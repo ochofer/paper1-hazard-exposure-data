@@ -216,12 +216,23 @@ branch 'main' set up to track 'origin/main'.</pre><button class="copy">copy</but
   </div>
 </div>
 
+<div class="step">
+  <div class="row"><input type="checkbox"><div class="title">A6. Push the notebook rendering fix <span class="st s-you">YOU</span></div></div>
+  <div class="body">
+    <div class="box stop"><p><strong>Reopen Terminal for this one.</strong> I said you could close it, then found a real bug in the notebook you had just pushed. The keychain now holds your token, so this will not ask you to sign in again. Same move as A2: type <code>cd </code> with a trailing space, drag the <code>repo_paper1_data</code> folder onto the window, press Enter.</p></div>
+    <div class="box warn"><p><strong>What was wrong.</strong> A notebook file stores each cell as a list of lines and joins them with nothing at all, not with line breaks. The generator was splitting on line breaks and throwing them away, so every cell collapsed onto a single line. Markdown rendered as one run-on paragraph, which is what you saw. The same fault was in the code cells, where it would have raised a syntax error on the very first run. It is fixed and committed locally, and every code cell is now parsed by a verification pass before the notebook is written.</p></div>
+    <div class="cmd"><pre><code>git push</code></pre></div>
+    <p><strong>Then reload Colab.</strong> Close the Colab tab entirely and reopen it from the badge or the link in B1. A refresh alone can serve you the old copy.</p>
+    <p><strong>How to tell it worked:</strong> the first cell reads as a proper heading, <em>Paper 1: raw data panels</em>, followed by separate paragraphs and a three-column table. If it is still one grey blob of text, you reopened a cached tab rather than a fresh one.</p>
+  </div>
+</div>
+
 <h2>B. Set up Colab</h2>
 
 <div class="step">
   <div class="row"><input type="checkbox"><div class="title">B1. Open the notebook in Colab <span class="st s-you">YOU</span></div></div>
   <div class="body">
-    <p>Once A4 has pushed, this link works. It is also the badge at the top of the README:</p>
+    <p>Once A6 has pushed, this link works. It is also the badge at the top of the README:</p>
     <div class="cmd"><pre>https://colab.research.google.com/github/ochofer/paper1-hazard-exposure-data/blob/main/notebooks/01_raw_panels.ipynb</pre><button class="copy">copy</button></div>
     <p>Opening it this way gives you a scratch copy, not a live link back to the repository. Saving inside Colab does <strong>not</strong> push anything to GitHub. Use <em>File, then Save a copy in GitHub</em> if you want a change to land, though editing <code>build_notebook.py</code> locally is cleaner.</p>
   </div>
