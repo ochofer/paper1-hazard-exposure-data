@@ -114,15 +114,18 @@ Status key: <span class="st s-conf">DONE</span> already completed · <span class
     <p>Terminal is now working inside the repository. <strong>You only need to do this once.</strong> It stays there for every command in this checklist unless you close the window.</p>
     <p><strong>Confirm you landed in the right place</strong> before pushing anything. Paste this and press Enter:</p>
     <div class="cmd"><pre>git log --oneline &amp;&amp; git ls-files</pre><button class="copy">copy</button></div>
-    <p>Expect exactly this, two commits and six files:</p>
-    <div class="cmd"><pre>81e1e44 Point Colab bootstrap at ochofer/paper1-hazard-exposure-data
+    <p>Expect three commits and seven files, most recent commit first:</p>
+    <div class="cmd"><pre>e20bb43 Restyle execution checklist to match house style
+81e1e44 Point Colab bootstrap at ochofer/paper1-hazard-exposure-data
 5880124 Add Paper 1 raw data scaffolding
 .gitignore
+EXECUTION_CHECKLIST.html
 README.md
 build_notebook.py
 config/tickers_draft_v0.csv
 data/raw/.gitkeep
 notebooks/01_raw_panels.ipynb</pre><button class="copy">copy</button></div>
+    <p>The commit hashes on your machine will match these, since the commits are already made. Only the count and the file names need to agree.</p>
     <div class="box stop"><p><strong>If you see anything else, stop and do not push.</strong> Hundreds of files, or the message <code>not a git repository</code>, means Terminal is pointed at the wrong folder. The most likely mistake is landing on <em>Finance Project A</em> itself rather than <code>repo_paper1_data</code> inside it. Redo the drag with the inner folder.</p></div>
   </div>
 </div>
