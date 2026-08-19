@@ -1,4 +1,4 @@
-# Paper 1 — data layer
+# Paper 1: data layer
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ochofer/paper1-hazard-exposure-data/blob/main/notebooks/01_raw_panels.ipynb)
 
@@ -12,7 +12,7 @@ quietly relaxed once results start appearing.
 
 ---
 
-## 1. Survivorship bias — how it will be handled
+## 1. Survivorship bias: how it will be handled
 
 **The ticker list currently in this repo is survivorship-biased, and knowingly so.**
 `config/tickers_draft_v0.csv` contains twenty firms that all still trade in August 2026.
@@ -38,7 +38,7 @@ two distinct places, and they need different fixes:
 
 **Delisting returns must be included.** A firm that goes to zero must contribute its
 final return, not simply disappear. Dropping the last observation converts bankruptcies
-into non-events and biases mean returns upward — precisely the direction that would
+into non-events and biases mean returns upward, precisely the direction that would
 flatter a hazard-exposure hypothesis. Where a delisting return is unavailable, the
 convention will be stated explicitly and applied uniformly rather than case by case.
 
@@ -54,7 +54,7 @@ carrying an empty array counts as a miss, not a hit.
 
 ---
 
-## 2. Transaction costs — how they will be handled
+## 2. Transaction costs: how they will be handled
 
 **Transaction costs are not netted anywhere in this repo, by design.** The raw panels are
 gross. Costs belong at the portfolio layer, applied once, visibly, and to turnover rather
@@ -102,7 +102,7 @@ data/raw/                     outputs + manifest.json (gitignored except manifes
 ## 4. Running it
 
 Colab is the intended environment. Add `FMP_API_KEY` to the Colab **Secrets** panel (key
-icon, left sidebar) and enable it for the notebook — do not paste it into a cell, or it
+icon, left sidebar) and enable it for the notebook. Do not paste it into a cell, or it
 will be committed. Locally, `export FMP_API_KEY='...'`.
 
 The notebook writes `panel_a_ff3_daily.csv`, `panel_b_prices_daily.csv`, the untouched
@@ -114,7 +114,7 @@ original French download, and `manifest.json` with SHA-256 hashes so a rerun can
 - **French factors are in percent, not decimals.** `Mkt-RF = 0.55` means 0.55%. Stored as
   published; the `/100` belongs downstream.
 - `-99.99` and `-999` are French's missing-value codes, converted to `NaN` at parse.
-- **`SHEL.L` is quoted in pence (GBp), not pounds** — a factor-of-100 error waiting to
+- **`SHEL.L` is quoted in pence (GBp), not pounds**. A factor-of-100 error waiting to
   happen.
 - No FX conversion is applied. US names are USD, European names EUR/CHF/GBp.
 - **Panel A is the US factor set.** The European leg must be regressed on French's
@@ -126,9 +126,9 @@ Twenty firms drawn from the top of `outputs/cross_section.csv` by operating-asse
 fourteen US, six European. Deliberately excluded from the draft, each for a reason that
 is a live design question rather than a data question:
 
-- **KKR, Blackstone** — whether a private-equity sponsor should carry physical hazard
+- **KKR, Blackstone**: whether a private-equity sponsor should carry physical hazard
   exposure in a listed-equity study is unsettled.
-- **Energy Transfer, Enterprise Products** — MLPs; partnership structure and K-1 tax
+- **Energy Transfer, Enterprise Products**: MLPs; partnership structure and K-1 tax
   treatment make them non-comparable to corporations without a stated convention.
 - **Berkshire Hathaway is included** but flagged: it owns its utilities outright, which is
   defensible, but it is a conglomerate whose returns are mostly not about physical assets.

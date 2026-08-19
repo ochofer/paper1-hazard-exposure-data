@@ -6,18 +6,29 @@ stays diffable in git. Run:  python build_notebook.py
 """
 import json, pathlib
 
-def md(src):   return {"cell_type": "markdown", "metadata": {}, "source": src.strip().split("\n")}
+def _lines(src: str) -> list[str]:
+    """Split into .ipynb source lines, KEEPING the trailing newline on each.
+
+    The notebook format joins source with "", not "\n". A plain .split("\n")
+    therefore collapses every cell onto a single line: markdown renders as one
+    run-on paragraph and code cells raise SyntaxError on the first run. Caught
+    only after the notebook was already pushed. Do not "simplify" this back.
+    """
+    parts = src.split("\n")
+    return [p + "\n" for p in parts[:-1]] + ([parts[-1]] if parts[-1] else [])
+
+def md(src):   return {"cell_type": "markdown", "metadata": {}, "source": _lines(src.strip())}
 def code(src): return {"cell_type": "code", "execution_count": None, "metadata": {},
-                       "outputs": [], "source": src.strip("\n").split("\n")}
+                       "outputs": [], "source": _lines(src.strip("\n"))}
 
 cells = []
 
 cells.append(md(r"""
-# Paper 1 — raw data panels
+# Paper 1: raw data panels
 
 **Scope of this notebook: acquisition only.** It downloads two panels, writes them to
 `data/raw/`, and stops. There is no return calculation, no factor regression, no
-portfolio formation and no merging of the two panels. That is deliberate — the raw
+portfolio formation and no merging of the two panels. That is deliberate. The raw
 layer should be reproducible and auditable on its own before anything is estimated
 on top of it.
 
@@ -70,7 +81,7 @@ cells.append(md(r"""
 
 Uncomment and run this cell if you are on Colab rather than a local checkout. Replace
 the URL with your repo. The FMP key is read from Colab's **Secrets** panel (the key
-icon in the left sidebar) — add a secret named `FMP_API_KEY` and enable it for this
+icon in the left sidebar), then add a secret named `FMP_API_KEY` and enable it for this
 notebook. Do not paste the key into a cell; it would end up in the committed output.
 """))
 
@@ -88,14 +99,14 @@ pass
 
 # ------------------------------------------------------------------ Panel A
 cells.append(md(r"""
-## 1. Panel A — Fama-French 3 factors, daily
+## 1. Panel A: Fama-French 3 factors, daily
 
 Source: Ken French's data library, file `F-F_Research_Data_Factors_daily_CSV.zip`.
 
 The file needs real parsing rather than a plain `read_csv`. It carries a multi-line
 copyright preamble, then the header row, then dated rows, then a trailing copyright
 line. The monthly version of this file additionally appends an *annual* block after the
-monthly block, separated by blank lines — if you ever swap this URL for the monthly one,
+monthly block, separated by blank lines. If you ever swap this URL for the monthly one,
 a naive parser will silently concatenate annual rows onto monthly rows and every
 subsequent number will be wrong.
 
@@ -192,7 +203,7 @@ display(ff3.describe().T[["count", "mean", "std", "min", "max"]])
 
 # ------------------------------------------------------------------ Panel B
 cells.append(md(r"""
-## 2. Panel B — daily prices from FMP
+## 2. Panel B: daily prices from FMP
 
 The draft ticker list is read from `config/tickers_draft_v0.csv` rather than being
 hardcoded here, so revising it is a one-line CSV edit and shows up cleanly in a diff.
@@ -200,8 +211,8 @@ It was drawn from the top of `outputs/cross_section.csv` by operating-asset coun
 
 Two benchmarks are pulled, and the distinction matters later:
 
-- `^GSPC` — the S&P 500 **index**. Price return only, no dividends, not investable.
-- `SPY` — the **investable** proxy. This is the one a transaction-cost model can be
+- `^GSPC` is the S&P 500 **index**. Price return only, no dividends, not investable.
+- `SPY` is the **investable** proxy. This is the one a transaction-cost model can be
   applied to, because it is a thing you can actually buy.
 
 Known issues that are recorded rather than fixed here, because fixing them silently in
@@ -225,7 +236,7 @@ display(tick[["name", "hq", "n_assets", "ticker", "leg"]])
 
 # --------------------------------------------------------------- preflight
 cells.append(md(r"""
-### 2a. Preflight — what can this API key actually see?
+### 2a. Preflight: what can this API key actually see?
 
 Run this before the main loop. It makes five cheap calls and reports what your key is
 allowed to do, which is faster and more reliable than reading a pricing page, and it
@@ -235,7 +246,7 @@ Each probe maps to a decision you would otherwise make blind:
 
 | Probe | If it fails |
 |---|---|
-| US daily prices | Nothing works. The key is wrong or unauthorised — not a tier problem. |
+| US daily prices | Nothing works. The key is wrong or unauthorised, not a tier problem. |
 | European ticker | Free tier. The six EU names will come back empty; drop the EU leg for now. |
 | Index `^GSPC` | Use `SPY` alone as the benchmark and record the substitution. |
 | History depth | Free keys are typically capped at a few recent years, which silently shortens the sample. |
@@ -335,7 +346,7 @@ def fetch_prices(symbol: str, start: str, end: str) -> pd.DataFrame:
 
     Tries the v3 endpoint (which the existing 01/02 scripts use) and falls back to the
     newer 'stable' endpoint, since FMP is migrating v3 out. An HTTP 200 carrying an
-    empty payload is treated as a MISS, not a hit — the same convention used in
+    empty payload is treated as a MISS, not a hit, the same convention used in
     01_survivorship_test_fmp.py, and the reason that matters is that a silent empty
     array otherwise looks identical to a successful call in aggregate counts.
     """
@@ -387,7 +398,7 @@ print(f"\nretrieved {len(frames)}, missing {len(missing)}: {missing}")
 
 cells.append(code(r'''
 if not frames:
-    raise SystemExit("No price data retrieved at all — check the API key and its plan tier.")
+    raise SystemExit("No price data retrieved at all. Check the API key and its plan tier.")
 
 prices = pd.concat(frames, ignore_index=True)
 
@@ -412,7 +423,7 @@ cells.append(md(r"""
 
 These assertions are here so that a broken download fails loudly at acquisition time
 rather than showing up as a puzzling coefficient three weeks later. They check the
-plumbing only — they make no claim about whether the data is fit for the research
+plumbing only. They make no claim about whether the data is fit for the research
 question. The manifest records SHA-256 hashes so a later rerun can be proved identical
 (or proved different) rather than assumed so.
 """))
@@ -456,7 +467,7 @@ display(report)
 
 n_fail = int((~report["pass"]).sum())
 print(f"\n{len(report) - n_fail}/{len(report)} checks passed"
-      + (f" — {n_fail} FAILED, read the detail column before using these files." if n_fail else ""))
+      + (f" {n_fail} FAILED, read the detail column before using these files." if n_fail else ""))
 '''))
 
 cells.append(code(r'''
@@ -474,7 +485,7 @@ manifest = {
         "source": FF3_DAILY,
         "inner_file": inner_name,
         "rows": int(len(ff3)),
-        "units": "PERCENT — divide by 100 before combining with decimal returns",
+        "units": "PERCENT: divide by 100 before combining with decimal returns",
         "missing_codes": [-99.99, -999],
     },
     "panel_b": {
