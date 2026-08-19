@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Paper 1 — data layer execution checklist</title>
+<style>
+  :root{
+    --bg:#faf9f7; --card:#fff; --ink:#1c1b19; --mut:#6b6862; --line:#e5e2dc;
+    --accent:#8b5e34; --ok:#2f6f4e; --warn:#8a6d1f; --danger:#9b2c2c;
+    --code-bg:#1e1c1a; --code-ink:#e8e4dd;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font:16px/1.62 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+    padding:0 20px 100px;
+  }
+  .wrap{max-width:860px;margin:0 auto}
+  header{padding:48px 0 20px;border-bottom:1px solid var(--line);margin-bottom:8px}
+  h1{font-size:29px;margin:0 0 8px;letter-spacing:-.02em;font-weight:650}
+  .sub{color:var(--mut);font-size:15px;margin:0}
+  .statusline{
+    margin-top:18px;padding:11px 14px;background:#fff5e6;border:1px solid #e8d5b0;
+    border-radius:7px;font-size:14px;color:#6b4f1d;
+  }
+  .statusline b{color:#5a4116}
+
+  /* progress */
+  .prog{position:sticky;top:0;background:var(--bg);padding:14px 0 12px;z-index:20;border-bottom:1px solid var(--line)}
+  .bar{height:7px;background:var(--line);border-radius:99px;overflow:hidden}
+  .fill{height:100%;width:0;background:var(--accent);transition:width .28s ease;border-radius:99px}
+  .ptext{display:flex;justify-content:space-between;font-size:13px;color:var(--mut);margin-bottom:7px}
+  .ptext b{color:var(--ink);font-variant-numeric:tabular-nums}
+
+  section{margin:34px 0 0}
+  h2{
+    font-size:13px;text-transform:uppercase;letter-spacing:.09em;color:var(--accent);
+    margin:0 0 14px;font-weight:700;
+  }
+  .step{
+    background:var(--card);border:1px solid var(--line);border-radius:9px;
+    padding:15px 17px;margin-bottom:11px;transition:opacity .2s,border-color .2s;
+  }
+  .step.done{opacity:.52;border-color:#d8ecd8}
+  .step.done .title{text-decoration:line-through;text-decoration-color:var(--mut)}
+  .row{display:flex;gap:12px;align-items:flex-start}
+  input[type=checkbox]{
+    appearance:none;width:20px;height:20px;min-width:20px;margin-top:2px;
+    border:1.5px solid #c6c1b8;border-radius:5px;background:#fff;cursor:pointer;position:relative;
+  }
+  input[type=checkbox]:checked{background:var(--ok);border-color:var(--ok)}
+  input[type=checkbox]:checked::after{
+    content:"";position:absolute;left:6.5px;top:2.5px;width:5px;height:10px;
+    border:solid #fff;border-width:0 2px 2px 0;transform:rotate(43deg);
+  }
+  .title{font-weight:600;font-size:15.5px;cursor:pointer;flex:1}
+  .body{margin:9px 0 0 32px;font-size:14.5px;color:#3d3a35}
+  .body p{margin:0 0 9px}
+  .body p:last-child{margin-bottom:0}
+
+  code.inl{background:#f0ede8;padding:1.5px 6px;border-radius:4px;font-size:13px;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+
+  .cmd{position:relative;margin:10px 0}
+  pre{
+    background:var(--code-bg);color:var(--code-ink);padding:13px 15px;border-radius:7px;
+    overflow-x:auto;margin:0;font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  .copy{
+    position:absolute;top:8px;right:8px;background:#3a3733;color:#ddd;border:0;
+    padding:4px 10px;border-radius:5px;font-size:11.5px;cursor:pointer;font-family:inherit;
+  }
+  .copy:hover{background:#4d4944}
+  .copy.ok{background:var(--ok);color:#fff}
+
+  .note{border-left:3px solid var(--line);padding:2px 0 2px 13px;margin:10px 0;font-size:14px;color:var(--mut)}
+  .warn{background:#fdf8e8;border-left:3px solid var(--warn);padding:10px 13px;border-radius:0 6px 6px 0;margin:10px 0;font-size:14px;color:#5f4c14}
+  .danger{background:#fdf0f0;border-left:3px solid var(--danger);padding:10px 13px;border-radius:0 6px 6px 0;margin:10px 0;font-size:14px;color:#7a2222}
+  .good{background:#f0f7f2;border-left:3px solid var(--ok);padding:10px 13px;border-radius:0 6px 6px 0;margin:10px 0;font-size:14px;color:#255c40}
+  .warn b,.danger b,.good b{font-weight:670}
+
+  details{margin:10px 0;border:1px solid var(--line);border-radius:7px;background:#fcfbf9}
+  summary{padding:9px 13px;cursor:pointer;font-size:14px;font-weight:600;color:var(--accent);list-style:none}
+  summary::-webkit-details-marker{display:none}
+  summary::before{content:"▸ ";color:var(--mut)}
+  details[open] summary::before{content:"▾ "}
+  details .inner{padding:0 13px 12px;font-size:14px}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0}
+  th,td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--mut);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  td code{font-size:12.5px}
+  .tag{display:inline-block;font-size:11px;padding:2px 7px;border-radius:4px;font-weight:650;letter-spacing:.03em}
+  .t-block{background:#fdeaea;color:#9b2c2c}
+  .t-you{background:#eef2fd;color:#2c4a9b}
+  footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--line);font-size:13px;color:var(--mut)}
+  .reset{background:none;border:1px solid var(--line);padding:6px 12px;border-radius:6px;
+    font-size:12.5px;color:var(--mut);cursor:pointer;font-family:inherit}
+  .reset:hover{border-color:var(--mut)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Paper 1 — data layer execution checklist</h1>
+  <p class="sub">Getting the scaffolding onto GitHub and both raw panels downloaded. Roughly 25 minutes if nothing fights back.</p>
+  <div class="statusline">
+    <b>Status: partial.</b> The repo is committed locally but does not exist on GitHub. Neither panel has been downloaded and no data has been verified. The FMP path has never made a live call from anywhere — <b>treat step 9 as the real test</b>, not a formality.
+  </div>
+</header>
+
+<div class="prog">
+  <div class="ptext"><span>Progress</span><span><b id="pn">0</b> / <b id="pt">0</b></span></div>
+  <div class="bar"><div class="fill" id="fill"></div></div>
+</div>
+
+<!-- ============================================ A -->
+<section>
+  <h2>A · Create and push the repo</h2>
+
+  <div class="step">
+    <div class="row"><input type="checkbox" checked><div class="title">Create the repo — DONE</div></div>
+    <div class="body">
+      <div class="good"><b>Already done:</b> <code class="inl">github.com/ochofer/paper1-hazard-exposure-data</code>. The Colab bootstrap cell and the README badge now point at it — no placeholders remain.</div>
+      <p>If you created it <i>with</i> a README, .gitignore or licence ticked, the remote has a commit on it and your first push will be rejected. That's recoverable — see the troubleshooting note under the push step.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="row"><input type="checkbox"><div class="title">Open Terminal and point it at the repo_paper1_data folder</div></div>
+    <div class="body">
+      <p><b>What Terminal is:</b> the Mac app where you type commands instead of clicking. Press <code class="inl">Cmd</code>+<code class="inl">Space</code>, type <i>Terminal</i>, hit Enter. A window opens with a blinking cursor.</p>
+      <p><b>Why it needs pointing:</b> Terminal always starts in your home folder. Every <code class="inl">git</code> command below acts on whatever folder Terminal is currently "in", so if you skip this, the commands either fail or — worse — act on the wrong folder.</p>
+      <p><b>The no-typing-paths method.</b> Rather than typing out a long path and getting a character wrong:</p>
+      <table>
+        <tr><th style="width:38px">#</th><th>Do this</th></tr>
+        <tr><td>1</td><td>Type <code class="inl">cd</code> then a space. <b>Do not press Enter yet.</b></td></tr>
+        <tr><td>2</td><td>Open Finder and find the <code class="inl">repo_paper1_data</code> folder, inside <i>Finance Project A</i>.</td></tr>
+        <tr><td>3</td><td><b>Drag that folder from Finder into the Terminal window.</b> Its full path appears automatically.</td></tr>
+        <tr><td>4</td><td>Now press Enter. The prompt changes to show the folder name.</td></tr>
+      </table>
+      <p>Terminal is now working inside the repo. <b>You only need to do this once</b> — it stays put for every command in this checklist, unless you close the window.</p>
+      <p><b>Confirm you landed in the right place</b> before pushing anything. Paste this and press Enter:</p>
+      <div class="cmd"><pre>git log --oneline &amp;&amp; git ls-files</pre><button class="copy">copy</button></div>
+      <p>Expect exactly this — one commit and six files:</p>
+      <div class="cmd"><pre>5880124 Add Paper 1 raw data scaffolding
+.gitignore
+README.md
+build_notebook.py
+config/tickers_draft_v0.csv
+data/raw/.gitkeep
+notebooks/01_raw_panels.ipynb</pre><button class="copy">copy</button></div>
+      <div class="danger"><b>If you see something else, stop and don't push.</b> Hundreds of files, or <code class="inl">not a git repository</code>, means Terminal is pointed at the wrong folder — most likely <i>Finance Project A</i> itself rather than <code class="inl">repo_paper1_data</code> inside it. Redo the drag with the inner folder. This is the check that prevents publishing 1.3 GB of licensed data, which is the next step.</div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="row"><input type="checkbox"><div class="title">Confirm no data files are staged</div></div>
+    <div class="body">
+      <div class="danger"><b>The 1.3 GB trap.</b> Your <i>Finance Project A</i> folder holds the GEM tracker and the GLEIF golden copy — three files exceed 100 MB, which GitHub rejects outright, and both carry licensing terms that must not land in a public repo. If you ever run <code class="inl">git init</code> at the <i>Finance Project A</i> root instead of inside <code class="inl">repo_paper1_data</code>, you will hit this.</div>
+      <div class="cmd"><pre>git ls-files | grep -iE "gleif|gem|\.xlsx|\.zip" || echo "clean - no data files tracked"</pre><button class="copy">copy</button></div>
+      <p>Expect <code class="inl">clean</code>. Anything else, do not push.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="row"><input type="checkbox"><div class="title">Add the remote and push</div></div>
+    <div class="body">
+      <p>Replace <code class="inl">paper1-hazard-exposure-data</code> with what you created:</p>
+      <div class="cmd"><pre>git remote add origin https://github.com/ochofer/paper1-hazard-exposure-data.git
+git branch -M main
+git push -u origin main</pre><button class="copy">copy</button></div>
+      <details><summary>If the push is rejected</summary><div class="inner">
+        <p><b>non-fast-forward / "updates were rejected"</b> — the remote isn't empty, meaning a README or licence got created with it. Either delete and recreate the repo empty, or run <code class="inl">git pull --rebase origin main</code> and push again.</p>
+        <p><b>Authentication failed</b> — GitHub stopped accepting passwords over HTTPS. Use a personal access token as the password, or switch the remote to SSH with <code class="inl">git remote set-url origin git@github.com:ochofer/paper1-hazard-exposure-data.git</code>.</p>
+        <p><b>remote origin already exists</b> — you ran this twice. Use <code class="inl">git remote set-url origin ...</code> instead.</p>
+      </div></details>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="row"><input type="checkbox" checked><div class="title">Wire the repo URL into the notebook — DONE</div></div>
+    <div class="body">
+      <div class="good">The Colab bootstrap cell now clones <code class="inl">ochofer/paper1-hazard-exposure-data</code>, and the README carries an <b>Open in Colab</b> badge. Both were regenerated and are in the commit you're about to push.</div>
+      <div class="note"><b>For later:</b> if you ever change the notebook, edit <code class="inl">build_notebook.py</code> and re-run <code class="inl">python build_notebook.py</code>. Editing the <code class="inl">.ipynb</code> directly works until the generator next runs, at which point your edit is silently overwritten.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================ B -->
+<section>
+  <h2>B · Set up Colab</h2>
+
+  <div class="step">
+    <div class="row"><input type="checkbox"><div class="title">Open the notebook in Colab</div></div>
+    <div class="body">
+      <p>Once pushed, this URL works directly:</p>
+      <div class="cmd"><pre>https://colab.research.google.com/github/ochofer/paper1-hazard-exposure-data/blob/main/notebooks/01_raw_panels.ipynb</pre><button class="copy">copy</button></div>
+      <p>Opening it this way gives you a scratch copy, not a live link to the repo. Saving in Colab does <i>not</i> push back — use <b>File → Save a copy in GitHub</b> if you want changes to land, though it's cleaner to edit <code class="inl">build_notebook.py</code> locally.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="row"><input type="checkbox"><div class="title">Add FMP_API_KEY to Colab Secrets</div></div>
+    <div class="body">
+      <p>Key icon in the left sidebar → <b>Add new secret</b> → name it exactly <code class="inl">FMP_API_KEY</code> → paste the value → <b>toggle notebook access on</b>. The toggle is easy to miss and the usual cause of "key not found" when the secret plainly exists.</p>
+      <div class="danger"><b>Do not paste the key into a cell.</b> Colab stores cell output in the .ipynb, so a key typed into a cell can end up committed to a public repo. Secrets never touch the notebook file.</div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="row"><input type="checkbox"><div class="title">Uncomment and run the bootstrap cell</div></div>
+    <div class="body">
+      <p>Second code cell. Uncomment every line between the dashed markers and set the clone URL. It clones the repo, moves into it, repoints <code class="inl">REPO</code>/<code class="inl">RAW</code>, and loads the secret into the environment.</p>
+      <p>Run the setup cell above it first, then this one. Confirm the printed <code class="inl">repo</code> path points inside the cloned folder and not <code class="inl">/content</code>.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================ C -->
+<section>
+  <h2>C · Panel A — Fama-French factors</h2>
+
+  <div class="step">
+    <div class="row"><input type="checkbox"><div class="title">Run the download and parse cell</div></div>
+    <div class="body">
+      <p>Pulls <code class="inl">F-F_Research_Data_Factors_daily_CSV.zip</code> and parses it. Expect a full range starting <b>1926-07-01</b> and roughly <b>25,000+ rows</b> before clipping.</p>
+      <div class="good"><b>This parser is the one piece already tested.</b> It was run against synthetic files reproducing the real format — preamble, trailing copyright line, missing-value codes, and the annual block that monthly files append. Two genuine bugs were found and fixed that way: a dtype flip to <code class="inl">object</code> that would have broken <code class="inl">.describe()</code>, and a bare <code class="inl">StopIteration</code> on malformed input.</div>
+      <details><summary>If it fails</summary><div class="inner">
+        <p><b>ValueError: No YYYYMMDD rows found</b> — the URL is pointing at a monthly file. Monthly dates are six digits and need a different parser plus handling for the annual block. Check the filename contains <code class="inl">_daily</code>.</p>
+        <p><b>HTTP 404</b> — French occasionally renames files. Open the data library page and copy the current "Fama/French 3 Factors [Daily]" CSV link.</p>
+        <p><b>Timeout or connection error</b> — Dartmouth's server is genuinely slow at times. Just re-run; nothing is cached, so a retry is clean.</p>
+      </div></details>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="row"><input type="checkbox"><div class="title">Sanity-check the summary table</div></div>
+    <div class="body">
+      <p>The window is fixed at <b>2010-01-01 to 2025-12-31</b> — set in advance so a rerun on a different day produces an identical file. Expect roughly <b>4,000 rows</b>.</p>
+      <div class="warn"><b>Values are in percent, not decimals.</b> <code class="inl">Mkt-RF = 0.55</code> means 0.55%. Stored as published, deliberately. Daily <code class="inl">Mkt-RF</code> should mostly sit between −3 and +3 with a std near 1. If std is near 0.01, something has already divided by 100 and downstream work will be wrong by two orders of magnitude.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================ D -->
+<section>
+  <h2>D · Panel B — prices</h2>
+
+  <div class="step">
+    <div class="row"><input type="checkbox"><div class="title">Run the ticker list cell</div></div>
+    <div class="body">
+      <p>Reads <code class="inl">config/tickers_draft_v0.csv</code> — 14 US, 6 European, plus <code class="inl">^GSPC</code> and <code class="inl">SPY</code>. Drawn from the top of <code class="inl">cross_section.csv</code> by operating-asset count.</p>
+      <div class="warn"><b>This list is survivorship-biased and it is meant to be.</b> All twenty names still trade today. It proves the data path works; it is not a research universe and no return-based result may come from it. Revising it means editing that one CSV — nothing downstream hardcodes a ticker.</div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="row"><input type="checkbox"><div class="title">Run the fetch loop and read the misses</div></div>
+    <div class="body">
+      <p>22 symbols, ~0.3 s apart, so under a minute. Each prints its row count and date range.</p>
+      <div class="warn"><b>Watch for <code class="inl">HTTP 200 but empty payload → counted as MISS</code>.</b> This is the line that matters most. FMP returns a 200 with an empty array for symbols it has no data for, which in aggregate counts looks identical to success. Same convention as your <code class="inl">01_survivorship_test_fmp.py</code>.</div>
+      <p>If the six <code class="inl">.PA</code> / <code class="inl">.MI</code> / <code class="inl">.L</code> / <code class="inl">.DE</code> / <code class="inl">.SW</code> tickers all come back empty, your key is almost certainly free-tier — European coverage is a paid feature. That is a plan limit, not a data quality finding, and shouldn't be recorded as one.</p>
+      <details><summary>Other failure modes</summary><div class="inner">
+        <p><b>HTTP 401/403</b> — bad or unauthorised key. Check the secret's notebook-access toggle.</p>
+        <p><b>HTTP 429</b> — rate limited. Raise the <code class="inl">time.sleep(0.3)</code> to 1.0 and re-run.</p>
+        <p><b>Everything empty including ^GSPC and SPY</b> — the key isn't reaching the API at all. Don't debug ticker by ticker; the problem is authentication.</p>
+        <p><b>Only ^GSPC empty</b> — index access is tiered separately on some plans. SPY alone is workable; note the substitution rather than silently dropping the benchmark.</p>
+      </div></details>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================ E -->
+<section>
+  <h2>E · Verify and record</h2>
+
+  <div class="step">
+    <div class="row"><input type="checkbox"><div class="title">Read the integrity check table — all 11 rows</div></div>
+    <div class="body">
+      <p>These catch a broken download at acquisition time rather than as a puzzling coefficient three weeks later. They test plumbing only and make no claim that the data suits the research question.</p>
+      <table>
+        <tr><th>Check</th><th>What a failure means</th></tr>
+        <tr><td>no duplicate dates / (symbol, date)</td><td>Vendor returned overlapping pages. Any panel regression would double-count.</td></tr>
+        <tr><td>factor magnitudes under 25</td><td>Units error — something already converted percent to decimal, or the parse misaligned columns.</td></tr>
+        <tr><td>no weekend dates</td><td>Date parsing is wrong, or the file isn't daily.</td></tr>
+        <tr><td>closes strictly positive</td><td>Nulls or sentinel values leaked into the price series.</td></tr>
+        <tr><td>every symbol returned data</td><td>Some are missing — expected on free-tier. Note which, don't quietly proceed.</td></tr>
+        <tr><td>FF3 / ^GSPC share &gt;2000 days</td><td>Calendar mismatch. The later merge would drop most rows.</td></tr>
+      </table>
+      <div class="note">A failure here is information, not an obstacle. Record what failed and why before working around it.</div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="row"><input type="checkbox"><div class="title">Generate and commit manifest.json</div></div>
+    <div class="body">
+      <p>SHA-256 hashes, row counts, date ranges, and the list of missing symbols. This is what lets a rerun be <i>proved</i> identical rather than assumed so.</p>
+      <div class="cmd"><pre>git add -f data/raw/manifest.json
+git commit -m "Record first successful data pull" &amp;&amp; git push</pre><button class="copy">copy</button></div>
+      <p>The <code class="inl">-f</code> is needed because <code class="inl">data/raw/</code> is gitignored — the manifest is deliberately the one exception. The CSVs stay out; they're reproducible from the notebook.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="row"><input type="checkbox"><div class="title">Note what this run does and does not establish</div></div>
+    <div class="body">
+      <p>A clean run means the acquisition path works. It does not mean the data supports return-based estimation. Two upstream items still block that, both carried from the 19 August handover:</p>
+      <p><b>1.</b> <code class="inl">01_survivorship_test_fmp.py</code> has not returned a number. Until there's a measured delisting hit rate, the survivorship problem is <i>unknown in size</i>, not small.</p>
+      <p><b>2.</b> The GEM ownership snapshot is undated, with sector vintages spanning ~16 months. That is look-ahead in the independent variable, and nothing in this repo addresses it.</p>
+      <div class="good">The README states the intended handling for survivorship bias and transaction costs up front, before any result exists, so neither commitment can be quietly relaxed once numbers start appearing. A stated intention is not a measured correction — the README says so explicitly.</div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>Companion to <code class="inl">README.md</code> in the same repo. Scope of the notebook is acquisition only — no returns, no regressions, no portfolio construction, no merge of the two panels.</p>
+  <p style="margin-top:14px"><button class="reset" id="reset">Reset all checkboxes</button></p>
+</footer>
+
+</div>
+
+<script>
+// In-memory only. Refreshing clears progress by design — this is a run-through
+// checklist, and a stale half-ticked state from a previous attempt is worse than none.
+var boxes = Array.prototype.slice.call(document.querySelectorAll('input[type=checkbox]'));
+var pn = document.getElementById('pn'), pt = document.getElementById('pt'), fill = document.getElementById('fill');
+pt.textContent = boxes.length;
+
+function sync(){
+  var n = boxes.filter(function(b){return b.checked}).length;
+  pn.textContent = n;
+  fill.style.width = (boxes.length ? (n / boxes.length * 100) : 0) + '%';
+}
+boxes.forEach(function(b){
+  var step = b.closest('.step');
+  // Steps that ship pre-ticked must render greyed on load, not just when clicked.
+  step.classList.toggle('done', b.checked);
+  b.addEventListener('change', function(){ step.classList.toggle('done', b.checked); sync(); });
+  // Let the title text toggle the box too - a bigger hit target than a 20px square.
+  step.querySelector('.title').addEventListener('click', function(){
+    b.checked = !b.checked;
+    b.dispatchEvent(new Event('change'));
+  });
+});
+
+document.querySelectorAll('.copy').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    var txt = btn.parentElement.querySelector('pre').innerText;
+    var done = function(){
+      btn.textContent = 'copied'; btn.classList.add('ok');
+      setTimeout(function(){ btn.textContent = 'copy'; btn.classList.remove('ok'); }, 1400);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(txt).then(done).catch(function(){ fallback(txt, done); });
+    } else { fallback(txt, done); }
+  });
+});
+function fallback(txt, cb){
+  var ta = document.createElement('textarea');
+  ta.value = txt; ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); cb(); } catch(e) {}
+  document.body.removeChild(ta);
+}
+
+document.getElementById('reset').addEventListener('click', function(){
+  boxes.forEach(function(b){ b.checked = false; b.closest('.step').classList.remove('done'); });
+  sync(); window.scrollTo({top:0, behavior:'smooth'});
+});
+
+sync();
+</script>
+</body>
+</html>

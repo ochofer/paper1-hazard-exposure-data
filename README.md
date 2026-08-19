@@ -1,5 +1,7 @@
 # Paper 1 — data layer
 
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ochofer/paper1-hazard-exposure-data/blob/main/notebooks/01_raw_panels.ipynb)
+
 Raw data acquisition for the physical-hazard-exposure asset pricing study. This repo
 holds the acquisition layer only: two raw panels, a manifest, and the checks that
 confirm the download was not silently corrupted. No returns, no regressions, no

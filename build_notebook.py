@@ -76,8 +76,8 @@ notebook. Do not paste the key into a cell; it would end up in the committed out
 
 cells.append(code(r'''
 # --- Colab bootstrap (uncomment on Colab) ---------------------------------
-# !git clone https://github.com/<YOUR_USER>/<YOUR_REPO>.git
-# %cd <YOUR_REPO>
+# !git clone https://github.com/ochofer/paper1-hazard-exposure-data.git
+# %cd paper1-hazard-exposure-data
 # REPO = Path.cwd(); RAW = REPO / "data" / "raw"; RAW.mkdir(parents=True, exist_ok=True)
 #
 # from google.colab import userdata
