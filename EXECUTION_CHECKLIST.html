@@ -140,17 +140,70 @@ notebooks/01_raw_panels.ipynb</pre><button class="copy">copy</button></div>
 </div>
 
 <div class="step">
-  <div class="row"><input type="checkbox"><div class="title">A4. Add the remote and push <span class="st s-you">YOU</span></div></div>
+  <div class="row"><input type="checkbox" checked><div class="title">A4. Add the remote and rename the branch <span class="st s-conf">DONE</span></div></div>
   <div class="body">
-    <p>"Remote" just means the copy on GitHub. This tells your local folder where to send commits, renames the branch to <code>main</code>, then sends it:</p>
+    <p>"Remote" just means the copy on GitHub. These two commands told your local folder where to send commits and renamed the branch to <code>main</code>. <strong>You have already run both successfully</strong>, so do not run them again.</p>
     <div class="cmd"><pre>git remote add origin https://github.com/ochofer/paper1-hazard-exposure-data.git
-git branch -M main
-git push -u origin main</pre><button class="copy">copy</button></div>
-    <p>Paste all three lines at once. Success looks like a few lines of counting objects ending in <code>branch 'main' set up to track 'origin/main'</code>.</p>
-    <details><summary>If the push is rejected</summary><div class="inner">
-      <p><strong>"Updates were rejected" or "non-fast-forward".</strong> The remote is not empty, which means a README or licence was created alongside it. Either delete the repository on GitHub and recreate it with nothing ticked, or run <code>git pull --rebase origin main</code> and push again.</p>
-      <p><strong>"Authentication failed".</strong> GitHub no longer accepts account passwords over HTTPS. Create a personal access token in GitHub settings under Developer settings, then use that token as the password. Alternatively switch to SSH with <code>git remote set-url origin git@github.com:ochofer/paper1-hazard-exposure-data.git</code>.</p>
-      <p><strong>"remote origin already exists".</strong> You ran the first line twice. Use <code>git remote set-url origin ...</code> instead of <code>git remote add</code>.</p>
+git branch -M main</pre><button class="copy">copy</button></div>
+    <p>If you ever need to check what the remote is pointing at, <code>git remote -v</code> shows it. If you ran the first line twice and got <code>remote origin already exists</code>, use <code>git remote set-url origin ...</code> instead.</p>
+  </div>
+</div>
+
+<div class="step">
+  <div class="row"><input type="checkbox"><div class="title">A4a. Create a personal access token <span class="st s-you">YOU</span></div></div>
+  <div class="body">
+    <div class="box warn">
+      <p><strong>Why the push failed, and why there is no password to type.</strong> GitHub stopped accepting account passwords for git operations in 2021. The prompt still says "Password", which is misleading, but what it wants is a <em>personal access token</em>.</p>
+      <p>You sign in to GitHub through Google, so you do not have a GitHub password at all. Nothing you could have typed there would have worked. A token is the replacement.</p>
+    </div>
+    <p>A token is a long generated string that acts as a password for git only. Create one on the website:</p>
+    <table>
+      <tr><th style="width:2.2em">#</th><th>Do this</th></tr>
+      <tr><td>1</td><td>Go to <a href="https://github.com/settings/tokens">github.com/settings/tokens</a>. That link lands you directly on the tokens page. If it asks you to sign in, use Google as usual.</td></tr>
+      <tr><td>2</td><td>Click <strong>Generate new token</strong>, then choose <strong>Generate new token (classic)</strong> from the dropdown.</td></tr>
+      <tr><td>3</td><td>In <strong>Note</strong>, type something you will recognise later, such as <code>paper1 push from laptop</code>.</td></tr>
+      <tr><td>4</td><td>Set <strong>Expiration</strong>. 90 days is a reasonable default. When it expires, pushes start failing again and you repeat this step.</td></tr>
+      <tr><td>5</td><td>Under <strong>Select scopes</strong>, tick the single box labelled <code>repo</code> at the top. That automatically ticks the items beneath it. Tick nothing else.</td></tr>
+      <tr><td>6</td><td>Scroll to the bottom and click <strong>Generate token</strong>.</td></tr>
+      <tr><td>7</td><td><strong>Copy the token now.</strong> It is shown exactly once. Click the copy icon next to it.</td></tr>
+    </table>
+    <div class="box stop">
+      <p><strong>If you navigate away before copying it, the token is gone for good.</strong> That is not a disaster, it just means deleting it and generating another. But copy it now and keep it on the clipboard for the next step.</p>
+      <p><strong>Do not paste the token into a file in this repository</strong>, or into a notebook cell. It is a credential, and the repository is public.</p>
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="row"><input type="checkbox"><div class="title">A4b. Push, using the token as the password <span class="st s-you">YOU</span></div></div>
+  <div class="body">
+    <p>First, tell git to remember the token in the Mac keychain so you only do this once:</p>
+    <div class="cmd"><pre>git config --global credential.helper osxkeychain</pre><button class="copy">copy</button></div>
+    <p>Then push:</p>
+    <div class="cmd"><pre>git push -u origin main</pre><button class="copy">copy</button></div>
+    <p>It will prompt you twice:</p>
+    <table>
+      <tr><th style="width:9em">Prompt</th><th>What to enter</th></tr>
+      <tr><td><code>Username</code></td><td><code>ochofer</code>. You had this right. It is your GitHub username, not your Google address.</td></tr>
+      <tr><td><code>Password</code></td><td><strong>Paste the token</strong> with <code>Cmd</code> and <code>V</code>. Not your Google password.</td></tr>
+    </table>
+    <div class="box warn">
+      <p><strong>Nothing will appear on screen when you paste the token.</strong> No dots, no stars, no movement at all. This is deliberate, so that a password is never visible, but it looks exactly like a failed paste and it catches almost everyone.</p>
+      <p>Paste once, then press Enter. Resist the urge to paste again because nothing showed up, since that submits the token twice and it will fail.</p>
+    </div>
+    <p>Success looks roughly like this, ending in a line about tracking:</p>
+    <div class="cmd"><pre>Enumerating objects: 14, done.
+Writing objects: 100% (14/14), 12.4 KiB | 6.2 MiB/s, done.
+To https://github.com/ochofer/paper1-hazard-exposure-data.git
+ * [new branch]      main -> main
+branch 'main' set up to track 'origin/main'.</pre><button class="copy">copy</button></div>
+    <p>Then reload the repository page on GitHub. You should see seven files and the README rendered underneath, with the Open in Colab badge at the top.</p>
+    <details><summary>If it still fails</summary><div class="inner">
+      <p><strong>"Invalid username or token" again.</strong> Most likely the token was not actually on the clipboard, or the <code>repo</code> scope was not ticked. Generate a fresh token, tick <code>repo</code>, and retry. A token with no scopes ticked authenticates but is refused for pushing.</p>
+      <p><strong>It prompts for username and password every single time.</strong> The keychain helper did not take. Check with <code>git config --global credential.helper</code>, which should print <code>osxkeychain</code>.</p>
+      <p><strong>You want to change the stored token later.</strong> Open the Keychain Access app, search for <code>github.com</code>, delete the entry, then push again to be prompted afresh.</p>
+      <p><strong>"Updates were rejected" or "non-fast-forward".</strong> A different problem entirely: the repository on GitHub is not empty because a README or licence was created with it. Run <code>git pull --rebase origin main</code> then push again.</p>
+      <p><strong>You would rather avoid tokens altogether.</strong> Install GitHub's own command line tool and authenticate through the browser with your Google sign-in: <code>brew install gh</code> then <code>gh auth login</code>, choosing HTTPS and browser authentication. This avoids token expiry, but only if Homebrew is already installed. Do not start down that road mid-task.</p>
     </div></details>
   </div>
 </div>
