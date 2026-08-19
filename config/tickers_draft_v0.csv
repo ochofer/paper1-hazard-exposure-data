@@ -1,0 +1,21 @@
+entity_id,name,hq,n_assets,ticker,leg,note
+E100000001194,Duke Energy Corp,United States,158,DUK,US,
+E100000001309,Southern Co,United States,115,SO,US,
+E100000001322,Vistra Corp,United States,92,VST,US,
+E100001000208,Constellation Energy Corp,United States,91,CEG,US,IPO Feb 2022 - short history by construction
+E100000001179,Chevron Corp,United States,73,CVX,US,no LEI in GEM - reached via CIK lane A
+E100000001213,Exxon Mobil Corp,United States,72,XOM,US,
+E100000001262,NRG Energy Inc,United States,63,NRG,US,
+E100000001329,Xcel Energy Inc,United States,62,XEL,US,
+E100000001245,Kinder Morgan Inc,United States,61,KMI,US,
+E100000001140,American Electric Power Company Inc,United States,59,AEP,US,
+E100000001210,Evergy Inc,United States,56,EVRG,US,formed 2018 Westar/Great Plains merger - predecessor history
+E100000001196,Dominion Energy Inc,United States,53,D,US,
+E100000001259,NextEra Energy Inc,United States,52,NEE,US,
+E100000001155,Berkshire Hathaway Inc,United States,104,BRK-B,US,conglomerate - owns utilities outright - see handover s10
+E100000000382,ENGIE SA,France,156,ENGI.PA,EU,EUR
+E100001014534,Snam SpA,Italy,156,SRG.MI,EU,EUR - consolidation flag CDP - keep per handover s8
+E100000000746,Shell PLC,United Kingdom,110,SHEL.L,EU,GBp - London quotes are in pence not pounds
+E100000000414,Heidelberg Materials AG,Germany,108,HEI.DE,EU,EUR
+E100000000387,TotalEnergies SE,France,106,TTE.PA,EU,EUR
+E100000000433,RWE AG,Germany,76,RWE.DE,EU,EUR

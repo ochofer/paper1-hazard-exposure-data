@@ -1,0 +1,13 @@
+# Raw data is reproducible from the notebook; the manifest is the audit record.
+data/raw/*
+!data/raw/.gitkeep
+!data/raw/manifest.json
+
+# Secrets. Never commit an API key.
+.env
+*.key
+
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.DS_Store
