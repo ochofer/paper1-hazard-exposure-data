@@ -223,18 +223,113 @@ print(f"benchmarks: {BENCHMARKS}")
 display(tick[["name", "hq", "n_assets", "ticker", "leg"]])
 '''))
 
+# --------------------------------------------------------------- preflight
+cells.append(md(r"""
+### 2a. Preflight — what can this API key actually see?
+
+Run this before the main loop. It makes five cheap calls and reports what your key is
+allowed to do, which is faster and more reliable than reading a pricing page, and it
+tells you *now* rather than twenty tickers into a loop.
+
+Each probe maps to a decision you would otherwise make blind:
+
+| Probe | If it fails |
+|---|---|
+| US daily prices | Nothing works. The key is wrong or unauthorised — not a tier problem. |
+| European ticker | Free tier. The six EU names will come back empty; drop the EU leg for now. |
+| Index `^GSPC` | Use `SPY` alone as the benchmark and record the substitution. |
+| History depth | Free keys are typically capped at a few recent years, which silently shortens the sample. |
+| Delisted companies | **Blocking test 1 cannot run.** No delisting list means no measured survivorship rate. |
+
+That last row is the one that matters most, and it is easy to miss. The survivorship test
+in `01_survivorship_test_fmp.py` draws its random sample from FMP's own delisted list. If
+that endpoint is closed to your key, the test cannot return a number at all, and the
+survivorship problem stays unquantified rather than merely unquantified-so-far.
+"""))
+
 cells.append(code(r'''
 API_KEY = os.environ.get("FMP_API_KEY")
 if not API_KEY:
     raise SystemExit(
         "FMP_API_KEY is not set.\n"
-        "  Colab : add it in the Secrets panel, then run the bootstrap cell above.\n"
+        "  Colab : add it in the Secrets panel and switch on notebook access, "
+        "then run the bootstrap cell above.\n"
         "  Local : export FMP_API_KEY='...'"
     )
 
+# Endpoint bases, defined here because the preflight below uses them too.
 V3     = "https://financialmodelingprep.com/api/v3/historical-price-full"
 STABLE = "https://financialmodelingprep.com/stable/historical-price-eod/full"
 
+def probe(label, url, params, want):
+    """One capability probe. Returns a row describing what happened.
+
+    An HTTP 200 carrying an empty payload counts as a FAIL, not a pass. FMP answers
+    'no access' and 'no data' the same way, so treating 200 as success would report a
+    free-tier key as fully capable.
+    """
+    try:
+        r = requests.get(url, params={**params, "apikey": API_KEY}, timeout=45)
+    except requests.RequestException as e:
+        return {"probe": label, "status": "ERROR", "ok": False, "detail": str(e)[:60]}
+
+    if r.status_code != 200:
+        hint = {401: "key rejected", 403: "not on your plan", 429: "rate limited"}.get(
+            r.status_code, "")
+        return {"probe": label, "status": f"HTTP {r.status_code}", "ok": False, "detail": hint}
+
+    payload = r.json()
+    rows = payload.get("historical") if isinstance(payload, dict) else payload
+    if not rows:
+        return {"probe": label, "status": "200 empty", "ok": False,
+                "detail": "no data returned - usually a plan limit"}
+    return {"probe": label, "status": "200", "ok": True, "detail": want(rows)}
+
+results = [
+    probe("US daily prices (DUK)",
+          f"{V3}/DUK", {"from": "2024-01-01", "to": "2024-03-01"},
+          lambda r: f"{len(r)} bars"),
+    probe("European ticker (ENGI.PA)",
+          f"{V3}/ENGI.PA", {"from": "2024-01-01", "to": "2024-03-01"},
+          lambda r: f"{len(r)} bars"),
+    probe("S&P 500 index (^GSPC)",
+          f"{V3}/{requests.utils.quote('^GSPC')}", {"from": "2024-01-01", "to": "2024-03-01"},
+          lambda r: f"{len(r)} bars"),
+    probe("History depth (2010 data)",
+          f"{V3}/DUK", {"from": "2010-01-01", "to": "2010-03-01"},
+          lambda r: f"earliest {min(x['date'] for x in r)}"),
+    probe("Delisted companies list",
+          "https://financialmodelingprep.com/api/v3/delisted-companies", {"limit": 5},
+          lambda r: f"{len(r)} sample rows"),
+]
+
+pre = pd.DataFrame(results)
+display(pre[["probe", "status", "detail"]])
+
+us_ok, eu_ok, idx_ok, hist_ok, delist_ok = [x["ok"] for x in results]
+
+print()
+if not us_ok:
+    print("STOP: even US prices failed. This is authentication, not a plan tier.")
+    print("      Check the key value and, on Colab, the secret's notebook-access toggle.")
+else:
+    tier = "paid (international coverage present)" if eu_ok else "free or entry tier (no international)"
+    print(f"Assessment: {tier}")
+    if not eu_ok:
+        print("  -> The 6 European tickers will return empty. Either drop the EU leg for now")
+        print("     and rerun with US-only, or upgrade before building the European panel.")
+    if not idx_ok:
+        print("  -> ^GSPC unavailable. Use SPY as the benchmark and RECORD the substitution;")
+        print("     SPY includes dividends and a fee drag, ^GSPC is price-only. Not interchangeable.")
+    if not hist_ok:
+        print(f"  -> History does not reach {START}. Your usable window is shorter than the")
+        print("     one fixed at the top of this notebook. Change START deliberately, not silently.")
+    if not delist_ok:
+        print("  -> Delisted list is closed to this key, so 01_survivorship_test_fmp.py CANNOT run.")
+        print("     Nothing return-based should be estimated until that test returns a number.")
+'''))
+
+cells.append(code(r'''
 def fetch_prices(symbol: str, start: str, end: str) -> pd.DataFrame:
     """Daily EOD bars for one symbol, as a tidy frame. Empty frame if unavailable.
 

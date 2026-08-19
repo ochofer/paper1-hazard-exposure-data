@@ -234,6 +234,27 @@ git push -u origin main</pre><button class="copy">copy</button></div>
 </div>
 
 <div class="step">
+  <div class="row"><input type="checkbox"><div class="title">D1a. Run the preflight cell and read the table <span class="st s-you">YOU</span></div></div>
+  <div class="body">
+    <p>Five cheap calls that report what your API key is actually allowed to fetch, before the main loop spends a minute finding out the hard way. You said you were not sure which FMP plan you are on; this answers it by measurement rather than by reading a pricing page.</p>
+    <p>Read the <code>status</code> column. <code>200</code> with a detail like <code>2 bars</code> is a pass. <code>200 empty</code> or <code>HTTP 403</code> means that capability is closed to your key.</p>
+    <table>
+      <tr><th>Probe</th><th>What a failure means for this project</th></tr>
+      <tr><td>US daily prices</td><td>Nothing works at all. This is authentication, not a plan tier. Stop and fix the key.</td></tr>
+      <tr><td>European ticker</td><td>Free or entry tier. The six EU names will return empty. Drop the EU leg for now or upgrade.</td></tr>
+      <tr><td>S&amp;P 500 index</td><td>Use SPY alone and record the substitution. SPY includes dividends and a fee drag; <code>^GSPC</code> is price only. They are not interchangeable.</td></tr>
+      <tr><td>History depth</td><td>Your usable window is shorter than the 2010 to 2025 one fixed in the notebook. Change <code>START</code> deliberately, not silently.</td></tr>
+      <tr><td>Delisted companies</td><td><strong>Blocking test 1 cannot run at all.</strong> See the warning below.</td></tr>
+    </table>
+    <div class="box stop">
+      <p><strong>The delisted companies row is the one to look at hardest.</strong> Your <code>01_survivorship_test_fmp.py</code> draws its random sample from FMP's own delisted list. If that endpoint is closed to your key, the survivorship test cannot return a number at all.</p>
+      <p>That does not merely delay the test. It means the size of the survivorship problem stays unmeasured, and the README's stated handling remains an intention rather than a correction. Nothing return based should be estimated in that state.</p>
+    </div>
+    <p>The cell prints a plain-language assessment underneath the table telling you which of these apply.</p>
+  </div>
+</div>
+
+<div class="step">
   <div class="row"><input type="checkbox"><div class="title">D2. Run the fetch loop and read the misses <span class="st s-pend">UNTESTED</span></div></div>
   <div class="body">
     <p>22 symbols at roughly 0.3 seconds apart, so under a minute. Each prints its row count and date range as it goes.</p>
