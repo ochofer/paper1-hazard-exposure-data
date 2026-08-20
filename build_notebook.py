@@ -378,6 +378,105 @@ else:
         print("     Nothing return-based should be estimated until that test returns a number.")
 '''))
 
+# ------------------------------------------------------- boundary finder (2b)
+cells.append(md(r"""
+### 2b. Where exactly is the paywall?
+
+Only run this if section 2a returned any `HTTP 402`. A 402 is *Payment Required*, which means
+the key is valid and the path is live, and something about the specific request is above your
+plan. That is a much better position than a 403 and it is worth locating precisely, because the
+answer decides whether this project can proceed on a free key or needs a paid one.
+
+The interesting fact from 2a is that `^GSPC` returned data from the **same endpoint** that
+refused `DUK`. So the wall is not the endpoint. Eight calls below separate the four candidate
+explanations:
+
+| Hypothesis | Distinguished by |
+|---|---|
+| The `full` variant is paid, `light` is free | `light` on DUK succeeds |
+| Individual equities are paid, indices and lists are free | every equity call fails regardless of variant |
+| Only some symbols are covered | AAPL succeeds where DUK fails |
+| History depth is capped | a recent window succeeds where 2024 and 2010 fail |
+
+The last two rows of the probe test the fallback that matters. If `light` prices and the
+`dividends` endpoint are both open, total returns can be reconstructed by hand: take the
+split-adjusted close, add the cash dividend on its ex-date, and compound. That is more work and
+more places to make an error, but it is not a compromise on the economics, and it would keep the
+paper on free and redistributable data, which is an architecture constraint rather than a budget
+preference.
+"""))
+
+cells.append(code(r'''
+def wall(label, path, params):
+    """Minimal probe. Reports status and row count only, no interpretation."""
+    try:
+        r = requests.get(f"{BASE}/{path}", params={**params, "apikey": API_KEY}, timeout=45)
+    except requests.RequestException as e:
+        return {"test": label, "status": "ERROR", "rows": 0, "note": str(e)[:40]}
+    if r.status_code != 200:
+        return {"test": label, "status": f"HTTP {r.status_code}", "rows": 0,
+                "note": {402: "above your plan", 403: "path retired",
+                         401: "key rejected", 429: "rate limited"}.get(r.status_code, "")}
+    try:
+        payload = r.json()
+    except ValueError:
+        return {"test": label, "status": "200 non-JSON", "rows": 0, "note": r.text[:40]}
+    rows = payload.get("historical") if isinstance(payload, dict) else payload
+    n = len(rows) if rows else 0
+    return {"test": label, "status": "200", "rows": n,
+            "note": "EMPTY, treat as a miss" if n == 0 else ""}
+
+W24    = {"from": "2024-01-02", "to": "2024-03-01"}
+RECENT = {"from": "2026-06-01", "to": "2026-08-01"}
+
+wall_tests = [
+    # variant, holding the symbol and window fixed
+    wall("DUK  light        2024",  "historical-price-eod/light",              {"symbol": "DUK",  **W24}),
+    wall("DUK  full         2024",  "historical-price-eod/full",               {"symbol": "DUK",  **W24}),
+    wall("DUK  non-split    2024",  "historical-price-eod/non-split-adjusted", {"symbol": "DUK",  **W24}),
+    # symbol, holding variant and window fixed
+    wall("AAPL full         2024",  "historical-price-eod/full",               {"symbol": "AAPL", **W24}),
+    wall("SPY  full         2024",  "historical-price-eod/full",               {"symbol": "SPY",  **W24}),
+    # window, holding symbol and variant fixed
+    wall("DUK  full       recent",  "historical-price-eod/full",               {"symbol": "DUK",  **RECENT}),
+    wall("DUK  full     no dates",  "historical-price-eod/full",               {"symbol": "DUK"}),
+    # the manual-total-return fallback
+    wall("DUK  dividends",          "dividends",                               {"symbol": "DUK"}),
+]
+
+w = pd.DataFrame(wall_tests)
+display(w)
+
+open_ = set(w.loc[w.status == "200", "test"])
+def got(prefix): return any(t.startswith(prefix) for t in open_)
+
+print()
+if got("DUK  light") and not got("DUK  full"):
+    print("DIAGNOSIS: the variant is the wall. 'light' is open, 'full' is not.")
+    print("  light returns date, price and volume only, split-adjusted, no dividends.")
+    print("  Workable for a plumbing test. NOT sufficient for factor regressions on its own.")
+elif got("AAPL full") and not got("DUK  full"):
+    print("DIAGNOSIS: symbol coverage is the wall, not the endpoint or the plan level.")
+    print("  Check whether the covered set is an exchange, an index membership, or a fixed list.")
+elif got("DUK  full       recent") and not got("DUK  full         2024"):
+    print("DIAGNOSIS: history depth is the wall. Recent data is open, older data is not.")
+    print(f"  The window fixed at the top of this notebook starts {START} and is unreachable.")
+    print("  Do not silently shorten START. A sample chosen by what the vendor will sell you")
+    print("  is a sample chosen by the vendor, and that belongs in the limitations section.")
+elif not any(t.startswith("DUK") or t.startswith("AAPL") for t in open_):
+    print("DIAGNOSIS: all single-equity price history is closed to this key.")
+    print("  Indices and reference lists are open, individual equity EOD is not.")
+    print("  Panel B cannot be built on this key at all. See the note below.")
+else:
+    print("DIAGNOSIS: mixed. Read the table row by row before concluding anything.")
+
+if got("DUK  dividends") and got("DUK  light"):
+    print()
+    print("FALLBACK AVAILABLE: light prices + dividends are both open, so total returns can")
+    print("  be reconstructed by hand. Slower and more error-prone than dividend-adjusted,")
+    print("  but economically equivalent and it keeps every input free and redistributable.")
+'''))
+
 cells.append(code(r'''
 def fetch_prices(symbol: str, start: str, end: str) -> pd.DataFrame:
     """Daily EOD bars for one symbol, as a tidy frame. Empty frame if unavailable.

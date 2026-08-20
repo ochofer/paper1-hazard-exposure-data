@@ -316,6 +316,25 @@ branch 'main' set up to track 'origin/main'.</pre><button class="copy">copy</but
       <p>That does not merely delay the test. It means the size of the survivorship problem stays unmeasured, and the README's stated handling remains an intention rather than a correction. Nothing return based should be estimated in that state.</p>
     </div>
     <p>The cell prints a plain-language assessment underneath the table telling you which of these apply.</p>
+    <div class="box key"><p><strong>Status codes, since they look alike and mean opposite things.</strong> <code>403</code> means the path is retired, which is a code problem and mine to fix. <code>402</code> means Payment Required: your key is valid, the path is live, and the request is above your plan. <code>401</code> means the key is wrong or the account email is not yet verified. Only <code>402</code> is a real plan limit.</p></div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="row"><input type="checkbox"><div class="title">D1b. If you saw any 402, run the boundary finder <span class="st s-you">YOU</span></div></div>
+  <div class="body">
+    <p>Section 2b of the notebook. Skip it if D1a came back clean.</p>
+    <div class="box key"><p><strong>Why this exists.</strong> In your 20 August run, <code>^GSPC</code> returned 42 bars from the <em>same endpoint</em> that refused <code>DUK</code>. So the wall is not the endpoint, and it is not the key. Eight calls hold two things fixed and vary the third, which is the only way to find out whether the limit is the price variant, the symbol, or how far back you can reach.</p></div>
+    <p>It prints a one-line diagnosis under the table. The four possible answers, and what each costs you:</p>
+    <table>
+      <tr><th>Diagnosis</th><th>What it means for the paper</th></tr>
+      <tr><td>The variant is the wall</td><td><code>light</code> is open, <code>full</code> is not. Enough to prove the pipeline runs. Not enough for factor regressions, because <code>light</code> carries no dividends.</td></tr>
+      <tr><td>Symbol coverage is the wall</td><td>Some tickers are covered and yours are not. Worth finding out whether the covered set is an exchange, an index membership, or a fixed list, because that determines whether the universe is choosable.</td></tr>
+      <tr><td>History depth is the wall</td><td>Recent data is open, 2010 is not. <strong>Do not quietly move <code>START</code>.</strong> A sample chosen by what the vendor will sell you is a sample chosen by the vendor, and it belongs in the limitations section rather than in a config constant.</td></tr>
+      <tr><td>All single-equity history is closed</td><td>Panel B cannot be built on this key at all. That is a decision point, not a bug.</td></tr>
+    </table>
+    <div class="box"><p><strong>The row worth hoping for.</strong> The last probe checks the <code>dividends</code> endpoint. If <code>light</code> prices and <code>dividends</code> are both open, total returns can be rebuilt by hand: take the split-adjusted close, add the cash dividend on its ex-date, compound. More work and more places to slip, but economically the same thing, and every input stays free and redistributable, which is an architecture constraint here rather than a budget preference.</p></div>
+    <p><strong>Send me the table.</strong> With it I can tell you whether a paid tier is worth it, which tier, or whether a US-only version one on free data gets you further faster.</p>
   </div>
 </div>
 
