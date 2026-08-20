@@ -477,6 +477,112 @@ if got("DUK  dividends") and got("DUK  light"):
     print("  but economically equivalent and it keeps every input free and redistributable.")
 '''))
 
+# ------------------------------------------------------ symbol coverage (2c)
+cells.append(md(r"""
+### 2c. What is the covered symbol list, exactly?
+
+2b said the wall is symbol coverage: `AAPL`, `CVX`, `XOM` and `SPY` return full history while
+`DUK`, `SO`, `NEE`, `BRK-B` and every European name return 402. Size does not explain it, since
+`BRK-B` is one of the largest listed companies in the world and is refused while `CVX` is served.
+
+The hypothesis worth testing is that the free list is **a Dow Jones Industrial Average membership
+snapshot taken before September 2020**. `XOM` was removed from the Dow on 31 August 2020, so a
+current-membership list would not include it, and a stale one would. `AAPL` and `CVX` are on both
+the old and the current list, so they do not discriminate.
+
+The probe below splits the Dow into three groups and adds controls:
+
+| Group | Prediction if the list is a pre-2020 Dow snapshot |
+|---|---|
+| Removed since 2020: `PFE`, `RTX`, `WBA`, `DOW`, `INTC` | **covered** |
+| Added since 2020: `CRM`, `AMGN`, `HON`, `NVDA`, `SHW` | **refused** |
+| On both lists: `MSFT`, `JNJ`, `KO`, `JPM` | covered |
+| Large non-Dow: `GOOGL`, `META`, `TSLA`, `BRK-B` | refused |
+
+The last probe matters more than the rest put together. The delisted *companies list* is open to
+your key, but that only gives you names. **Blocking test 1 needs the price history of a delisted
+firm**, and if that is refused then the survivorship rate cannot be measured on this key no matter
+how many names the list returns. This probe pulls a real symbol out of the delisted list and
+immediately asks for its prices.
+"""))
+
+cells.append(code(r'''
+def covered(sym):
+    """True if this key can retrieve any daily history for the symbol."""
+    try:
+        r = requests.get(f"{BASE}/historical-price-eod/full",
+                         params={"symbol": sym, "from": "2024-01-02",
+                                 "to": "2024-03-01", "apikey": API_KEY}, timeout=45)
+    except requests.RequestException:
+        return None
+    if r.status_code != 200:
+        return False
+    try:
+        rows = r.json()
+    except ValueError:
+        return False
+    return bool(rows.get("historical") if isinstance(rows, dict) else rows)
+
+GROUPS = {
+    "Dow, removed since 2020": ["PFE", "RTX", "WBA", "DOW", "INTC"],
+    "Dow, added since 2020":   ["CRM", "AMGN", "HON", "NVDA", "SHW"],
+    "Dow, on both lists":      ["MSFT", "JNJ", "KO", "JPM"],
+    "Large non-Dow":           ["GOOGL", "META", "TSLA", "BRK-B"],
+    "ETFs":                    ["QQQ", "IWM", "VTI"],
+    "Indices":                 ["^DJI", "^IXIC"],
+}
+
+rows = []
+for group, syms in GROUPS.items():
+    for s in syms:
+        rows.append({"group": group, "symbol": s, "covered": covered(s)})
+        time.sleep(0.25)
+
+cov = pd.DataFrame(rows)
+display(cov.groupby("group").agg(n=("symbol", "size"), covered=("covered", "sum")))
+print()
+print("covered  :", sorted(cov.loc[cov.covered == True,  "symbol"].tolist()))
+print("refused  :", sorted(cov.loc[cov.covered == False, "symbol"].tolist()))
+
+old = cov.loc[cov.group == "Dow, removed since 2020", "covered"]
+new = cov.loc[cov.group == "Dow, added since 2020",   "covered"]
+print()
+if old.all() and not new.any():
+    print("CONFIRMED: the free list is a pre-September-2020 Dow 30 snapshot.")
+    print("  That caps the investable universe at 30 US mega-caps, frozen six years ago,")
+    print("  and the freeze is itself a survivorship filter: membership was decided by")
+    print("  a committee using information you would not have had at the start of the sample.")
+elif cov.loc[cov.group.str.startswith("Dow"), "covered"].all() and not new.any():
+    print("PARTIAL: Dow-linked, but not cleanly a pre-2020 snapshot. Read the lists above.")
+else:
+    print("NOT the Dow hypothesis. Read the covered and refused lists and look for the pattern.")
+
+# --- the probe that decides whether blocking test 1 can run at all
+print()
+try:
+    dl = requests.get(f"{BASE}/delisted-companies",
+                      params={"page": 0, "limit": 20, "apikey": API_KEY}, timeout=45).json()
+except Exception as e:
+    dl = []
+    print("delisted list call failed:", e)
+
+if dl:
+    sample = [d.get("symbol") for d in dl if d.get("symbol")][:5]
+    print(f"delisted list returned names, testing prices for: {sample}")
+    hits = {s: covered(s) for s in sample}
+    for s, ok in hits.items():
+        print(f"  {s:8} prices {'AVAILABLE' if ok else 'REFUSED'}")
+    if not any(hits.values()):
+        print()
+        print("  CONCLUSION: the delisted LIST is open but delisted PRICE HISTORY is not.")
+        print("  Blocking test 1 cannot return a survivorship hit rate on this key. Knowing")
+        print("  which firms died without being able to price them measures nothing.")
+    else:
+        print()
+        print("  Blocking test 1 is runnable for at least some delisted names. Report the")
+        print("  hit rate as a measured fraction and say which names could not be priced.")
+'''))
+
 cells.append(code(r'''
 def fetch_prices(symbol: str, start: str, end: str) -> pd.DataFrame:
     """Daily EOD bars for one symbol, as a tidy frame. Empty frame if unavailable.
