@@ -363,6 +363,35 @@ branch 'main' set up to track 'origin/main'.</pre><button class="copy">copy</but
 </div>
 
 <div class="step">
+  <div class="row"><input type="checkbox"><div class="title">D1d. Buy the plan, on monthly billing <span class="st s-you">YOU</span></div></div>
+  <div class="body">
+    <p>Only two attributes on that pricing page decide anything for this paper: how far back the history reaches, and which countries are covered. Everything else is call rate and extras you do not need. Measured against <code>outputs/cross_section.csv</code>:</p>
+    <table>
+      <tr><th>Tier</th><th>History</th><th>Coverage</th><th>Firms reached, of 328</th><th>Verdict</th></tr>
+      <tr><td>Basic, free</td><td>5 years</td><td>a fixed handful</td><td>about 4</td><td>Cannot build Panel B</td></tr>
+      <tr><td>Starter, $19</td><td>5 years</td><td>US</td><td>157, but only back to 2021</td><td>Dead on history depth</td></tr>
+      <tr><td>Premium, $49</td><td>30+ years</td><td>US, UK, Canada</td><td>185 (56.4%)</td><td>Workable if the paper goes US and UK only</td></tr>
+      <tr><td>Ultimate, $99</td><td>full</td><td>Global</td><td>328 (100%)</td><td>What the paper as designed needs</td></tr>
+    </table>
+    <p>Your universe is 157 US, 28 UK, 0 Canada and 143 continental European. Premium would drop 143 firms and 2,125 of the 5,115 assets.</p>
+    <div class="box warn">
+      <p><strong>Choose monthly billing, not annual.</strong> The $19, $49 and $99 figures are the annually-billed rates, so the monthly rate is higher, likely near $149 for Ultimate. That still beats the alternative: annual billing on Ultimate is a $1,188 commitment for what should be a one-month pull. Buy one month, take everything, cancel.</p>
+    </div>
+    <div class="box stop">
+      <p><strong>Before you pay, read FMP's terms line under the pricing table.</strong> Redistributing their data requires a separate licensing agreement with them. So the price panel cannot go into the public repo at any tier. That is not a reason to avoid paying, it is a reason to set the repo up correctly on day one: <code>data/raw/prices/</code> goes in <code>.gitignore</code>, the repo ships the fetch code and the symbol list, and the README says which layer a reader has to buy. Panel A is unaffected, Ken French data is freely redistributable.</p>
+    </div>
+    <p><strong>Day-one acceptance test, before the refund window closes.</strong> Paste the new key into Colab Secrets, then rerun sections 2a, 2b and 2c in that order. Four things have to come back true, and the last one is not itemised anywhere on the pricing page:</p>
+    <table>
+      <tr><th>Check</th><th>Where</th><th>What failure means</th></tr>
+      <tr><td>DUK and the European names return data</td><td>2a preflight</td><td>Coverage is not what was sold. Ask for a refund the same day.</td></tr>
+      <tr><td>History reaches January 2010</td><td>2b, history depth test</td><td>The tier's range is shorter than advertised. Do not shorten <code>START</code> to hide it.</td></tr>
+      <tr><td><code>dividend-adjusted</code> works for every symbol</td><td>2c and D2</td><td>A mixed panel. The integrity check in section 3 will fail it deliberately rather than let it through.</td></tr>
+      <tr><td>Delisted symbols return price history</td><td>2c, final probe</td><td>Blocking test 1 still cannot run. Worth knowing on day one rather than in month three.</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="step">
   <div class="row"><input type="checkbox"><div class="title">D2. Run the fetch loop and read the misses <span class="st s-pend">UNTESTED</span></div></div>
   <div class="body">
     <p>22 symbols at roughly 0.3 seconds apart, so under a minute. Each prints its row count and date range as it goes.</p>
