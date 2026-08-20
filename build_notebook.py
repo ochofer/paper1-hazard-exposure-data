@@ -238,19 +238,33 @@ display(tick[["name", "hq", "n_assets", "ticker", "leg"]])
 cells.append(md(r"""
 ### 2a. Preflight: what can this API key actually see?
 
-Run this before the main loop. It makes five cheap calls and reports what your key is
+Run this before the main loop. It makes six cheap calls and reports what your key is
 allowed to do, which is faster and more reliable than reading a pricing page, and it
 tells you *now* rather than twenty tickers into a loop.
+
+> **All endpoints are under `/stable/`.** The older `/api/v3/` paths are refused for keys
+> issued today, and the refusal is an HTTP 403, which reads as *"not on your plan"* and is
+> nothing of the sort. A 403 on every probe at once, including the most basic US price
+> call, is the signature of a retired endpoint rather than a tier limit or a bad key.
 
 Each probe maps to a decision you would otherwise make blind:
 
 | Probe | If it fails |
 |---|---|
-| US daily prices | Nothing works. The key is wrong or unauthorised, not a tier problem. |
+| US daily prices | Nothing works. The key is wrong, unverified, or the path is retired. |
+| Dividend-adjusted prices | **You are stuck with price returns.** See the warning below; this one changes results, not just coverage. |
 | European ticker | Free tier. The six EU names will come back empty; drop the EU leg for now. |
 | Index `^GSPC` | Use `SPY` alone as the benchmark and record the substitution. |
 | History depth | Free keys are typically capped at a few recent years, which silently shortens the sample. |
 | Delisted companies | **Blocking test 1 cannot run.** No delisting list means no measured survivorship rate. |
+
+**Why the dividend-adjusted probe was added.** `historical-price-eod/full` is adjusted for
+splits but *not* for dividends, so it yields price returns. The Fama-French factors in
+Panel A are built from *total* returns. Regressing one on the other subtracts the dividend
+yield from your alpha, and this draft universe is mostly regulated utilities, which are the
+highest-yielding sector in the market at roughly 3 to 4 percent a year. That is not a
+rounding error, it is larger than most published anomaly premia. Use
+`historical-price-eod/dividend-adjusted` for anything return-based.
 
 That last row is the one that matters most, and it is easy to miss. The survivorship test
 in `01_survivorship_test_fmp.py` draws its random sample from FMP's own delisted list. If
@@ -269,15 +283,27 @@ if not API_KEY:
     )
 
 # Endpoint bases, defined here because the preflight below uses them too.
-V3     = "https://financialmodelingprep.com/api/v3/historical-price-full"
-STABLE = "https://financialmodelingprep.com/stable/historical-price-eod/full"
+#
+# Everything lives under /stable/. The /api/v3/ paths that older tutorials and FMP's own
+# legacy examples still show are retired for keys issued now, and they answer HTTP 403.
+# That status is the trap: it reads as "not on your plan" when the real cause is a dead
+# path, so a working key on a paid plan produces an identical failure table to no key at
+# all. Checked against the August 2026 documentation, in which every listed endpoint is
+# /stable/ and none is /api/v3/. Do not "restore" v3 as a fallback.
+BASE   = "https://financialmodelingprep.com/stable"
+EOD    = f"{BASE}/historical-price-eod/full"               # split-adjusted, dividends NOT included
+EOD_TR = f"{BASE}/historical-price-eod/dividend-adjusted"  # total return, use this for returns
 
-def probe(label, url, params, want):
+def probe(label, url, params, want, ok_if=None):
     """One capability probe. Returns a row describing what happened.
 
     An HTTP 200 carrying an empty payload counts as a FAIL, not a pass. FMP answers
     'no access' and 'no data' the same way, so treating 200 as success would report a
     free-tier key as fully capable.
+
+    ok_if lets a probe demand more than "some rows came back". The history probe needs
+    it: if the endpoint ignores from/to rather than rejecting them, it returns the full
+    series, which looks like a pass while telling you nothing about depth.
     """
     try:
         r = requests.get(url, params={**params, "apikey": API_KEY}, timeout=45)
@@ -285,8 +311,9 @@ def probe(label, url, params, want):
         return {"probe": label, "status": "ERROR", "ok": False, "detail": str(e)[:60]}
 
     if r.status_code != 200:
-        hint = {401: "key rejected", 403: "not on your plan", 429: "rate limited"}.get(
-            r.status_code, "")
+        hint = {401: "key rejected or not yet verified",
+                403: "endpoint retired, or not on your plan",
+                429: "rate limited"}.get(r.status_code, "")
         return {"probe": label, "status": f"HTTP {r.status_code}", "ok": False, "detail": hint}
 
     payload = r.json()
@@ -294,38 +321,49 @@ def probe(label, url, params, want):
     if not rows:
         return {"probe": label, "status": "200 empty", "ok": False,
                 "detail": "no data returned - usually a plan limit"}
-    return {"probe": label, "status": "200", "ok": True, "detail": want(rows)}
+    ok = True if ok_if is None else bool(ok_if(rows))
+    return {"probe": label, "status": "200" if ok else "200 wrong range",
+            "ok": ok, "detail": want(rows)}
+
+WIN = {"from": "2024-01-02", "to": "2024-03-01"}
 
 results = [
     probe("US daily prices (DUK)",
-          f"{V3}/DUK", {"from": "2024-01-01", "to": "2024-03-01"},
-          lambda r: f"{len(r)} bars"),
+          EOD, {"symbol": "DUK", **WIN}, lambda r: f"{len(r)} bars"),
+    probe("Dividend-adjusted prices (DUK)",
+          EOD_TR, {"symbol": "DUK", **WIN}, lambda r: f"{len(r)} bars"),
     probe("European ticker (ENGI.PA)",
-          f"{V3}/ENGI.PA", {"from": "2024-01-01", "to": "2024-03-01"},
-          lambda r: f"{len(r)} bars"),
+          EOD, {"symbol": "ENGI.PA", **WIN}, lambda r: f"{len(r)} bars"),
     probe("S&P 500 index (^GSPC)",
-          f"{V3}/{requests.utils.quote('^GSPC')}", {"from": "2024-01-01", "to": "2024-03-01"},
-          lambda r: f"{len(r)} bars"),
+          EOD, {"symbol": "^GSPC", **WIN}, lambda r: f"{len(r)} bars"),
     probe("History depth (2010 data)",
-          f"{V3}/DUK", {"from": "2010-01-01", "to": "2010-03-01"},
-          lambda r: f"earliest {min(x['date'] for x in r)}"),
+          EOD, {"symbol": "DUK", "from": "2010-01-04", "to": "2010-03-01"},
+          lambda r: f"earliest {min(x['date'] for x in r)}",
+          ok_if=lambda r: min(x["date"] for x in r) < "2011-01-01"),
     probe("Delisted companies list",
-          "https://financialmodelingprep.com/api/v3/delisted-companies", {"limit": 5},
+          f"{BASE}/delisted-companies", {"page": 0, "limit": 5},
           lambda r: f"{len(r)} sample rows"),
 ]
 
 pre = pd.DataFrame(results)
 display(pre[["probe", "status", "detail"]])
 
-us_ok, eu_ok, idx_ok, hist_ok, delist_ok = [x["ok"] for x in results]
+us_ok, tr_ok, eu_ok, idx_ok, hist_ok, delist_ok = [x["ok"] for x in results]
 
 print()
 if not us_ok:
-    print("STOP: even US prices failed. This is authentication, not a plan tier.")
-    print("      Check the key value and, on Colab, the secret's notebook-access toggle.")
+    print("STOP: even US prices failed, so nothing below is diagnostic.")
+    print("      403 on every row at once means the path is retired, not that you need to pay.")
+    print("      401 on every row means the key is wrong, or the account email is unverified.")
+    print("      Also confirm the Colab secret is named exactly FMP_API_KEY, with notebook")
+    print("      access switched on, and that the bootstrap cell copying it into os.environ ran.")
 else:
     tier = "paid (international coverage present)" if eu_ok else "free or entry tier (no international)"
     print(f"Assessment: {tier}")
+    if not tr_ok:
+        print("  -> Dividend-adjusted prices are closed to this key, so you have PRICE returns only.")
+        print("     Do not regress these on Fama-French factors, which are TOTAL returns. On a")
+        print("     utility-heavy universe that understates alpha by roughly 3 to 4 percent a year.")
     if not eu_ok:
         print("  -> The 6 European tickers will return empty. Either drop the EU leg for now")
         print("     and rerun with US-only, or upgrade before building the European panel.")
@@ -344,21 +382,21 @@ cells.append(code(r'''
 def fetch_prices(symbol: str, start: str, end: str) -> pd.DataFrame:
     """Daily EOD bars for one symbol, as a tidy frame. Empty frame if unavailable.
 
-    Tries the v3 endpoint (which the existing 01/02 scripts use) and falls back to the
-    newer 'stable' endpoint, since FMP is migrating v3 out. An HTTP 200 carrying an
-    empty payload is treated as a MISS, not a hit, the same convention used in
-    01_survivorship_test_fmp.py, and the reason that matters is that a silent empty
-    array otherwise looks identical to a successful call in aggregate counts.
+    Tries the dividend-adjusted series first and falls back to the split-adjusted one.
+    That order is deliberate: dividend-adjusted gives total returns, which is what the
+    Fama-French factors in Panel A are built from. The fallback is a degradation, not an
+    equivalent, so the column 'series' records which one each symbol actually got and
+    the integrity checks below refuse to let a mixed panel pass unremarked.
+
+    An HTTP 200 carrying an empty payload is treated as a MISS, not a hit, the same
+    convention used in 01_survivorship_test_fmp.py, and the reason that matters is that
+    a silent empty array otherwise looks identical to a successful call in aggregate
+    counts.
     """
-    attempts = [
-        (V3,     {"symbol_in_path": True,  "from": start, "to": end}),
-        (STABLE, {"symbol_in_path": False, "from": start, "to": end}),
-    ]
-    for base, opt in attempts:
-        params = {"apikey": API_KEY, "from": opt["from"], "to": opt["to"]}
-        url = f"{base}/{requests.utils.quote(symbol)}" if opt["symbol_in_path"] else base
-        if not opt["symbol_in_path"]:
-            params["symbol"] = symbol
+    attempts = [(EOD_TR, "dividend-adjusted"), (EOD, "split-adjusted")]
+    for base, series in attempts:
+        params = {"apikey": API_KEY, "symbol": symbol, "from": start, "to": end}
+        url = base
         try:
             r = requests.get(url, params=params, timeout=45)
         except requests.RequestException as e:
@@ -377,7 +415,10 @@ def fetch_prices(symbol: str, start: str, end: str) -> pd.DataFrame:
 
         df = pd.DataFrame(rows)
         df["symbol"] = symbol
+        df["series"] = series
         df["date"] = pd.to_datetime(df["date"])
+        if series != "dividend-adjusted":
+            print(f"    {symbol}: fell back to {series}, PRICE returns only for this symbol")
         return df.sort_values("date").reset_index(drop=True)
 
     return pd.DataFrame()
@@ -456,6 +497,16 @@ check("prices: all closes strictly positive",
 check("prices: S&P 500 index present", "^GSPC" in set(prices.symbol))
 check("prices: every requested symbol returned data",
       len(missing) == 0, f"missing: {missing}")
+# A panel that mixes total-return and price-return series is not comparable across
+# symbols, and the difference is a dividend yield, so it loads on exactly the kind of
+# firm characteristic a hazard sort is likely to pick up. Fail loudly rather than let
+# the mixture pass as a footnote.
+_series = sorted(prices["series"].unique()) if "series" in prices.columns else ["unknown"]
+check("prices: one return convention across the whole panel", len(_series) == 1,
+      f"series present: {_series}")
+check("prices: convention is dividend-adjusted (total return)",
+      _series == ["dividend-adjusted"],
+      "price returns are not comparable with Fama-French total-return factors")
 
 # Trading-day overlap is the join key sanity check for the (later) merge step.
 common = set(ff3.date) & set(prices.loc[prices.symbol == "^GSPC", "date"])
@@ -489,7 +540,8 @@ manifest = {
         "missing_codes": [-99.99, -999],
     },
     "panel_b": {
-        "source": "FMP historical-price-eod (v3 with stable fallback)",
+        "source": "FMP stable/historical-price-eod, dividend-adjusted preferred",
+        "return_convention": sorted(prices["series"].unique()) if "series" in prices.columns else ["unknown"],
         "requested": TICKERS + BENCHMARKS,
         "missing": missing,
         "rows": int(len(prices)),
