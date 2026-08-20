@@ -71,15 +71,15 @@
 
 <h1>Execution checklist: Paper 1 data layer</h1>
 <p class="meta">
-Companion to <code>README.md</code> in <code>repo_paper1_data</code> · written 19 August 2026 · Carlo Hofer<br>
-Getting the scaffolding onto GitHub and both raw panels downloaded. About 25 minutes if nothing fights back.<br>
+Companion to <code>README.md</code> in <code>repo_paper1_data</code> · written 19 August 2026, revised 20 August · Carlo Hofer<br>
+Sections A to E get the scaffolding onto GitHub and both raw panels downloaded. F and G are what comes after the data source is paid for.<br>
 Status key: <span class="st s-conf">DONE</span> already completed · <span class="st s-you">YOU</span> needs you at a keyboard · <span class="st s-pend">UNTESTED</span> never run against live data · <span class="st s-no">BLOCKED</span> cannot proceed yet
 </p>
 
 <div class="box stop">
-<p><strong>Read this before starting. The status of this work is partial.</strong></p>
-<p>The repository is committed locally but has never been pushed. Neither data panel has been downloaded and no data has been verified. The FMP request path has never made a live call from anywhere, because the environment these files were built in has no outbound internet.</p>
-<p>That last point matters for how you read a failure: <strong>step D2 is the first real test of the price code, not a formality.</strong> The Fama-French parser is the one exception; it was tested against synthetic files and is marked <span class="st s-conf">DONE</span> where relevant.</p>
+<p><strong>Where this stands on 20 August, after the 2a, 2b and 2c runs.</strong></p>
+<p>The repository is pushed. Panel A, the Fama-French factors, is downloaded and verified: 4,024 daily rows, 2010 to 2025, at 251.5 trading days a year, with the March 2020 extremes landing on the right dates. That half is finished and fully reproducible by anyone.</p>
+<p><strong>Panel B is blocked, and not by a bug.</strong> Three rounds of probing established that the free FMP key serves a hand-picked demo list of about fifteen household-name tickers plus three indices. Five of your 328 firms fall inside it, holding 3.3 percent of the assets. Delisted price history is refused entirely, which blocks the survivorship test. There is no free path to a price panel, so steps D1d and D1e are a decision rather than a debugging exercise.</p>
 </div>
 
 <div class="prog">
@@ -222,7 +222,7 @@ branch 'main' set up to track 'origin/main'.</pre><button class="copy">copy</but
     <div class="box stop"><p><strong>Reopen Terminal for this one.</strong> I said you could close it, then found a real bug in the notebook you had just pushed. The keychain now holds your token, so this will not ask you to sign in again. Same move as A2: type <code>cd </code> with a trailing space, drag the <code>repo_paper1_data</code> folder onto the window, press Enter.</p></div>
     <div class="box warn"><p><strong>Fix one, the run-on text.</strong> A notebook file stores each cell as a list of lines and joins them with nothing at all, not with line breaks. The generator was splitting on line breaks and throwing them away, so every cell collapsed onto a single line. Markdown rendered as one run-on paragraph, which is what you saw. The same fault was in the code cells, where it would have raised a syntax error on the very first run. Every code cell is now parsed by a verification pass before the notebook is written.</p></div>
     <div class="box warn"><p><strong>Fix two, the FMP 403s.</strong> The preflight was calling <code>/api/v3/</code>, which is retired for keys issued now. It answers <code>HTTP 403</code>, which reads as <em>not on your plan</em> and is nothing of the sort. All endpoints now point at <code>/stable/</code>, checked against the documentation you sent. The preflight also gained a sixth probe for dividend-adjusted prices, which matters more than it sounds and is explained inside the notebook.</p></div>
-    <div class="cmd"><pre><code>git push</code></pre></div>
+    <div class="cmd"><pre>git push</pre><button class="copy">copy</button></div>
     <p><strong>Then reload Colab.</strong> Close the Colab tab entirely and reopen it from the badge or the link in B1. A refresh alone can serve you the old copy.</p>
     <p><strong>How to tell it worked:</strong> the first cell reads as a proper heading, <em>Paper 1: raw data panels</em>, followed by separate paragraphs and a three-column table. If it is still one grey blob of text, you reopened a cached tab rather than a fresh one.</p>
   </div>
@@ -359,12 +359,51 @@ branch 'main' set up to track 'origin/main'.</pre><button class="copy">copy</but
     <div class="box stop">
       <p><strong>The probe at the bottom is the one that decides blocking test 1.</strong> It pulls real tickers out of the delisted companies list and immediately asks for their price history. The list being open is what made blocking test 1 look ungated. But knowing which firms died, with no ability to price them, measures nothing. If that probe returns 402, blocking test 1 cannot produce a survivorship hit rate on this key, and nothing return-based can be estimated until that changes.</p>
     </div>
+    <div class="box key">
+      <p><strong>Result, 20 August. The Dow hypothesis is dead, and what replaced it is worse.</strong> It failed in three separate places: NVDA joined the Dow in 2020 and is covered, RTX and DOW were dropped and are refused, and GOOGL, META and TSLA have never been in the Dow and are all covered. So it is not an index snapshot.</p>
+      <p>The full covered set across every probe so far is AAPL, GOOGL, INTC, JNJ, JPM, KO, META, MSFT, NVDA, PFE, TSLA, WBA, CVX, XOM, SPY, and the indices ^DJI, ^IXIC, ^GSPC. Refused: AMGN, BRK-B, CRM, DOW, HON, RTX, SHW, QQQ, IWM, VTI, all thirteen utilities and pipelines, and every European name.</p>
+      <p>Three tests each rule out a rule you could work around. <strong>Not size:</strong> WBA is covered at roughly $8bn while BRK-B is refused near $1tn. <strong>Not sector:</strong> MSFT is covered and CRM is refused. <strong>Not asset class:</strong> SPY is covered and QQQ, IWM and VTI are refused. What is left is a hand-picked list of household names, which is what a demo set looks like. There is no rule, so there is nothing to exploit and no way to define a universe that happens to fall inside it.</p>
+    </div>
+    <div class="box stop">
+      <p><strong>The number that ends the argument.</strong> Cross-referencing the covered list against <code>outputs/cross_section.csv</code>: five of your 328 firms are reachable on the free key. Chevron, Exxon Mobil, JPMorgan, Alphabet and Microsoft. Between them they hold 171 of the 5,115 assets, so <strong>1.5 percent of firms and 3.3 percent of the hazard exposure</strong>. And of those five, three are incidental owners with 21, 3 and 2 assets each. The free tier is not a small version of the sample, it is a different thing entirely.</p>
+      <p>The delisted probe also came back as feared: <code>NB2.F</code>, <code>082640.KS</code>, <code>VICE</code>, <code>EQR</code> and <code>FTRK</code> all refused. Blocking test 1 cannot run on this key.</p>
+    </div>
+    <details><summary>One oddity in that delisted sample, worth remembering later</summary><div class="inner">
+      <p><code>EQR</code> is Equity Residential, an active S&amp;P 500 REIT that has not been delisted. Either FMP's delisted list carries false positives, or it records historical ticker reuse without flagging it. Do not treat this as settled either way on one observation. But blocking test 1 divides by the size of that list, so if the list is inflated the survivorship rate is understated, and an understated survivorship rate is precisely the error that makes a bias look ignorable. Verify the list against a known-good sample once you have a key that can price these names. Added to step G2.</p>
+    </div></details>
   </div>
 </div>
 
 <div class="step">
-  <div class="row"><input type="checkbox"><div class="title">D1d. Buy the plan, on monthly billing <span class="st s-you">YOU</span></div></div>
+  <div class="row"><input type="checkbox"><div class="title">D1d. Before you pay, find out how many of the 328 are listed at all <span class="st s-you">YOU</span></div></div>
   <div class="body">
+    <div class="box stop">
+      <p><strong>This step exists because I found a gap while pricing the tiers, and it is upstream of the payment decision.</strong> <code>outputs/cross_section.csv</code> has <code>entity_id</code>, <code>name</code>, <code>hq</code>, <code>lei</code>, <code>permid</code> and <code>cik</code>. It has no ticker column. The only tickers that exist anywhere in this project are the 20 hand-written rows in <code>config/tickers_draft_v0.csv</code>. So there is no list of 328 symbols to buy data for, and nothing has yet established that 328 listed equities even exist in that file.</p>
+    </div>
+    <p>They almost certainly do not. GEM tracks asset ownership, and a large share of energy asset owners are not listed companies: state utilities, municipal generators, co-operatives, infrastructure funds, and wholly owned subsidiaries whose parent is the listed entity. The identifier columns hint at the scale of the question without answering it:</p>
+    <table>
+      <tr><th>Identifier</th><th>Present</th><th>What it does and does not tell you</th></tr>
+      <tr><td><code>has_permid</code></td><td>326 of 328</td><td>Refinitiv entity IDs. Assigned to private and public entities alike, so this says nothing about listing status.</td></tr>
+      <tr><td><code>has_lei</code></td><td>315 of 328</td><td>Required for derivatives counterparties and many debt issuers. Also says nothing about listing status.</td></tr>
+      <tr><td><code>has_cik</code></td><td>149 of 328</td><td>SEC filer. Closer, but still not the same thing: debt-only filers and funds have CIKs without listed equity. 149 of your 157 US firms have one.</td></tr>
+    </table>
+    <div class="box warn">
+      <p><strong>Why this must come before the payment, not after.</strong> The tier choice below is between $49 for US, UK and Canada and $99 for global. That comparison assumes 143 continental European <em>listed</em> firms are waiting on the other side of the global tier. If most of those 143 are state and municipal utilities, which is exactly what you would expect in a European energy ownership file, then the $99 tier buys far less than the firm count suggests and Premium may be the right call after all. You cannot answer that from the pricing page. You can only answer it from your own data.</p>
+    </div>
+    <p>What to produce: extend <code>cross_section.csv</code> with a <code>ticker</code>, <code>exchange</code> and <code>listed</code> column, then count listed firms by country. Two routes, and they are complementary rather than alternatives:</p>
+    <table>
+      <tr><th>Route</th><th>Covers</th><th>Cost</th></tr>
+      <tr><td>LEI to ISIN mapping, which you already have in <code>Data/GLEIF Data/lei-isin-20260818T071512.csv</code></td><td>Global, and free. An ISIN existing does not prove listed equity, but no ISIN is strong evidence of no listing.</td><td>Zero, the file is on disk</td></tr>
+      <tr><td>FMP's <code>stable/search-name</code> and <code>stable/company-screener</code> endpoints</td><td>Resolves name to ticker and exchange directly</td><td>Free tier allows 250 calls a day, so 328 names takes two days, or one day if you filter first</td></tr>
+    </table>
+    <p><strong>Send me the country by listing-status counts.</strong> That table, not the pricing page, decides between the $49 and the $99 tier. It is also the sample size line in your methods section, so it has to be produced eventually regardless of which plan you buy.</p>
+  </div>
+</div>
+
+<div class="step">
+  <div class="row"><input type="checkbox"><div class="title">D1e. Buy the plan, on monthly billing <span class="st s-you">YOU</span></div></div>
+  <div class="body">
+    <div class="box key"><p><strong>What 2c settled about the free tier.</strong> It is a demo allowlist of about fifteen household-name tickers plus three indices, not a rule you can design a universe around. Five of your 328 firms fall inside it, holding 3.3 percent of the assets. So there is no free path to Panel B, and the only remaining question is which paid tier.</p></div>
     <p>Only two attributes on that pricing page decide anything for this paper: how far back the history reaches, and which countries are covered. Everything else is call rate and extras you do not need. Measured against <code>outputs/cross_section.csv</code>:</p>
     <table>
       <tr><th>Tier</th><th>History</th><th>Coverage</th><th>Firms reached, of 328</th><th>Verdict</th></tr>
@@ -373,21 +412,14 @@ branch 'main' set up to track 'origin/main'.</pre><button class="copy">copy</but
       <tr><td>Premium, $49</td><td>30+ years</td><td>US, UK, Canada</td><td>185 (56.4%)</td><td>Workable if the paper goes US and UK only</td></tr>
       <tr><td>Ultimate, $99</td><td>full</td><td>Global</td><td>328 (100%)</td><td>What the paper as designed needs</td></tr>
     </table>
-    <p>Your universe is 157 US, 28 UK, 0 Canada and 143 continental European. Premium would drop 143 firms and 2,125 of the 5,115 assets.</p>
+    <p>Your universe is 157 US, 28 UK, 0 Canada and 143 continental European. Premium would drop 143 firms and 2,125 of the 5,115 assets. <strong>Read those as entity counts, not listed-firm counts</strong>, which is what step D1d is for. If the European 143 turns out to be mostly unlisted, the gap between the two tiers narrows sharply and Premium becomes the better buy.</p>
     <div class="box warn">
       <p><strong>Choose monthly billing, not annual.</strong> The $19, $49 and $99 figures are the annually-billed rates, so the monthly rate is higher, likely near $149 for Ultimate. That still beats the alternative: annual billing on Ultimate is a $1,188 commitment for what should be a one-month pull. Buy one month, take everything, cancel.</p>
     </div>
     <div class="box stop">
       <p><strong>Before you pay, read FMP's terms line under the pricing table.</strong> Redistributing their data requires a separate licensing agreement with them. So the price panel cannot go into the public repo at any tier. That is not a reason to avoid paying, it is a reason to set the repo up correctly on day one: <code>data/raw/prices/</code> goes in <code>.gitignore</code>, the repo ships the fetch code and the symbol list, and the README says which layer a reader has to buy. Panel A is unaffected, Ken French data is freely redistributable.</p>
     </div>
-    <p><strong>Day-one acceptance test, before the refund window closes.</strong> Paste the new key into Colab Secrets, then rerun sections 2a, 2b and 2c in that order. Four things have to come back true, and the last one is not itemised anywhere on the pricing page:</p>
-    <table>
-      <tr><th>Check</th><th>Where</th><th>What failure means</th></tr>
-      <tr><td>DUK and the European names return data</td><td>2a preflight</td><td>Coverage is not what was sold. Ask for a refund the same day.</td></tr>
-      <tr><td>History reaches January 2010</td><td>2b, history depth test</td><td>The tier's range is shorter than advertised. Do not shorten <code>START</code> to hide it.</td></tr>
-      <tr><td><code>dividend-adjusted</code> works for every symbol</td><td>2c and D2</td><td>A mixed panel. The integrity check in section 3 will fail it deliberately rather than let it through.</td></tr>
-      <tr><td>Delisted symbols return price history</td><td>2c, final probe</td><td>Blocking test 1 still cannot run. Worth knowing on day one rather than in month three.</td></tr>
-    </table>
+    <p>The moment the key is live, go to section F. Step F1 is a ten minute acceptance test that verifies you got what you paid for while a refund is still realistic.</p>
   </div>
 </div>
 
@@ -448,6 +480,130 @@ git commit -m "Record first successful data pull" &amp;&amp; git push</pre><butt
       <li><strong>The GEM ownership snapshot is undated</strong>, with sector vintages spanning about sixteen months. That is look ahead contaminating the independent variable, and nothing in this repository addresses it.</li>
     </ul>
     <div class="box key"><p>The README states the intended handling of survivorship bias and transaction costs up front, before any result exists, so that neither commitment can be quietly relaxed once numbers start appearing. It also says plainly that a stated intention is not a measured correction.</p></div>
+  </div>
+</div>
+
+<h2>F. The paid pull: what to download, and where it goes</h2>
+
+<p>Everything in this section assumes a live paid key. The governing idea is that you are renting access for a month and keeping the result forever, so <strong>the cost of pulling something you turn out not to need is one API call, and the cost of not pulling something you later need is another subscription.</strong> Be greedy inside the month.</p>
+
+<div class="step">
+  <div class="row"><input type="checkbox"><div class="title">F1. Run the day-one acceptance test before anything else <span class="st s-you">YOU</span></div></div>
+  <div class="body">
+    <p>Paste the new key into Colab Secrets, then rerun 2a, 2b and 2c in that order. Roughly ten minutes. Four things have to come back true, and the last is not itemised anywhere on the pricing page:</p>
+    <table>
+      <tr><th>Check</th><th>Where</th><th>What failure means</th></tr>
+      <tr><td>DUK and the European names return data</td><td>2a preflight</td><td>Coverage is not what was sold. Ask for a refund the same day.</td></tr>
+      <tr><td>History reaches January 2010</td><td>2b, history depth test</td><td>The tier's range is shorter than advertised. Do not shorten <code>START</code> to hide it.</td></tr>
+      <tr><td><code>dividend-adjusted</code> works for every equity</td><td>2c and D2</td><td>A mixed panel. See the note below on why the check fires.</td></tr>
+      <tr><td>Delisted symbols return price history</td><td>2c, final probe</td><td>Blocking test 1 still cannot run. Better to know on day one than in month three.</td></tr>
+    </table>
+    <div class="box"><p><strong>Expect one failure that is not a failure.</strong> Section 3 checks that the whole panel uses one return convention, and your free-tier run already trips it: <code>^GSPC</code> fell back to split-adjusted while CVX, XOM and SPY got dividend-adjusted. That is correct behaviour. An index has no dividends to reinvest, so <code>^GSPC</code> has no dividend-adjusted series anywhere, at any price. The fix is to treat the index as a benchmark series rather than a panel member, or to use SPY, which does have a total return series, and say which you did.</p></div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="row"><input type="checkbox"><div class="title">F2. Pull more than the paper needs <span class="st s-you">YOU</span></div></div>
+  <div class="body">
+    <p>Seven things, in this order. The first four are load bearing, the last three are cheap insurance.</p>
+    <table>
+      <tr><th></th><th>What</th><th>Endpoint</th><th>Why it is on the list</th></tr>
+      <tr><td>1</td><td>Daily prices, every resolved ticker, 2005 to today</td><td><code>stable/historical-price-eod/dividend-adjusted</code></td><td>Panel B itself. Start at 2005, not 2010: the extra five years costs nothing now and lets you show the result is not a sample-window artefact.</td></tr>
+      <tr><td>2</td><td>The same tickers, split-adjusted</td><td><code>stable/historical-price-eod/full</code></td><td>The difference between the two series is the dividend contribution. Holding both lets you demonstrate the total-return correction rather than assert it.</td></tr>
+      <tr><td>3</td><td>Dividend events</td><td><code>stable/dividends</code></td><td>An independent check on series 1 and 2. If the reconstructed total return does not match the vendor's, one of them is wrong and you want to find out now.</td></tr>
+      <tr><td>4</td><td>The full delisted companies list, every page</td><td><code>stable/delisted-companies</code></td><td>Blocking test 1. Page through it completely, do not stop at page 0.</td></tr>
+      <tr><td>5</td><td>Prices for the delisted names too</td><td>as row 1</td><td>This is the half the free key refused, and the half that turns the list into a measurable hit rate.</td></tr>
+      <tr><td>6</td><td>Company profiles for every ticker</td><td><code>stable/profile</code></td><td>Exchange, currency, sector, market cap, and the listing status you had to infer in D1d. Cheap, one call per symbol.</td></tr>
+      <tr><td>7</td><td>The full symbol directory</td><td><code>stable/stock-list</code></td><td>Lets every future ticker resolution be done offline against a local file instead of against a subscription you no longer have.</td></tr>
+    </table>
+    <div class="box warn">
+      <p><strong>Currency will bite you if you buy the global tier.</strong> A price series from Frankfurt is in euros, from Milan in euros, from London in pence rather than pounds on many tickers. Ken French's US factors are in dollars. Mixing them silently produces returns that are part asset return and part exchange rate move. Record the currency from the profile call alongside every series, and decide the conversion explicitly. This is the single most common way a cross-country return panel goes quietly wrong.</p>
+    </div>
+    <div class="box"><p><strong>On rate limits.</strong> Premium allows 750 calls a minute and Ultimate 3,000, so 328 symbols across four endpoint families is a few minutes of wall clock, not hours. The binding constraint is the trailing 30 day bandwidth cap, 50GB on Premium and 150GB on Ultimate. Daily bars for a few hundred symbols over twenty years is on the order of hundreds of megabytes, so you are nowhere near it. Do not add long sleeps out of caution; you are paying for the throughput.</p></div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="row"><input type="checkbox"><div class="title">F3. Store it so the month cannot be wasted <span class="st s-you">YOU</span></div></div>
+  <div class="body">
+    <div class="box stop">
+      <p><strong>Do not run the paid pull in Colab alone.</strong> Colab storage is ephemeral. A disconnected runtime after a two hour pull on a subscription you are about to cancel is an expensive and entirely avoidable mistake. Either mount your Google Drive and write straight to it, or run the pull locally in Terminal. Write each symbol to disk as it arrives rather than accumulating in memory and saving at the end, so a crash costs you the last symbol instead of all of them.</p>
+    </div>
+    <p>The layout, under <code>repo_paper1_data/</code>:</p>
+    <div class="cmd"><pre>data/
+  raw/
+    prices_div_adj/    AAPL.csv, DUK.csv, ...   one file per symbol
+    prices_split_adj/  AAPL.csv, DUK.csv, ...
+    dividends/         AAPL.csv, ...
+    reference/         delisted_companies.csv, stock_list.csv, profiles.csv
+    ff3_daily.csv
+    manifest.json
+  interim/                                       nothing hand edited, ever
+config/
+  tickers_v1.csv                                 the resolved list from D1d</pre><button class="copy">copy</button></div>
+    <p>One file per symbol rather than one combined CSV, for a specific reason: a partial pull stays usable and resumable. With a single combined file, an interrupted run leaves you unable to tell which symbols completed.</p>
+    <table>
+      <tr><th>Rule</th><th>Reason</th></tr>
+      <tr><td><code>data/raw/</code> stays in <code>.gitignore</code></td><td>FMP's terms require a separate licensing agreement to redistribute their data. This is not optional and it applies at every tier including free.</td></tr>
+      <tr><td><code>data/raw/manifest.json</code> is force added with <code>git add -f</code></td><td>Hashes and row counts are facts about the data, not the data. They are what makes the pull auditable without publishing it.</td></tr>
+      <tr><td><code>config/tickers_v1.csv</code> is committed</td><td>The symbol list is your own work, not FMP's. A reader with their own key needs it to reproduce you.</td></tr>
+      <tr><td>Raw files are never edited in place</td><td>Every correction belongs in code that reads <code>raw/</code> and writes <code>interim/</code>. A hand-edited raw file cannot be re-pulled and compared.</td></tr>
+      <tr><td>Keep a second copy outside the repo folder</td><td>Once you cancel, this data cannot be regenerated without paying again. Treat it as irreplaceable, because for your budget it is.</td></tr>
+    </table>
+    <div class="box key"><p><strong>What the README has to say once this exists.</strong> That Panel A is fully reproducible from public Ken French files, that Panel B requires an FMP subscription at a named tier, that <code>manifest.json</code> lets a reader verify their own pull matches yours byte for byte, and the date the data was pulled. A reader who cannot reproduce half your pipeline can still verify that you did what you said, provided you tell them how.</p></div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="row"><input type="checkbox"><div class="title">F4. Verify, then cancel <span class="st s-you">YOU</span></div></div>
+  <div class="body">
+    <p>Run the section 3 integrity checks and regenerate <code>manifest.json</code> against the full pull. Then, before you cancel, go down this list once. Everything on it is free while the subscription is live and impossible afterwards:</p>
+    <table>
+      <tr><th>Confirm</th><th>Because</th></tr>
+      <tr><td>Every resolved ticker has a file, and the misses are written down</td><td>A missing symbol discovered after cancellation is a permanent hole in the sample.</td></tr>
+      <tr><td>Every file starts in 2005 or at the firm's first trading day, whichever is later</td><td>Truncation is easy to miss and changes the sample without announcing itself.</td></tr>
+      <tr><td>Delisted names have price files</td><td>Blocking test 1 depends entirely on this.</td></tr>
+      <tr><td>The currency of every non-US series is recorded</td><td>Not recoverable later without the profile endpoint.</td></tr>
+      <tr><td>You have a backup copy outside the repo</td><td>Self evident, routinely skipped.</td></tr>
+    </table>
+    <div class="box warn"><p><strong>Set a calendar reminder for two days before the renewal date, on the day you subscribe.</strong> An unnoticed second month is the same money as the first, and this is the most common way a one-month data purchase becomes a four-month one.</p></div>
+  </div>
+</div>
+
+<h2>G. The remaining tests</h2>
+
+<p>These are the things that stand between a working download and a defensible result. None is blocked by anything except the data pull, and the first two decide whether the paper's central estimate can be trusted at all.</p>
+
+<div class="step">
+  <div class="row"><input type="checkbox"><div class="title">G1. Blocking test 1, the survivorship hit rate <span class="st s-no">BLOCKED</span></div></div>
+  <div class="body">
+    <p>Blocked on the paid key, and it is the first thing to run once you have one. <code>code/01_survivorship_test_fmp.py</code> exists but has never returned a number, and it still points at the retired <code>/api/v3/</code> paths, so it needs the same URL fix the notebook got before it will run at all.</p>
+    <p>The question it answers: of the firms that owned assets in the GEM file at the start of the sample, what fraction had left the listed universe by the end, and how do their returns compare with the survivors. <strong>Until that fraction is a number, survivorship bias in this paper is of unknown size, which is not the same as small.</strong> Commit to how you will handle it before you see the figure, so the threshold cannot move to accommodate the result.</p>
+  </div>
+</div>
+
+<div class="step">
+  <div class="row"><input type="checkbox"><div class="title">G2. Audit the delisted list before trusting the rate <span class="st s-no">BLOCKED</span></div></div>
+  <div class="body">
+    <p>New, and it comes out of the 2c run. The free-tier sample of delisted names included <code>EQR</code>, which is an active S&amp;P 500 REIT. One observation is not a verdict, but it is enough to require a check, because blocking test 1 divides by the size of this list.</p>
+    <div class="box key"><p><strong>The direction of the error matters more than its size.</strong> A list inflated with still-listed firms makes the delisting rate look higher, which sounds conservative. But used the other way, as a denominator, an inflated list makes the fraction of your own universe that delisted look smaller, and an understated survivorship rate is exactly the error that makes a bias look safe to ignore. Take a sample of fifty names off the list, check their current listing status against the profile endpoint, and report the false positive rate in the methods section.</p></div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="row"><input type="checkbox"><div class="title">G3. Factor replication, <code>02_factor_replication.py</code> <span class="st s-pend">UNTESTED</span></div></div>
+  <div class="body">
+    <p>Also still on <code>/api/v3/</code> and also never run. Its job is to confirm that returns computed from your own price panel reproduce known factor behaviour before that panel is used to estimate anything new. Standard order of operations: reproduce something known, then measure something unknown.</p>
+    <p>Concretely: regress a handful of your own daily return series on the Ken French factors and check the betas land where published estimates put them. If a large-cap energy name does not come back with a market beta near one, the problem is in the return construction, and finding that here costs an afternoon rather than a chapter.</p>
+  </div>
+</div>
+
+<div class="step">
+  <div class="row"><input type="checkbox"><div class="title">G4. The GEM vintage problem, still the critical path <span class="st s-no">BLOCKED</span></div></div>
+  <div class="body">
+    <p>Unchanged since the 19 August handover and still the most serious problem in the project. The GEM ownership snapshot is undated, with sector trackers published across a span of roughly sixteen months. Using a 2026 ownership snapshot to explain 2010 returns attributes to a firm assets it did not own yet.</p>
+    <div class="box stop"><p><strong>This one contaminates the regressor, which is why it outranks everything else here.</strong> Survivorship bias distorts the dependent variable and can be bounded and reported. Look-ahead in the independent variable means the exposure measure is partly constructed from information that did not exist at the time, and no amount of care downstream repairs that.</p></div>
+    <p>The unblocking path is already in motion: Gabe at GEM is sending prior dataset releases plus a version carrying a last-verified-date column. When that arrives, the exposure measure gets rebuilt as a time-varying panel using only vintages available at each date. Two things to hold on to when you reply to him: a last-verified date bounds knowledge rather than dating events, so an asset verified in 2024 may have changed hands in 2019 and simply not been rechecked; and ask explicitly whether the prior releases are archived as originally published or restated, because a restated archive reintroduces the same look-ahead in a form that is much harder to notice.</p>
   </div>
 </div>
 
