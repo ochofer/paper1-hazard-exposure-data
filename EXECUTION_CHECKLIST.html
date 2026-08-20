@@ -335,6 +335,30 @@ branch 'main' set up to track 'origin/main'.</pre><button class="copy">copy</but
     </table>
     <div class="box"><p><strong>The row worth hoping for.</strong> The last probe checks the <code>dividends</code> endpoint. If <code>light</code> prices and <code>dividends</code> are both open, total returns can be rebuilt by hand: take the split-adjusted close, add the cash dividend on its ex-date, compound. More work and more places to slip, but economically the same thing, and every input stays free and redistributable, which is an architecture constraint here rather than a budget preference.</p></div>
     <p><strong>Send me the table.</strong> With it I can tell you whether a paid tier is worth it, which tier, or whether a US-only version one on free data gets you further faster.</p>
+    <div class="box key"><p><strong>Result, 20 August.</strong> Done. The diagnosis came back <em>symbol coverage is the wall</em>. Four symbols returned the full 2010 to 2025 history: <code>CVX</code>, <code>XOM</code>, <code>SPY</code>, <code>^GSPC</code>. Eighteen returned 402, including <code>DUK</code>, <code>NEE</code>, <code>BRK-B</code> and every European name. Size does not explain it, since <code>BRK-B</code> is refused and is larger than <code>CVX</code>. Step D1c follows up.</p></div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="row"><input type="checkbox"><div class="title">D1c. Find out what the covered set actually is <span class="st s-you">YOU</span></div></div>
+  <div class="body">
+    <p>Section 2c of the notebook. This is new, so you need the latest code before you can run it.</p>
+    <p><strong>First, push and reload.</strong> In Terminal, in the repo folder:</p>
+    <pre><code>git push</code></pre>
+    <p>Then in Colab use <strong>File, Open notebook, GitHub</strong> and open <code>notebooks/01_raw_panels.ipynb</code> again from scratch. Do not just refresh the browser tab: Colab holds the old copy in memory and a refresh will hand it back to you unchanged. Rerun sections 1 and 2 to restore <code>API_KEY</code>, then go to 2c.</p>
+    <div class="box key">
+      <p><strong>The hypothesis being tested, and why it is worth a cell.</strong> <code>XOM</code> works and <code>DUK</code> does not. <code>XOM</code> was removed from the Dow Jones Industrial Average on <strong>31 August 2020</strong>. If the free tier is a fixed list frozen from a pre-September-2020 Dow snapshot, that predicts a very specific pattern: names dropped from the Dow since 2020 still work, names added since 2020 do not, and large non-Dow names never work regardless of size. That is a falsifiable prediction rather than a hunch, which is the only kind worth spending a run on.</p>
+    </div>
+    <p>The cell probes six groups and prints one of three verdicts:</p>
+    <table>
+      <tr><th>Verdict</th><th>What it tells you</th></tr>
+      <tr><td>CONFIRMED, a frozen index snapshot</td><td>The covered set is a fixed list you cannot influence. No universe you can define will be a research universe. Panel B needs a different source or a paid tier, full stop.</td></tr>
+      <tr><td>PARTIAL, the pattern is close but not exact</td><td>Some other fixed list, possibly a demo set. Same practical consequence, but the exact rule is worth naming in the limitations section.</td></tr>
+      <tr><td>NOT the Dow hypothesis</td><td>Something else selects the covered set. Send me the group table and I will work out what.</td></tr>
+    </table>
+    <div class="box stop">
+      <p><strong>The probe at the bottom is the one that decides blocking test 1.</strong> It pulls real tickers out of the delisted companies list and immediately asks for their price history. The list being open is what made blocking test 1 look ungated. But knowing which firms died, with no ability to price them, measures nothing. If that probe returns 402, blocking test 1 cannot produce a survivorship hit rate on this key, and nothing return-based can be estimated until that changes.</p>
+    </div>
   </div>
 </div>
 
