@@ -129,10 +129,12 @@ if IN_COLAB and not os.environ.get("FMP_API_KEY"):
 # path, so a working key on a paid plan produces an identical failure table to no key at
 # all. Checked against the August 2026 documentation, in which every listed endpoint is
 # /stable/ and none is /api/v3/. Do not "restore" v3 as a fallback.
-API_KEY = os.environ.get("FMP_API_KEY")
-BASE    = "https://financialmodelingprep.com/stable"
-EOD     = f"{BASE}/historical-price-eod/full"               # split-adjusted, no dividends
-EOD_TR  = f"{BASE}/historical-price-eod/dividend-adjusted"  # total return, use for returns
+API_KEY     = os.environ.get("FMP_API_KEY")
+BASE        = "https://financialmodelingprep.com/stable"
+EOD         = f"{BASE}/historical-price-eod/full"               # split-adjusted, no dividends
+EOD_TR      = f"{BASE}/historical-price-eod/dividend-adjusted"  # total return, use for returns
+SEARCH_ISIN = f"{BASE}/search-isin"
+PROFILE     = f"{BASE}/profile"
 
 # ---------------------------------------------------------------- window
 # Fixed in advance so a rerun on a different day produces the same file.
@@ -1211,8 +1213,6 @@ cells.append(code(r'''
 # Probe first, parse second. This prints the raw shape of one response so a field-name
 # change in the vendor API is visible immediately rather than becoming a silent
 # mis-parse in the cell below.
-SEARCH_ISIN = f"{BASE}/search-isin"
-
 _probe_isins = cand["isin"].dropna().unique()[:3].tolist()
 for _i in _probe_isins:
     _r = requests.get(SEARCH_ISIN, params={"isin": _i, "apikey": API_KEY}, timeout=45)
@@ -1234,11 +1234,14 @@ def fmp_symbols_for_isin(isin_code):
     indistinguishable from 'this ISIN is not covered'."""
     if isin_code in isin_map:
         return isin_map[isin_code]
+    # Catch network and decode failures only. A bare `except Exception` here once
+    # swallowed a NameError and reported every ISIN as uncovered, which looks exactly
+    # like a plan limit and took an integration run to find. Let bugs raise.
     try:
         r = requests.get(SEARCH_ISIN, params={"isin": isin_code, "apikey": API_KEY},
                          timeout=45)
         payload = r.json() if r.status_code == 200 else []
-    except Exception:
+    except (requests.RequestException, ValueError):
         payload = []
     if isinstance(payload, dict):
         payload = payload.get("data") or payload.get("results") or []
@@ -1265,13 +1268,17 @@ def liquidity(symbol):
     across a EUR ordinary and a USD receipt. Median rather than mean, because a single
     index-rebalance day would otherwise decide the primary listing.
     """
+    # Always exactly two values. The cache row is [dollar_vol, bars, share_vol] and an
+    # early version returned it whole, so every caller unpacking two broke the moment
+    # the cache was warm and worked fine while it was cold. Share volume is reached
+    # through share_volume() instead.
     if symbol in _liq:
-        return tuple(_liq[symbol])
+        return _liq[symbol][0], _liq[symbol][1]
     try:
         r = requests.get(EOD, params={"symbol": symbol, "from": PROBE_FROM,
                                       "to": PROBE_TO, "apikey": API_KEY}, timeout=45)
         rows = r.json() if r.status_code == 200 else []
-    except Exception:
+    except (requests.RequestException, ValueError):
         rows = []
     if isinstance(rows, dict):
         rows = rows.get("historical", [])
@@ -1308,6 +1315,12 @@ for k, isin_code in enumerate(uniq_isins, 1):
         scored.append({"isin": isin_code, **s})
 ISIN_CACHE.write_text(json.dumps(isin_map))
 
+if not scored:
+    raise SystemExit(
+        "FMP returned no symbol for any of the equity ISINs.\n"
+        "  That is not a normal result on a paid key. Check that the probe cell above\n"
+        "  printed real responses, and that section 2 produced a non-empty `cand`."
+    )
 sc = pd.DataFrame(scored).drop_duplicates("symbol")
 print(f"{len(sc):,} distinct FMP symbols to score")
 
@@ -1443,7 +1456,6 @@ rather than buried in a CSV.
 """))
 
 cells.append(code(r'''
-PROFILE   = f"{BASE}/profile"
 PROF_CACHE = RAW / "fmp_profile_cache.json"
 prof = json.loads(PROF_CACHE.read_text()) if PROF_CACHE.exists() else {}
 
@@ -1454,7 +1466,7 @@ def profile_of(symbol):
     try:
         r = requests.get(PROFILE, params={"symbol": symbol, "apikey": API_KEY}, timeout=45)
         payload = r.json() if r.status_code == 200 else []
-    except Exception:
+    except (requests.RequestException, ValueError):
         payload = []
     if isinstance(payload, dict):
         payload = payload.get("data") or [payload]
