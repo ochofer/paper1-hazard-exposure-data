@@ -2968,23 +2968,33 @@ except Exception as exc:
 
 # What must exist. Named explicitly rather than globbed, so a missing file is an error
 # rather than a silently shorter list.
-REQUIRED = ["panel_b_prices_daily.csv", "ff3_daily.csv", "manifest.json",
-            "fmp_delisted.json", "fmp_profile_cache.json", "openfigi_cache.json",
-            "fmp_isin_cache.json", "fmp_liquidity_cache.json"]
-OPTIONAL = ["panel_b_prices_daily.parquet", "blocking_test_1_return_gaps.csv",
-            "blocking_test_2_ff3.csv", "blocking_test_2_weighting.csv",
-            "blocking_test_2_subperiods.csv"]
+# Export EVERYTHING in data/raw, then separately assert that the critical files are
+# among them. The first version listed filenames by hand and got one wrong: Panel A is
+# written as panel_a_ff3_daily.csv, not ff3_daily.csv, so both Panel A files were
+# silently left out of the 21 August archive while the cell reported success on the
+# rest. A hand-maintained list of filenames drifts from the code that writes them; a
+# glob cannot.
+present = sorted(f.name for f in RAW.iterdir() if f.is_file())
 
-missing_req = [f for f in REQUIRED if not (RAW / f).exists()]
-present = [f for f in REQUIRED + OPTIONAL if (RAW / f).exists()]
+CRITICAL = ["panel_b_prices_daily.csv",   # cannot be rebuilt without a paid key
+            "panel_a_ff3_daily.csv",      # parsed Panel A
+            "ff3_daily_original.csv",     # the exact bytes Ken French served, the audit record
+            "manifest.json",
+            "fmp_delisted.json", "fmp_profile_cache.json"]
+missing_req = [f for f in CRITICAL if f not in present]
 
-print(f"\n{len(present)} files to export, {(sum((RAW / f).stat().st_size for f in present) / 1e6):.0f} MB total")
+print(f"\n{len(present)} files to export, "
+      f"{(sum((RAW / f).stat().st_size for f in present) / 1e6):.1f} MB total")
 for f in present:
     print(f"  {f:38s} {(RAW / f).stat().st_size / 1e6:8.1f} MB")
 if missing_req:
     print(f"\nMISSING REQUIRED FILES: {missing_req}")
     print("Run the sections that produce them before exporting, or you will cancel")
     print("the subscription with a hole in the archive.")
+    print("\nff3_daily_original.csv matters more than it looks. Ken French updates that")
+    print("file in place, so a re-download next year returns different bytes. Those are")
+    print("the exact bytes served on the day the panel was built, and the manifest hash")
+    print("only means something if they are kept.")
 '''))
 
 cells.append(code(r'''
