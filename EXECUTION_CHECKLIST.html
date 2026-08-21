@@ -525,17 +525,16 @@ git commit -m "Record first successful data pull" &amp;&amp; git push</pre><butt
       <p>Three problems, and the first is the one that matters. <strong>The panel would double count:</strong> a hazard-sorted portfolio holding all three Allianz lines holds one bet with three weights, and because the duplicates are near perfectly correlated they look like independent observations, so your cross-sectional standard errors come out too small. <strong>A receipt is not the security:</strong> an ADR carries the underlying return plus an exchange rate move, traded on US hours against a European close, which injects a currency factor into a climate-hazard sort. And it costs a multiple of the download time while the subscription is running.</p>
     </div>
     <p>Section 2b fixes it by letting liquidity arbitrate rather than by hand-maintaining a table of exchange codes. For every candidate it asks FMP what it can price, pulls one recent quarter, and keeps the line with the highest median daily dollar volume. Median rather than mean, so a single index-rebalance day cannot decide a listing; dollar rather than share volume, because share counts are not comparable between a euro ordinary and a dollar receipt.</p>
-    <p><strong>Run it in this order.</strong> Nothing here needs editing.</p>
+    <p><strong>Simplest path: push, reopen the notebook from GitHub, then Runtime, Run all.</strong> Every section now runs in dependency order and the slow parts are cached, so a rerun costs minutes rather than repeating the whole job. Expect roughly fifteen minutes end to end, most of it the Panel B fetch.</p>
     <table>
-      <tr><th>Step</th><th>Cell</th><th>What to check before moving on</th></tr>
-      <tr><td>1</td><td>Section 0, both cells</td><td><code>repo</code> ends in the repo name, <code>api key: set</code></td></tr>
-      <tr><td>2</td><td>Section 2, three cells</td><td>Cached, so seconds. Ends at <code>271 of 328</code> or better</td></tr>
-      <tr><td>3</td><td>Section 2b, <strong>probe cell first</strong></td><td>It prints three raw API responses. If they do not contain a <code>symbol</code> field, stop and send them to me</td></tr>
-      <tr><td>4</td><td>Section 2b, remaining two cells</td><td><code>no symbol is claimed by two entities</code>, and a firm count near 270</td></tr>
-      <tr><td>5</td><td>Section 2c, both cells</td><td>Currency is filled for every priceable firm, and the spot-check table shows European firms on European exchanges</td></tr>
-      <tr><td>6</td><td>Section 3, ticker cell</td><td>Must say <code>tickers_primary.csv</code>. If it raises, step 4 did not finish</td></tr>
-      <tr><td>7</td><td>Section 3, fetch loop</td><td>Roughly 290 symbols rather than thousands</td></tr>
-      <tr><td>8</td><td>Section 4, both cells</td><td>Read every row of the check table before trusting the files</td></tr>
+      <tr><th>Section</th><th>Does</th><th>Stop if</th></tr>
+      <tr><td>0</td><td>Clone, secrets, paths</td><td><code>api key</code> is not <code>set</code></td></tr>
+      <tr><td>2</td><td>OpenFIGI resolution</td><td>Fewer than about 270 of 328</td></tr>
+      <tr><td>2b</td><td>One listing per firm</td><td>A symbol is claimed by two entities</td></tr>
+      <tr><td>2c</td><td>Currency, exchange, losses</td><td>Currency is empty, or a European firm sits on a US over-the-counter line</td></tr>
+      <tr><td>2d</td><td>Name retry for the misses</td><td>A recovered name looks like a different company</td></tr>
+      <tr><td>3</td><td>Panel B prices</td><td>It lists thousands of symbols rather than roughly 300</td></tr>
+      <tr><td>4</td><td>Integrity checks, manifest</td><td>Read every failing row before continuing</td></tr>
     </table>
     <div class="box key">
       <p><strong>Two bugs the dry run caught before you paid for them.</strong> The <code>lei</code> column held the literal string <code>"not found"</code> for 13 firms, Chevron among them with 73 assets. Left as a string it is a valid join key, so all 13 were being merged into each other, and pandas joins missing keys to each other too. Those 13 now resolve through their SEC CIK instead, which recovers all of them. Section 2b also asserts that no ticker is claimed by two entities, because a collapsed crosswalk would silently double the assets attributed to one firm.</p>

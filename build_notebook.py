@@ -1254,6 +1254,8 @@ def fmp_symbols_for_isin(isin_code):
 
 
 PROBE_FROM, PROBE_TO = "2024-01-02", "2024-03-28"
+LIQ_CACHE = RAW / "fmp_liquidity_cache.json"
+_liq = json.loads(LIQ_CACHE.read_text()) if LIQ_CACHE.exists() else {}
 
 
 def liquidity(symbol):
@@ -1263,6 +1265,8 @@ def liquidity(symbol):
     across a EUR ordinary and a USD receipt. Median rather than mean, because a single
     index-rebalance day would otherwise decide the primary listing.
     """
+    if symbol in _liq:
+        return tuple(_liq[symbol])
     try:
         r = requests.get(EOD, params={"symbol": symbol, "from": PROBE_FROM,
                                       "to": PROBE_TO, "apikey": API_KEY}, timeout=45)
@@ -1272,13 +1276,24 @@ def liquidity(symbol):
     if isinstance(rows, dict):
         rows = rows.get("historical", [])
     if not rows:
+        _liq[symbol] = [0.0, 0, 0.0]
         return 0.0, 0
     d = pd.DataFrame(rows)
     if not {"close", "volume"}.issubset(d.columns):
+        _liq[symbol] = [0.0, len(d), 0.0]
         return 0.0, len(d)
-    dv = (pd.to_numeric(d["close"], errors="coerce")
-          * pd.to_numeric(d["volume"], errors="coerce")).dropna()
-    return float(dv.median()) if len(dv) else 0.0, len(d)
+    px  = pd.to_numeric(d["close"], errors="coerce")
+    vol = pd.to_numeric(d["volume"], errors="coerce")
+    dv  = (px * vol).dropna()
+    out = [float(dv.median()) if len(dv) else 0.0, len(d),
+           float(vol.median()) if len(vol.dropna()) else 0.0]
+    _liq[symbol] = out
+    return out[0], out[1]
+
+
+def share_volume(symbol):
+    """Shares traded per day, used only to break ties between share classes."""
+    return (_liq.get(symbol) or [0, 0, 0])[2]
 
 
 scored = []
@@ -1301,8 +1316,10 @@ for k, s in enumerate(sc["symbol"].tolist(), 1):
     if k % 100 == 0:
         print(f"  scored {k}/{len(sc)}")
     liq[s] = liquidity(s)
-sc["dollar_vol"] = sc["symbol"].map(lambda s: liq[s][0])
-sc["bars_q1_24"] = sc["symbol"].map(lambda s: liq[s][1])
+sc["dollar_vol"]  = sc["symbol"].map(lambda s: liq[s][0])
+sc["bars_q1_24"]  = sc["symbol"].map(lambda s: liq[s][1])
+sc["share_vol"]   = sc["symbol"].map(share_volume)
+LIQ_CACHE.write_text(json.dumps(_liq))
 '''))
 
 cells.append(code(r'''
@@ -1310,10 +1327,19 @@ cells.append(code(r'''
 lei_of = dict(zip(cand["isin"], cand["lei"]))   # cand.isin is the method, not the column
 sc["lei"] = sc["isin"].map(lei_of)
 
-alive = sc[(sc.dollar_vol > 0) & (sc.bars_q1_24 > 30)]
-pick  = (alive.sort_values("dollar_vol", ascending=False)
-              .drop_duplicates("lei")
-              .rename(columns={"symbol": "primary_symbol"}))
+alive = sc[(sc.dollar_vol > 0) & (sc.bars_q1_24 > 30)].copy()
+
+# Dollar volume alone picks BRK-A over BRK-B: the A share costs about 1,500 times more,
+# so a few hundred shares a day rivals the B share's millions. They are claims on the
+# same firm with near identical returns, but the A share trades in tiny share counts,
+# which means stale prices and coarse discreteness in a daily return series. So: use
+# dollar volume to decide which lines are seriously traded, then among lines within a
+# factor of three of the best, prefer the one with more SHARES changing hands.
+alive["dv_rank"] = alive.groupby("lei")["dollar_vol"].transform("max")
+contenders = alive[alive.dollar_vol >= alive.dv_rank / 3]
+pick = (contenders.sort_values(["share_vol", "dollar_vol"], ascending=False)
+                  .drop_duplicates("lei")
+                  .rename(columns={"symbol": "primary_symbol"}))
 
 # Map through dictionaries rather than pd.merge(on="lei"). pandas joins NaN keys to each
 # other, so any firm without a LEI would be matched to every other firm without one. The
@@ -1493,6 +1519,138 @@ display(primary[primary.priceable]
         .sort_values("n_assets", ascending=False)
         .head(20)[["name", "hq", "n_assets", "primary_symbol", "exchange",
                    "currency", "route"]])
+'''))
+
+cells.append(md(r"""
+### 2d. Last pass: find the ones the identifiers missed
+
+The 21 August run left 37 firms unpriceable, holding 287 assets, 5.6 percent of the
+total. Reading that list rather than the count is what separates a real limitation from
+a bug, and it contains both.
+
+**Correctly excluded, and they should stay excluded.** City of Vienna is a city.
+enercity AG is municipally owned. UBS Fund Management is an unlisted subsidiary whose
+parent UBS Group is already in the sample separately. Edison SpA was taken private by
+EDF. EVRAZ is suspended from the LSE under sanctions, so it is genuinely unpriceable
+rather than merely unresolved.
+
+**Resolution failures, and there are more than a handful.** CRH holds 61 assets and
+trades on the NYSE. UPM-Kymmene, Kemira and Metsä Board are all listed in Helsinki and
+all three failed, which looks like a pattern rather than three coincidences. Morgan
+Stanley, Linde and LyondellBasell are among the most liquid equities in the world. None
+of these is unlisted; the identifier route simply did not reach them.
+
+So this cell retries the unpriceable firms by **name**, which is a weaker key than an
+ISIN and therefore used last and defensively: a candidate is only accepted if the name
+similarity clears a threshold, and the match is printed for you to read rather than
+applied silently.
+
+**One category is left deliberately unresolved, because it is your decision and not a
+lookup.** Entergy Louisiana LLC and Pacific Gas and Electric Co are wholly owned
+operating subsidiaries of listed parents, Entergy Corp and PG&E Corp. Their assets are
+real and the priced claim on them is the parent's equity. Rolling them up would recover
+the assets, but it also changes what a firm is in your cross-section, and it interacts
+with the lookthrough already in the GEM ownership graph, so doing it silently risks
+double counting assets the parent is credited with twice. The cell flags these rather
+than merging them.
+"""))
+
+cells.append(code(r'''
+from difflib import SequenceMatcher
+
+SUFFIX = re.compile(r"\b(corp|corporation|inc|plc|ltd|limited|ag|sa|spa|nv|oyj|asa|se|"
+                    r"holding|holdings|group|company|co|lp|llc|the)\b\.?", re.I)
+
+
+def norm(s):
+    s = SUFFIX.sub(" ", str(s).lower())
+    return re.sub(r"[^a-z0-9 ]", " ", s).split()
+
+
+def similar(a, b):
+    return SequenceMatcher(None, " ".join(norm(a)), " ".join(norm(b))).ratio()
+
+
+NAME_MIN = 0.72          # below this, a "match" is usually a different company
+
+todo = primary[~primary.priceable].copy()
+print(f"retrying {len(todo)} unpriceable firms by name, threshold {NAME_MIN}\n")
+
+found = 0
+for i, row in todo.iterrows():
+    try:
+        r = requests.get(f"{BASE}/search-name",
+                         params={"query": row["name"], "limit": 10, "apikey": API_KEY},
+                         timeout=45)
+        hits = r.json() if r.status_code == 200 else []
+    except Exception:
+        hits = []
+    if isinstance(hits, dict):
+        hits = hits.get("data") or []
+
+    best, best_key = None, (0.0, 0.0)
+    for h in hits if isinstance(hits, list) else []:
+        sym = h.get("symbol")
+        if not sym:
+            continue
+        sim = similar(row["name"], h.get("name") or h.get("companyName") or "")
+        if sim < NAME_MIN:
+            continue
+        dv, bars = liquidity(sym)
+        if bars <= 30:
+            continue
+        if (sim, dv) > best_key:
+            best, best_key = h, (sim, dv)
+
+    if best:
+        found += 1
+        primary.loc[i, "primary_symbol"] = best["symbol"]
+        primary.loc[i, "dollar_vol"] = best_key[1]
+        primary.loc[i, "route"] = "name"
+        print(f"  {row['name'][:36]:38s} -> {best['symbol']:12s} "
+              f"(similarity {best_key[0]:.2f}, {int(row['n_assets'])} assets)")
+    time.sleep(0.05)
+
+LIQ_CACHE.write_text(json.dumps(_liq))
+primary["priceable"] = primary.primary_symbol.notna()
+
+dupes = primary.loc[primary.priceable & primary.primary_symbol.duplicated(keep=False)]
+print(f"\nrecovered {found} firms by name")
+print("duplicate symbols after the name pass:",
+      "NONE" if not len(dupes) else f"{len(dupes)} rows, READ THESE")
+if len(dupes):
+    display(dupes[["entity_id", "name", "hq", "n_assets", "primary_symbol", "route"]])
+'''))
+
+cells.append(code(r'''
+# Refresh currency and exchange for anything the name pass added, then write.
+for s in primary.loc[primary.priceable, "primary_symbol"]:
+    profile_of(s)
+PROF_CACHE.write_text(json.dumps(prof))
+
+for col, keys in [("currency", ("currency",)),
+                  ("exchange", ("exchangeShortName", "exchange")),
+                  ("listed_country", ("country",)),
+                  ("ipo_date", ("ipoDate",))]:
+    primary[col] = primary.primary_symbol.map(
+        lambda s: field(s, *keys) if pd.notna(s) else None)
+
+primary.to_csv(REPO / "config" / "tickers_primary.csv", index=False)
+
+still = primary[~primary.priceable].sort_values("n_assets", ascending=False)
+print(f"FINAL: {int(primary.priceable.sum())} of {len(primary)} firms priceable, "
+      f"{int(primary.loc[primary.priceable, 'n_assets'].sum()):,} of "
+      f"{int(primary.n_assets.sum()):,} assets "
+      f"({primary.loc[primary.priceable, 'n_assets'].sum() / primary.n_assets.sum():.1%})")
+print("\nby route:", primary.route.value_counts(dropna=False).to_dict())
+print(f"\nstill unpriceable: {len(still)} firms, {int(still.n_assets.sum())} assets")
+display(still[["name", "hq", "n_assets"]].head(20))
+
+print("\nwholly owned subsidiaries of listed parents, YOUR CALL, not merged here:")
+SUBS = ["Entergy Louisiana", "Pacific Gas and Electric Co", "Union Electric"]
+flag = primary[primary.name.astype(str).str.contains("|".join(SUBS), case=False, na=False)]
+display(flag[["name", "hq", "n_assets", "primary_symbol", "priceable"]])
+print(f"wrote {REPO / 'config' / 'tickers_primary.csv'}")
 '''))
 
 cells.append(md(r"""
