@@ -90,29 +90,47 @@ def _git(*args, cwd=None):
     return r.returncode, (r.stdout + r.stderr).strip()
 
 
-if REPO is None and IN_COLAB:
-    if Path(REPO_NAME).exists():
-        # Hard reset rather than pull. This clone is a disposable read-only copy, so
-        # there is nothing here worth preserving, and --ff-only fails on any local
-        # divergence. It previously ran with check=False, so a FAILED PULL WAS SILENT:
-        # reopening the notebook from GitHub gave fresh notebook code while the repo
-        # files stayed old, and config/ticker_overrides.csv simply never arrived. The
-        # overrides were skipped without a word. Never make this quiet again.
-        print(f"{REPO_NAME} present, resetting to origin")
-        for args in (["fetch", "--depth", "1", "origin"],
-                     ["reset", "--hard", "origin/HEAD"],
-                     ["clean", "-fd", "config", "notebooks"]):
-            rc, out = _git(*args, cwd=REPO_NAME)
-            if rc != 0:
-                print(f"  git {args[0]} FAILED: {out}")
-        rc, out = _git("reset", "--hard", "origin/main", cwd=REPO_NAME)
-        if rc != 0:
-            print(f"  reset to origin/main failed: {out}")
-    else:
+def _describe(path):
+    rc, out = _git("-C", str(path), "log", "-1", "--format=%h %ad %s", "--date=short")
+    return out if rc == 0 else "unknown"
+
+
+# On Colab, sync unconditionally. The previous version only synced when REPO was None,
+# which meant that once the working directory was inside the clone from an earlier run,
+# the sync was skipped and the clone silently stayed behind. That is how the notebook
+# ended up running current code against a six-commit-old config directory.
+if IN_COLAB:
+    target = Path("/content") / REPO_NAME
+    if not target.exists():
         print(f"cloning {REPO_URL}")
-        subprocess.run(["git", "clone", "--depth", "1", REPO_URL], check=True)
-    os.chdir(REPO_NAME)
-    REPO = _find_repo(Path.cwd())
+        rc, out = _git("clone", "--depth", "1", REPO_URL, str(target))
+        if rc:
+            raise RuntimeError(f"clone failed: {out}")
+    else:
+        before = _describe(target)
+        rc, out = _git("-C", str(target), "fetch", "--depth", "1", "origin")
+        if rc:
+            print(f"  git fetch FAILED: {out}")
+        done = False
+        for ref in ("origin/main", "origin/master"):
+            rc, out = _git("-C", str(target), "reset", "--hard", ref)
+            if rc == 0:
+                done = True
+                break
+        if not done:
+            raise RuntimeError(
+                f"could not reset {target} to origin. Last error:\n{out}\n"
+                f"Simplest fix: run  !rm -rf {target}  in a cell, then rerun this one."
+            )
+        _git("-C", str(target), "clean", "-fd", "config", "notebooks")
+        after = _describe(target)
+        print(f"  before: {before}")
+        print(f"  after : {after}")
+        if before == after:
+            print("  (already current)")
+    os.chdir(target)
+
+REPO = _find_repo(Path.cwd())
 
 if REPO is None:
     raise FileNotFoundError(
