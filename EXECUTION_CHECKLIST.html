@@ -620,10 +620,19 @@ config/
 </div>
 
 <div class="step">
-  <div class="row"><input type="checkbox"><div class="title">G3. Factor replication, <code>02_factor_replication.py</code> <span class="st s-pend">UNTESTED</span></div></div>
+  <div class="row"><input type="checkbox"><div class="title">G3. Blocking test 2, factor replication <span class="st s-you">YOU</span></div></div>
   <div class="body">
-    <p>Also still on <code>/api/v3/</code> and also never run. Its job is to confirm that returns computed from your own price panel reproduce known factor behaviour before that panel is used to estimate anything new. Standard order of operations: reproduce something known, then measure something unknown.</p>
-    <p>Concretely: regress a handful of your own daily return series on the Ken French factors and check the betas land where published estimates put them. If a large-cap energy name does not come back with a market beta near one, the problem is in the return construction, and finding that here costs an afternoon rather than a chapter.</p>
+    <p><strong>Built, and it is section 6 of the notebook.</strong> It supersedes <code>code/02_factor_replication.py</code>, which never ran and still points at the retired v3 paths. <strong>This needs no subscription and no CRSP</strong>, since Panel A is a free public download and Panel B is already on disk, so it is the thing to do while WRDS access is pending.</p>
+    <div class="box key"><p><strong>Why it blocks.</strong> Everything so far shows that data arrived, not that returns computed from it are correct. A panel can pass all sixteen integrity checks and still produce nonsense: a split adjustment applied twice, a currency mixed into a dollar factor, a preferred share standing in for common equity. None of that appears as a missing value. The market beta of a broad equity portfolio is one by definition, not by hypothesis, so if it comes back at 0.4 the return construction is broken and every later coefficient is worthless.</p></div>
+    <table>
+      <tr><th>Quantity</th><th>Expected</th><th>If it fails</th></tr>
+      <tr><td>Market beta, equal-weighted US portfolio</td><td>0.7 to 1.3</td><td>Returns misscaled, or the panel is not what you think</td></tr>
+      <tr><td>R-squared on FF3</td><td>above 0.5</td><td>Portfolio not diversified, or returns are noise</td></tr>
+      <tr><td>Annualised alpha</td><td>within a few percent of zero</td><td>Systematic construction error, or a real sector effect worth naming</td></tr>
+      <tr><td>Utility beta below energy beta</td><td>yes</td><td>Symbols attached to the wrong firms. The aggregate can look fine while every individual beta is meaningless</td></tr>
+    </table>
+    <div class="box warn"><p><strong>The headline test runs on the US subset only, deliberately.</strong> Ken French's factors are dollar returns and your panel holds USD, EUR, GBp, NOK, CHF, SEK, DKK and ILA. A euro return regressed on a dollar factor measures the asset plus the exchange rate, and an exchange rate is not a climate hazard. The non-US firms run separately and the gap between the two lines is itself a measurement of how much conversion matters.</p></div>
+    <p>Standard errors are Newey-West at five lags, because daily portfolio returns are heteroskedastic and mildly autocorrelated and plain OLS would overstate precision. Verified against synthetic data with a planted beta of 0.85: the cell recovered 0.855.</p>
   </div>
 </div>
 

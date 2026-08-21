@@ -970,7 +970,7 @@ PANELB_END = len(cells)
 # Held back and appended last: this is the closing scope statement, so it has to come
 # after every section, including ones added later.
 absent_cell = md(r"""
-## 6. What is deliberately absent
+## 7. What is deliberately absent
 
 No returns, no regressions, no portfolio construction, no merge of the two panels, and
 no survivorship correction. Those belong downstream of this file. This section is the
@@ -2390,6 +2390,211 @@ more subscription time here.** FMP is the wrong tool for this measurement and no
 of care with it will fix that.
 """))
 
+
+cells.append(md(r"""
+---
+
+## 6. Blocking test 2: does this pipeline reproduce something already known?
+
+**Needs no subscription and no CRSP.** Panel A is a free public download and Panel B is
+already on disk. This is the test to run while you wait for WRDS.
+
+### Why it blocks
+
+Everything so far establishes that data arrived. Nothing establishes that returns
+computed from it are *correct*. A panel can pass all sixteen integrity checks and still
+produce nonsense returns: a split adjustment applied twice, a currency mixed into a
+dollar factor, a price series that is actually a preferred share. None of that shows up
+as a missing value.
+
+So before estimating anything unknown, reproduce something known. Take the price panel,
+compute returns through the same code path the real result will use, and regress a
+diversified portfolio on the Fama-French factors. **The market beta of a broad
+equity portfolio is one.** That is not a hypothesis, it is a definition, so if it comes
+back at 0.4 or 2.1 the return construction is broken and every later coefficient is
+worthless. Finding that here costs an afternoon; finding it after the hazard sort costs
+a chapter.
+
+### What is checked, and against what
+
+| Quantity | Expected | If it fails |
+|---|---|---|
+| Market beta, equal-weighted US portfolio | near 1, say 0.7 to 1.3 | Returns are misscaled, or the panel is not what you think |
+| R-squared on FF3 | above 0.5 for a diversified portfolio | The portfolio is not diversified, or returns are noise |
+| Annualised alpha | small, within a few percent of zero | A systematic construction error, or a real sector effect worth naming |
+| Sector beta pattern | utilities below 1, energy above | If reversed, symbols are mismatched to firms |
+
+### The currency trap, restated because this is where it bites
+
+The Ken French factors are **dollar** returns. Your panel holds prices in USD, EUR, GBp,
+NOK, CHF, SEK, DKK and ILA. A euro-denominated return regressed on a dollar factor
+measures the asset plus the exchange rate, and the exchange rate is not a climate hazard.
+So the headline test below runs on the **US subset only**, where the currency question
+does not arise. The non-US firms are then run separately, and the gap between the two is
+itself the measurement of how much conversion matters.
+"""))
+
+cells.append(code(r'''
+# Daily simple returns, per symbol, through the same path the real result will use.
+px = prices.sort_values(["symbol", "date"]).copy()
+px["ret"] = px.groupby("symbol")["price"].pct_change()
+
+# A 50% one-day move in a large listed firm is almost always a split or a data error
+# rather than news. Flag rather than drop: silently winsorising is how a broken
+# adjustment becomes invisible.
+extreme = px[px.ret.abs() > 0.5].dropna(subset=["ret"])
+print(f"{len(extreme)} daily moves above 50% across {extreme.symbol.nunique()} symbols")
+if len(extreme):
+    display(extreme.groupby("symbol")
+                   .agg(n=("ret", "size"), worst=("ret", lambda s: s.abs().max()))
+                   .sort_values("n", ascending=False).head(10))
+    print("Check these before trusting anything below. A cluster in one symbol is a")
+    print("split adjustment problem; scattered singletons are usually real.")
+
+tp = pd.read_csv(REPO / "config" / "tickers_primary.csv")
+tp = tp[tp.priceable]
+cur = dict(zip(tp.primary_symbol, tp.currency))
+hq  = dict(zip(tp.primary_symbol, tp.hq))
+px["currency"] = px.symbol.map(cur)
+px["hq"] = px.symbol.map(hq)
+
+us = px[(px.hq == "United States") & (px.currency == "USD")]
+print(f"\nUS subset: {us.symbol.nunique()} symbols, {len(us):,} rows")
+print(f"non-US    : {px[px.hq != 'United States'].symbol.nunique()} symbols")
+'''))
+
+cells.append(code(r'''
+def newey_west_ols(y, X, lags=5):
+    """OLS with Newey-West standard errors.
+
+    Daily portfolio returns are heteroskedastic and mildly autocorrelated, so plain OLS
+    standard errors overstate precision. Five lags is the usual choice for daily data
+    and is not tuned to the result.
+    """
+    X = np.column_stack([np.ones(len(X)), X])
+    b, *_ = np.linalg.lstsq(X, y, rcond=None)
+    e = y - X @ b
+    XtX_inv = np.linalg.inv(X.T @ X)
+    S = (X * e[:, None]).T @ (X * e[:, None])
+    for L in range(1, lags + 1):
+        w = 1 - L / (lags + 1)
+        G = (X[L:] * e[L:, None]).T @ (X[:-L] * e[:-L, None])
+        S += w * (G + G.T)
+    V = XtX_inv @ S @ XtX_inv
+    se = np.sqrt(np.diag(V))
+    return b, se, b / se
+
+
+def run_ff3(daily_rets, label):
+    """Equal-weighted portfolio of `daily_rets` regressed on the FF3 factors."""
+    port = daily_rets.groupby("date")["ret"].mean().rename("port").to_frame()
+    port["n_firms"] = daily_rets.groupby("date")["ret"].size()
+
+    f = ff3.set_index("date")[["Mkt-RF", "SMB", "HML", "RF"]] / 100.0   # percent -> decimal
+    d = port.join(f, how="inner").dropna()
+    if len(d) < 250:
+        print(f"{label}: only {len(d)} overlapping days, skipping")
+        return None
+
+    y = (d["port"] - d["RF"]).values
+    X = d[["Mkt-RF", "SMB", "HML"]].values
+    b, se, t = newey_west_ols(y, X)
+
+    fitted = np.column_stack([np.ones(len(X)), X]) @ b
+    r2 = 1 - ((y - fitted) ** 2).sum() / ((y - y.mean()) ** 2).sum()
+
+    print(f"\n{label}")
+    print(f"  days {len(d):,}   firms per day: median {d.n_firms.median():.0f}")
+    print(f"  alpha   {b[0] * 25150:+7.2f}% a year   t = {t[0]:+5.2f}")
+    for k, nm in enumerate(["Mkt-RF", "SMB", "HML"], start=1):
+        print(f"  {nm:7s} {b[k]:+7.3f}              t = {t[k]:+5.2f}")
+    print(f"  R2      {r2:7.3f}")
+    return {"label": label, "alpha_ann": b[0] * 25150, "beta_mkt": b[1],
+            "smb": b[2], "hml": b[3], "r2": r2, "days": len(d),
+            "t_alpha": t[0], "t_mkt": t[1]}
+
+
+res = []
+r = run_ff3(us, "US equal-weighted, FF3 US factors")
+if r: res.append(r)
+
+nonus = px[(px.hq != "United States") & px.hq.notna()]
+r = run_ff3(nonus, "Non-US equal-weighted, FF3 US factors (currency NOT converted)")
+if r: res.append(r)
+'''))
+
+cells.append(code(r'''
+# The verdict, against thresholds fixed before the numbers were seen.
+if res:
+    main = res[0]
+    print("BLOCKING TEST 2 VERDICT\n")
+    checks2 = [
+        ("market beta near 1", 0.7 <= main["beta_mkt"] <= 1.3, f"{main['beta_mkt']:.3f}"),
+        ("R2 above 0.5",       main["r2"] > 0.5,               f"{main['r2']:.3f}"),
+        ("alpha under 10%/yr in absolute value",
+                               abs(main["alpha_ann"]) < 10,    f"{main['alpha_ann']:+.2f}%"),
+        ("at least 2000 days", main["days"] >= 2000,           f"{main['days']:,}"),
+    ]
+    v = pd.DataFrame([{"check": c, "pass": p, "value": d} for c, p, d in checks2])
+    display(v)
+    nfail = int((~v["pass"]).sum())
+    if nfail:
+        print(f"\n{nfail} FAILED. Do not proceed to the hazard sort. A pipeline that")
+        print("cannot reproduce a market beta of one cannot be trusted with a new number.")
+    else:
+        print("\nPassed. Returns computed through this path behave like equity returns,")
+        print("which is the minimum standard, not evidence the research design is sound.")
+
+    if len(res) > 1:
+        gap = res[1]["beta_mkt"] - res[0]["beta_mkt"]
+        print(f"\nUS market beta {res[0]['beta_mkt']:.3f} vs non-US {res[1]['beta_mkt']:.3f}"
+              f"  (difference {gap:+.3f})")
+        print("Part of that difference is genuine, since European equities do not move")
+        print("one for one with the US market. Part is unconverted currency. Those two")
+        print("cannot be separated without converting, which is why the headline test")
+        print("runs on the US subset and the non-US line is diagnostic only.")
+
+    pd.DataFrame(res).to_csv(RAW / "blocking_test_2_ff3.csv", index=False)
+    print(f"\nwrote {RAW / 'blocking_test_2_ff3.csv'}")
+'''))
+
+cells.append(code(r'''
+# Sector pattern. Utilities should sit below a market beta of one and energy above it.
+# This catches a whole class of error the portfolio test cannot: if symbols are attached
+# to the wrong firms, the aggregate still looks fine while every individual beta is
+# meaningless.
+KNOWN = {"DUK": ("Duke Energy", "utility, expect beta well below 1"),
+         "SO":  ("Southern Co", "utility, expect beta well below 1"),
+         "NEE": ("NextEra", "utility, expect beta below 1"),
+         "XOM": ("Exxon Mobil", "energy, expect beta near or above 1"),
+         "CVX": ("Chevron", "energy, expect beta near or above 1"),
+         "AEP": ("American Electric Power", "utility, expect beta well below 1")}
+
+f = ff3.set_index("date")[["Mkt-RF", "RF"]] / 100.0
+rows = []
+for sym, (nm, expect) in KNOWN.items():
+    s = px[px.symbol == sym][["date", "ret"]].dropna().set_index("date")
+    d = s.join(f, how="inner").dropna()
+    if len(d) < 250:
+        continue
+    y = (d["ret"] - d["RF"]).values
+    X = d[["Mkt-RF"]].values
+    b, se, t = newey_west_ols(y, X)
+    rows.append({"symbol": sym, "firm": nm, "beta": b[1], "t": t[1],
+                 "days": len(d), "expectation": expect})
+
+if rows:
+    display(pd.DataFrame(rows))
+    ut = [r["beta"] for r in rows if "utility" in r["expectation"]]
+    en = [r["beta"] for r in rows if "energy" in r["expectation"]]
+    if ut and en:
+        print(f"\nmean utility beta {np.mean(ut):.2f}, mean energy beta {np.mean(en):.2f}")
+        if np.mean(ut) < np.mean(en):
+            print("Ordering is as expected. Symbols are attached to the right firms.")
+        else:
+            print("ORDERING IS WRONG. Utilities should be less market-sensitive than")
+            print("energy. Check the crosswalk before going further.")
+'''))
 
 # ---------------------------------------------------------------- run order
 # Written order is not run order. Ticker resolution was added after Panel B but must run
