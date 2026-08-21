@@ -262,9 +262,16 @@ print("\nsummary (values are PERCENT, not decimals):")
 display(ff3.describe().T[["count", "mean", "std", "min", "max"]])
 '''))
 
+# Cells are appended in the order they were written, then reordered at the bottom of
+# this file into the order they should be RUN. Ticker resolution was added last but has
+# to come before Panel B, because it produces the symbol list Panel B buys prices for.
+# These two markers are what make that reordering possible without moving large blocks
+# of text around in this file.
+PANELB_START = len(cells)
+
 # ------------------------------------------------------------------ Panel B
 cells.append(md(r"""
-## 2. Panel B: daily prices from FMP
+## 3. Panel B: daily prices from FMP
 
 The draft ticker list is read from `config/tickers_draft_v0.csv` rather than being
 hardcoded here, so revising it is a one-line CSV edit and shows up cleanly in a diff.
@@ -286,18 +293,44 @@ the raw layer is how errors get buried:
 """))
 
 cells.append(code(r'''
-tick = pd.read_csv(REPO / "config" / "tickers_draft_v0.csv")
-TICKERS    = tick.ticker.tolist()
-BENCHMARKS = ["^GSPC", "SPY"]
+# Prefer the resolved list from section 2. Fall back to the 20-name hand-written draft
+# only if section 2 has not been run yet, and say clearly which one is in use, because
+# the two mean very different things: one is a research universe, the other is a
+# plumbing test made of firms that happen to still trade in 2026.
+V1    = REPO / "config" / "tickers_v1.csv"
+DRAFT = REPO / "config" / "tickers_draft_v0.csv"
 
-print(f"{len(TICKERS)} draft tickers  ({(tick.leg=='US').sum()} US, {(tick.leg=='EU').sum()} EU)")
+if V1.exists():
+    tick    = pd.read_csv(V1)
+    tick    = tick[tick.listed & tick.ticker.notna()]
+    TICKERS = sorted(tick.ticker.unique().tolist())
+    SOURCE  = "tickers_v1.csv (resolved from GEM entities via GLEIF and OpenFIGI)"
+    print(f"{len(TICKERS)} resolved tickers from {tick.entity_id.nunique()} firms")
+    print(tick.groupby("hq").entity_id.nunique().sort_values(ascending=False).to_string())
+else:
+    tick    = pd.read_csv(DRAFT)
+    TICKERS = tick.ticker.tolist()
+    SOURCE  = "tickers_draft_v0.csv (HAND-WRITTEN DRAFT, survivorship biased)"
+    print(f"{len(TICKERS)} draft tickers  "
+          f"({(tick.leg=='US').sum()} US, {(tick.leg=='EU').sum()} EU)")
+    print("\nWARNING: section 2 has not been run, so this is the convenience sample.")
+    print("Fine for testing the data path. Not a research universe.")
+
+BENCHMARKS = ["^GSPC", "SPY"]
+print(f"\nsource : {SOURCE}")
 print(f"benchmarks: {BENCHMARKS}")
-display(tick[["name", "hq", "n_assets", "ticker", "leg"]])
+
+# The two files have different schemas: the draft carries a hand-assigned `leg` column,
+# the resolved one carries `exchange`. Pick whichever columns are actually present
+# rather than assuming, which is how this cell crashed the first time it saw v1.
+SHOW = [c for c in ["name", "hq", "n_assets", "ticker", "exchange", "leg"]
+        if c in tick.columns]
+display(tick[SHOW].head(40))
 '''))
 
 # --------------------------------------------------------------- preflight
 cells.append(md(r"""
-### 2a. Preflight: what can this API key actually see?
+### 3a. Preflight: what can this API key actually see?
 
 Run this before the main loop. It makes six cheap calls and reports what your key is
 allowed to do, which is faster and more reliable than reading a pricing page, and it
@@ -441,7 +474,7 @@ else:
 
 # ------------------------------------------------------- boundary finder (2b)
 cells.append(md(r"""
-### 2b. Where exactly is the paywall?
+### 3b. Where exactly is the paywall?
 
 Only run this if section 2a returned any `HTTP 402`. A 402 is *Payment Required*, which means
 the key is valid and the path is live, and something about the specific request is above your
@@ -540,7 +573,7 @@ if got("DUK  dividends") and got("DUK  light"):
 
 # ------------------------------------------------------ symbol coverage (2c)
 cells.append(md(r"""
-### 2c. What is the covered symbol list, exactly?
+### 3c. What is the covered symbol list, exactly?
 
 2b said the wall is symbol coverage: `AAPL`, `CVX`, `XOM` and `SPY` return full history while
 `DUK`, `SO`, `NEE`, `BRK-B` and every European name return 402. Size does not explain it, since
@@ -726,7 +759,7 @@ display(
 
 # ------------------------------------------------------------------ integrity
 cells.append(md(r"""
-## 3. Integrity checks and manifest
+## 4. Integrity checks and manifest
 
 These assertions are here so that a broken download fails loudly at acquisition time
 rather than showing up as a puzzling coefficient three weeks later. They check the
@@ -822,31 +855,45 @@ manifest = {
 print(json.dumps(manifest, indent=2)[:1500])
 '''))
 
+PANELB_END = len(cells)
+
 # Held back and appended last: this is the closing scope statement, so it has to come
 # after every section, including ones added later.
 absent_cell = md(r"""
 ## 5. What is deliberately absent
 
 No returns, no regressions, no portfolio construction, no merge of the two panels, and
-no survivorship correction. Those belong downstream of this file.
+no survivorship correction. Those belong downstream of this file. This section is the
+only place inside the notebook itself that says so, which is why it is worth keeping
+even though the same limits are tracked in more detail elsewhere: a stranger who opens
+this file on GitHub sees the scope statement without having to find anything else.
 
-Before anything return-based is estimated on this data, two upstream items have to
-close, both carried over from the 19 August handover:
+Before anything return-based is estimated on this data, three things have to close.
 
-1. **`01_survivorship_test_fmp.py` has not returned a number.** Until there is a measured
-   delisting hit rate for FMP, the size of the survivorship problem is unknown rather
-   than small. The README states the intended handling; that is not the same as having
-   measured it.
-2. **The ownership snapshot is undated.** The GEM Ownership Tracker is a single snapshot
-   with sector vintages spanning roughly sixteen months, so the exposure variable
-   currently carries look-ahead of unknown size.
+1. **The delisting hit rate is unmeasured, and now known to be blocked.**
+   `01_survivorship_test_fmp.py` has never returned a number. Section 3c established
+   why: the delisted companies *list* is open on a free key but delisted *price
+   history* is refused, and knowing which firms died without being able to price them
+   measures nothing. Until that rate is a number, the size of the survivorship problem
+   is unknown rather than small.
+2. **The ownership snapshot is undated.** The GEM Ownership Tracker is a single
+   snapshot with sector vintages spanning roughly sixteen months, so the exposure
+   variable carries look-ahead of unknown size. This is the worst of the three,
+   because it contaminates the independent variable rather than the dependent one.
+3. **The universe is not yet a universe.** Section 2 resolves entities to tickers, but
+   a resolved ticker is not a price series, and some of the 328 entities are owners
+   only in a financing sense. Both counts belong in the methods section, and they are
+   different numbers.
+
+For where each of these stands and what unblocks it, see `EXECUTION_CHECKLIST.html`
+in the repository root rather than duplicating the detail here.
 """)
 
 # ------------------------------------------------------- Section 4: ticker resolution
 cells.append(md(r"""
 ---
 
-## 4. Resolving the universe to tickers
+## 2. Resolving the universe to tickers
 
 **Run this once, before buying an FMP plan. It needs no FMP key and costs nothing.**
 
@@ -1094,7 +1141,15 @@ the ownership graph rather than a fact about its balance sheet. Decide explicitl
 whether financial holders belong in the cross-section, and say which way you went.
 """))
 
-cells.append(absent_cell)
+# ---------------------------------------------------------------- run order
+# Written order is not run order. Ticker resolution was added after Panel B but has to
+# come before it, because it produces the symbol list Panel B prices. Reassemble here
+# rather than shuffling hundreds of lines of text above.
+head    = cells[:PANELB_START]    # title, setup, Panel A
+panel_b = cells[PANELB_START:PANELB_END]
+tickers = cells[PANELB_END:]      # everything appended after the marker
+
+cells = head + tickers + panel_b + [absent_cell]
 
 nb = {
     "cells": cells,

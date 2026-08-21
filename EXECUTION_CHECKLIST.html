@@ -77,7 +77,7 @@ Status key: <span class="st s-conf">DONE</span> already completed · <span class
 </p>
 
 <div class="box stop">
-<p><strong>Where this stands on 20 August, after the 2a, 2b and 2c runs.</strong></p>
+<p><strong>Where this stands on 20 August, after the 3a, 3b and 3c runs.</strong></p>
 <p>The repository is pushed. Panel A, the Fama-French factors, is downloaded and verified: 4,024 daily rows, 2010 to 2025, at 251.5 trading days a year, with the March 2020 extremes landing on the right dates. That half is finished and fully reproducible by anyone.</p>
 <p><strong>Panel B is blocked, and not by a bug.</strong> Three rounds of probing established that the free FMP key serves a hand-picked demo list of about fifteen household-name tickers plus three indices. Five of your 328 firms fall inside it, holding 3.3 percent of the assets. Delisted price history is refused entirely, which blocks the survivorship test. There is no free path to a price panel, so steps D1d and D1e are a decision rather than a debugging exercise.</p>
 </div>
@@ -327,7 +327,7 @@ branch 'main' set up to track 'origin/main'.</pre><button class="copy">copy</but
 <div class="step">
   <div class="row"><input type="checkbox"><div class="title">D1b. If you saw any 402, run the boundary finder <span class="st s-you">YOU</span></div></div>
   <div class="body">
-    <p>Section 2b of the notebook. Skip it if D1a came back clean.</p>
+    <p>Section 3b of the notebook. Skip it if D1a came back clean.</p>
     <div class="box key"><p><strong>Why this exists.</strong> In your 20 August run, <code>^GSPC</code> returned 42 bars from the <em>same endpoint</em> that refused <code>DUK</code>. So the wall is not the endpoint, and it is not the key. Eight calls hold two things fixed and vary the third, which is the only way to find out whether the limit is the price variant, the symbol, or how far back you can reach.</p></div>
     <p>It prints a one-line diagnosis under the table. The four possible answers, and what each costs you:</p>
     <table>
@@ -346,7 +346,7 @@ branch 'main' set up to track 'origin/main'.</pre><button class="copy">copy</but
 <div class="step">
   <div class="row"><input type="checkbox"><div class="title">D1c. Find out what the covered set actually is <span class="st s-you">YOU</span></div></div>
   <div class="body">
-    <p>Section 2c of the notebook. This is new, so you need the latest code before you can run it.</p>
+    <p>Section 3c of the notebook. This is new, so you need the latest code before you can run it.</p>
     <p><strong>First, push and reload.</strong> In Terminal, in the repo folder:</p>
     <pre><code>git push</code></pre>
     <p>Then in Colab use <strong>File, Open notebook, GitHub</strong> and open <code>notebooks/01_raw_panels.ipynb</code> again from scratch. Do not just refresh the browser tab: Colab holds the old copy in memory and a refresh will hand it back to you unchanged. Rerun sections 1 and 2 to restore <code>API_KEY</code>, then go to 2c.</p>
@@ -394,9 +394,9 @@ branch 'main' set up to track 'origin/main'.</pre><button class="copy">copy</but
     <div class="box warn">
       <p><strong>Why this must come before the payment, not after.</strong> The tier choice below is between $49 for US, UK and Canada and $99 for global. That comparison assumes 143 continental European <em>listed</em> firms are waiting on the other side of the global tier. If most of those 143 are state and municipal utilities, which is exactly what you would expect in a European energy ownership file, then the $99 tier buys far less than the firm count suggests and Premium may be the right call after all. You cannot answer that from the pricing page. You can only answer it from your own data.</p>
     </div>
-    <p><strong>This is now built. Run section 4 of the notebook.</strong> It needs no FMP key. I already did the first half: joining your LEIs against the GLEIF ISIN file gives 296 of 328 firms with at least one ISIN, including 137 of the 143 continental European ones. Both files are committed as <code>config/universe.csv</code> and <code>config/universe_isins.csv</code>.</p>
+    <p><strong>This is now built. Run section 2 of the notebook.</strong> It needs no FMP key. I already did the first half: joining your LEIs against the GLEIF ISIN file gives 296 of 328 firms with at least one ISIN, including 137 of the 143 continental European ones. Both files are committed as <code>config/universe.csv</code> and <code>config/universe_isins.csv</code>.</p>
     <div class="box warn">
-      <p><strong>296 is an upper bound, not the answer.</strong> ISINs are issued for bonds as readily as for shares, and heavily indebted utilities are precisely the entities that carry many ISINs and no listed equity. The file holds 98,104 pairs and the biggest holder is Deutsche Bank with 21,793, almost all structured notes. Section 4 sends them to OpenFIGI, which returns a security type per instrument and so separates common stock from debt.</p>
+      <p><strong>296 is an upper bound, not the answer.</strong> ISINs are issued for bonds as readily as for shares, and heavily indebted utilities are precisely the entities that carry many ISINs and no listed equity. The file holds 98,104 pairs and the biggest holder is Deutsche Bank with 21,793, almost all structured notes. Section 2 sends them to OpenFIGI, which returns a security type per instrument and so separates common stock from debt.</p>
     </div>
     <p><strong>Get a free OpenFIGI API key first</strong>, at <code>openfigi.com/api</code>, and add it to Colab Secrets as <code>OPENFIGI_API_KEY</code>. It is free and takes about a minute. The cell runs either way, but the rate limits differ enormously:</p>
     <table>
@@ -410,7 +410,7 @@ branch 'main' set up to track 'origin/main'.</pre><button class="copy">copy</but
 ULTIMATE $99: ___ listed firms, ___ assets</pre><button class="copy">copy</button></div>
     <p>That comparison, not the pricing page, decides the tier. It is also the sample size line in your methods section, so it has to exist regardless of which plan you buy.</p>
     <div class="box key">
-      <p><strong>One thing section 4 will surface that is not about pricing.</strong> Deutsche Bank, JPMorgan, Goldman Sachs, Santander and Crédit Agricole are all in your 328. That is almost certainly lookthrough of financing stakes rather than operational ownership, and a bank's hazard exposure computed that way is an artefact of the ownership graph rather than a fact about its balance sheet. Decide explicitly whether financial holders belong in the cross-section, and record which way you went. Easier to settle now than after a coefficient depends on it.</p>
+      <p><strong>One thing section 2 will surface that is not about pricing.</strong> Deutsche Bank, JPMorgan, Goldman Sachs, Santander and Crédit Agricole are all in your 328. That is almost certainly lookthrough of financing stakes rather than operational ownership, and a bank's hazard exposure computed that way is an artefact of the ownership graph rather than a fact about its balance sheet. Decide explicitly whether financial holders belong in the cross-section, and record which way you went. Easier to settle now than after a coefficient depends on it.</p>
     </div>
   </div>
 </div>
@@ -505,13 +505,13 @@ git commit -m "Record first successful data pull" &amp;&amp; git push</pre><butt
 <div class="step">
   <div class="row"><input type="checkbox"><div class="title">F1. Run the day-one acceptance test before anything else <span class="st s-you">YOU</span></div></div>
   <div class="body">
-    <p>Paste the new key into Colab Secrets, then rerun 2a, 2b and 2c in that order. Roughly ten minutes. Four things have to come back true, and the last is not itemised anywhere on the pricing page:</p>
+    <p>Paste the new key into Colab Secrets, then rerun 3a, 3b and 3c in that order. Roughly ten minutes. Four things have to come back true, and the last is not itemised anywhere on the pricing page:</p>
     <table>
       <tr><th>Check</th><th>Where</th><th>What failure means</th></tr>
-      <tr><td>DUK and the European names return data</td><td>2a preflight</td><td>Coverage is not what was sold. Ask for a refund the same day.</td></tr>
-      <tr><td>History reaches January 2010</td><td>2b, history depth test</td><td>The tier's range is shorter than advertised. Do not shorten <code>START</code> to hide it.</td></tr>
-      <tr><td><code>dividend-adjusted</code> works for every equity</td><td>2c and D2</td><td>A mixed panel. See the note below on why the check fires.</td></tr>
-      <tr><td>Delisted symbols return price history</td><td>2c, final probe</td><td>Blocking test 1 still cannot run. Better to know on day one than in month three.</td></tr>
+      <tr><td>DUK and the European names return data</td><td>3a preflight</td><td>Coverage is not what was sold. Ask for a refund the same day.</td></tr>
+      <tr><td>History reaches January 2010</td><td>3b, history depth test</td><td>The tier's range is shorter than advertised. Do not shorten <code>START</code> to hide it.</td></tr>
+      <tr><td><code>dividend-adjusted</code> works for every equity</td><td>3c and D2</td><td>A mixed panel. See the note below on why the check fires.</td></tr>
+      <tr><td>Delisted symbols return price history</td><td>3c, final probe</td><td>Blocking test 1 still cannot run. Better to know on day one than in month three.</td></tr>
     </table>
     <div class="box"><p><strong>Expect one failure that is not a failure.</strong> Section 3 checks that the whole panel uses one return convention, and your free-tier run already trips it: <code>^GSPC</code> fell back to split-adjusted while CVX, XOM and SPY got dividend-adjusted. That is correct behaviour. An index has no dividends to reinvest, so <code>^GSPC</code> has no dividend-adjusted series anywhere, at any price. The fix is to treat the index as a benchmark series rather than a panel member, or to use SPY, which does have a total return series, and say which you did.</p></div>
   </div>
