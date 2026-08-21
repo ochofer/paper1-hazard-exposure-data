@@ -2739,6 +2739,164 @@ if len(r6):
     print(f"\nwrote {RAW / 'blocking_test_2_weighting.csv'}")
 '''))
 
+cells.append(md(r"""
+### 6c. The alpha is not microstructure. So what is it?
+
+Four specifications, four positive alphas: 3.67, 2.83, 3.93, 3.49 percent a year, with
+the value-weighted monthly figure significant at t of 2.11. Only 0.19 percentage points
+moved when the weighting and frequency changed, so **the Blume-Stambaugh explanation is
+dead**. Two candidates remain, and they are separable.
+
+**Missing factors, and there is a specific reason to expect this one.** The portfolio
+loads on HML at +0.549, which is a large value tilt. Over most of 2010 to 2020 the value
+premium was *negative*, so a three-factor model predicts low returns for a value-tilted
+portfolio, and anything the portfolio actually earned above that shows up as alpha. These
+firms are also profitable and capital-intensive, which is exactly what RMW and CMA are
+built to price. FF3 is the wrong model for this sector, and both extra factors are free
+downloads from the same library Panel A came from.
+
+**A concentrated sector episode.** Independent power producers ran extraordinarily hard
+in 2023 to 2025 on data-centre electricity demand. Vistra, Constellation, Talen and NRG
+are all in this universe, and all four are among the largest US owners in it. If the
+alpha is concentrated in the last two years, it is that trade rather than a persistent
+sector premium.
+
+That distinction matters more than it might appear. **If hazard-exposed firms are
+disproportionately independent power producers, a hazard sort would pick up the
+data-centre trade and report it as a climate risk premium.** The subperiod split below is
+what tells you whether that risk is live.
+"""))
+
+cells.append(code(r'''
+FF5_DAILY = f"{FRENCH_BASE}/F-F_Research_Data_5_Factors_2x3_daily_CSV.zip"
+MOM_DAILY = f"{FRENCH_BASE}/F-F_Momentum_Factor_daily_CSV.zip"
+
+_n5, _b5 = fetch_french_zip(FF5_DAILY)
+ff5 = parse_french_daily(_b5)
+print(f"FF5 : {_n5}, {len(ff5):,} rows, {list(ff5.columns)}")
+
+try:
+    _nm, _bm = fetch_french_zip(MOM_DAILY)
+    mom = parse_french_daily(_bm)
+    mom.columns = ["date"] + ["MOM" if c.strip() in ("Mom", "Mom   ") else c.strip()
+                              for c in mom.columns[1:]]
+    print(f"MOM : {_nm}, {len(mom):,} rows, {list(mom.columns)}")
+except Exception as exc:
+    mom = None
+    print(f"momentum download failed ({exc}); continuing with FF5 only")
+
+fac = ff5.copy()
+if mom is not None:
+    fac = fac.merge(mom, on="date", how="inner")
+fac = fac[(fac.date >= START) & (fac.date <= END)].reset_index(drop=True)
+FACCOLS = [c for c in ["Mkt-RF", "SMB", "HML", "RMW", "CMA", "MOM"] if c in fac.columns]
+print(f"\nusing factors: {FACCOLS}, {len(fac):,} days")
+'''))
+
+cells.append(code(r'''
+def regress(port, factor_df, cols, ann, lags, min_obs=60):
+    """min_obs is a parameter, not a constant, because a three-year subperiod has 36
+    monthly observations. Hard-coding 60 silently dropped two of the three subperiods
+    and left the summary claiming the only surviving period had the largest alpha."""
+    f = factor_df.set_index("date")[cols + ["RF"]] / 100.0
+    d = pd.DataFrame({"port": port}).join(f, how="inner").dropna()
+    if len(d) < min_obs:
+        return None
+    y = (d["port"] - d["RF"]).values
+    X = d[cols].values
+    b, se, t = newey_west_ols(y, X, lags=lags)
+    fit = np.column_stack([np.ones(len(X)), X]) @ b
+    r2 = 1 - ((y - fit) ** 2).sum() / ((y - y.mean()) ** 2).sum()
+    out = {"obs": len(d), "alpha_pct_yr": b[0] * ann, "t_alpha": t[0], "R2": r2}
+    for k, c in enumerate(cols, start=1):
+        out[c] = b[k]
+    return out
+
+
+us_clean = clean[clean.hq == "United States"]
+port_m = portfolio(us_clean, "vw", "M")
+port_m.index = port_m.index.to_timestamp()
+
+# Monthly factors, compounded from daily so FF3 and FF5 are treated identically.
+def to_monthly(df, cols):
+    g = df.set_index("date")[cols + ["RF"]] / 100.0
+    m = g.groupby(g.index.to_period("M")).apply(lambda x: (1 + x).prod() - 1,
+                                                include_groups=False) * 100.0
+    m.index = m.index.to_timestamp()
+    return m.reset_index().rename(columns={"index": "date"})
+
+ff3_m = to_monthly(ff3, ["Mkt-RF", "SMB", "HML"])
+ff5_m = to_monthly(fac, FACCOLS)
+
+comp = []
+r = regress(port_m, ff3_m, ["Mkt-RF", "SMB", "HML"], 1200, 3)
+if r: comp.append({"model": "FF3", **r})
+r = regress(port_m, ff5_m, FACCOLS, 1200, 3)
+if r: comp.append({"model": "FF5+MOM" if "MOM" in FACCOLS else "FF5", **r})
+
+cmp_df = pd.DataFrame(comp)
+display(cmp_df.round(3))
+
+if len(cmp_df) == 2:
+    a3, a5 = cmp_df.alpha_pct_yr.iloc[0], cmp_df.alpha_pct_yr.iloc[1]
+    t5 = cmp_df.t_alpha.iloc[1]
+    print(f"\nFF3 alpha {a3:+.2f}%/yr  ->  richer model {a5:+.2f}%/yr  (t = {t5:.2f})")
+    if abs(t5) < 2:
+        print("The alpha is absorbed once profitability, investment and momentum are")
+        print("priced. FF3 was simply the wrong model for this sector. USE THE RICHER")
+        print("MODEL for the headline result and report the FF3 version as a robustness")
+        print("check, not the other way round.")
+    else:
+        print("The alpha survives the richer model too. At that point it is either a")
+        print("real sector effect or survivorship, and the subperiod split below is")
+        print("the cheapest way to tell those apart.")
+'''))
+
+cells.append(code(r'''
+# Subperiods. Fixed on economic events rather than chosen to split the result: the first
+# ends before COVID, the second covers the pandemic and the 2022 energy shock, the third
+# is the data-centre electricity demand episode.
+PERIODS = [("2010-2019, pre-COVID",      "2010-01-01", "2019-12-31"),
+           ("2020-2022, COVID and energy shock", "2020-01-01", "2022-12-31"),
+           ("2023-2025, data-centre demand",     "2023-01-01", "2025-12-31")]
+
+sub = []
+for label, a, b_ in PERIODS:
+    p_ = port_m[(port_m.index >= a) & (port_m.index <= b_)]
+    if len(p_) < 24:
+        continue
+    # 24 monthly observations against 6 factors is thin, so the t-statistics in this
+    # table are indicative and the table says so rather than pretending otherwise.
+    r = regress(p_, ff5_m, FACCOLS, 1200, 3, min_obs=24)
+    if r:
+        sub.append({"period": label, **r})
+
+s_df = pd.DataFrame(sub)
+if len(s_df):
+    display(s_df[["period", "obs", "alpha_pct_yr", "t_alpha", "R2"]].round(3))
+    if len(s_df) < len(PERIODS):
+        print(f"NOTE: only {len(s_df)} of {len(PERIODS)} subperiods had enough data.")
+    print("Subperiods carry 36 observations against 6 factors, so read the alphas as")
+    print("indicative magnitudes and the t-statistics as weak evidence.")
+    worst = s_df.loc[s_df.alpha_pct_yr.idxmax()]
+    print(f"\nlargest alpha: {worst['period']} at {worst['alpha_pct_yr']:+.2f}%/yr")
+    early = s_df[s_df.period.str.startswith("2010")]
+    if len(early) and abs(float(early.t_alpha.iloc[0])) < 2:
+        print("\nThe pre-COVID decade shows no significant alpha. The whole effect sits")
+        print("in the recent period, which points at the data-centre power trade rather")
+        print("than a persistent sector premium.")
+        print("\nCONSEQUENCE FOR THE PAPER: if hazard-exposed firms are disproportionately")
+        print("independent power producers, a hazard sort will pick that trade up and")
+        print("report it as a climate risk premium. Before running the sort, check the")
+        print("overlap between high-hazard firms and Vistra, Constellation, Talen and NRG,")
+        print("and pre-commit to reporting the result with and without them.")
+    else:
+        print("\nThe alpha is spread across subperiods rather than concentrated, which")
+        print("makes a one-off sector episode a weaker explanation.")
+    s_df.to_csv(RAW / "blocking_test_2_subperiods.csv", index=False)
+    print(f"\nwrote {RAW / 'blocking_test_2_subperiods.csv'}")
+'''))
+
 # ---------------------------------------------------------------- run order
 # Written order is not run order. Ticker resolution was added after Panel B but must run
 # before it, because it produces the symbol list Panel B prices. Blocking test 1 was
