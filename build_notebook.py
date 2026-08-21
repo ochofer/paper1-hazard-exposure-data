@@ -840,6 +840,254 @@ close, both carried over from the 19 August handover:
    currently carries look-ahead of unknown size.
 """))
 
+# ------------------------------------------------------- Section 4: ticker resolution
+cells.append(md(r"""
+---
+
+## 4. Resolving the universe to tickers
+
+**Run this once, before buying an FMP plan. It needs no FMP key and costs nothing.**
+
+The problem it solves: `outputs/cross_section.csv` identifies 328 asset owners by name,
+LEI, PermID and CIK, and by no ticker at all. So there is no symbol list to buy prices
+for, and nothing has yet established that 328 *listed* entities are even in the file.
+For an asset ownership tracker they probably are not. State utilities, municipal
+generators, co-operatives, infrastructure funds and wholly owned subsidiaries all own
+power assets without having listed equity.
+
+That gap sits directly under the plan decision. Premium at $49 covers the US, UK and
+Canada, which is 185 of the 328 entities. Ultimate at $99 adds the 143 continental
+European ones. Whether that $50 is worth paying depends entirely on how many of the 143
+are listed, and no pricing page can answer that.
+
+### Why ISINs, and why they are not enough on their own
+
+`config/universe_isins.csv` maps each firm's LEI to its ISINs, taken from the GLEIF
+golden copy you already hold. 296 of the 328 firms have at least one, including 137 of
+the 143 continental European ones. That number is an upper bound rather than an answer,
+because **ISINs are issued for bonds as readily as for shares**, and heavily indebted
+utilities are exactly the entities that hold many ISINs and no listed equity. The file
+carries 98,104 pairs, and the largest holders are banks: Deutsche Bank alone accounts
+for 21,793, almost all structured notes.
+
+OpenFIGI resolves this. It maps an ISIN to an instrument record carrying `marketSector`
+and `securityType2`, so common stock can be separated from debt. It is free, and an API
+key is optional but strongly recommended: without one you get 25 requests a minute at 10
+ISINs each, with one you get 25 requests every 6 seconds at 100 each, which is the
+difference between minutes and most of a day. Get one at
+[openfigi.com/api](https://www.openfigi.com/api), then add it to Colab Secrets as
+`OPENFIGI_API_KEY`. If you skip it the cell still runs, just slowly.
+"""))
+
+cells.append(code(r'''
+# Optional. Everything below works without it, only slower.
+OPENFIGI_KEY = os.environ.get("OPENFIGI_API_KEY")
+if IN_COLAB and not OPENFIGI_KEY:
+    try:
+        from google.colab import userdata
+        OPENFIGI_KEY = userdata.get("OPENFIGI_API_KEY")
+        os.environ["OPENFIGI_API_KEY"] = OPENFIGI_KEY or ""
+    except Exception:
+        pass   # secret absent is a supported state, not an error
+
+BATCH = 100 if OPENFIGI_KEY else 10          # jobs per request, set by OpenFIGI
+PAUSE = 6.0 / 25 if OPENFIGI_KEY else 60.0 / 25   # seconds between requests
+
+universe = pd.read_csv(REPO / "config" / "universe.csv")
+pairs    = pd.read_csv(REPO / "config" / "universe_isins.csv")
+
+# Try each firm's home-country ISINs first. A primary listing is usually domestic, so
+# this resolves most firms in the first wave and keeps the 21,793-ISIN banks from
+# dominating the job.
+HQ_ISO = {
+    "United States": "US", "United Kingdom": "GB", "Germany": "DE", "France": "FR",
+    "Italy": "IT", "Spain": "ES", "Norway": "NO", "Switzerland": "CH", "Finland": "FI",
+    "Austria": "AT", "Belgium": "BE", "Portugal": "PT", "Sweden": "SE", "Greece": "GR",
+    "Netherlands": "NL", "Ireland": "IE", "Denmark": "DK",
+}
+lei_hq = dict(zip(universe.lei, universe.hq.map(HQ_ISO)))
+
+# NOTE: always pairs["isin"], never pairs.isin. The attribute form returns the DataFrame
+# .isin() method rather than the column, and the resulting error is confusing.
+pairs["home"] = [i[:2] == lei_hq.get(l) for l, i in zip(pairs["lei"], pairs["isin"])]
+pairs = pairs.sort_values(["lei", "home", "isin"], ascending=[True, False, True])
+
+# Materialise lei -> ordered ISIN list once. Filtering a 98k row frame inside the wave
+# loop would rescan it several hundred times per wave for no reason.
+BY_LEI = {lei: g["isin"].tolist() for lei, g in pairs.groupby("lei", sort=False)}
+
+print(f"{len(universe)} firms, {len(pairs):,} ISINs")
+print(f"OpenFIGI key: {'present' if OPENFIGI_KEY else 'ABSENT, will run slowly'}")
+print(f"batch size {BATCH}, {PAUSE:.2f}s between requests")
+'''))
+
+cells.append(md(r"""
+### The resolution loop
+
+It runs in waves. Wave 1 tries at most 20 ISINs per firm, wave 2 raises the cap to 100
+for whatever is still unresolved, and so on. **Only unresolved firms carry into the next
+wave**, which is what keeps this from becoming a 98,104-call job: most firms resolve on
+their domestic ISINs in the first wave, and only the handful of large bond issuers ever
+reach the later ones.
+
+Partial results are written to disk after every wave, so a dropped Colab runtime costs
+you the current wave rather than the whole run.
+"""))
+
+cells.append(code(r'''
+FIGI_URL = "https://api.openfigi.com/v3/mapping"
+CACHE    = RAW / "openfigi_cache.json"
+
+cache = json.loads(CACHE.read_text()) if CACHE.exists() else {}
+print(f"cache: {len(cache):,} ISINs already resolved")
+
+
+def figi_lookup(isins):
+    """Map ISINs to instrument records. Returns {isin: [records]}.
+
+    Unknown ISINs get an empty list, which is cached too: 'OpenFIGI has never heard of
+    this' is a real answer and re-asking it on every rerun wastes the rate limit.
+    """
+    todo = [i for i in isins if i not in cache]
+    for k in range(0, len(todo), BATCH):
+        chunk = todo[k:k + BATCH]
+        body  = [{"idType": "ID_ISIN", "idValue": i} for i in chunk]
+        head  = {"Content-Type": "application/json"}
+        if OPENFIGI_KEY:
+            head["X-OPENFIGI-APIKEY"] = OPENFIGI_KEY
+
+        for attempt in range(5):
+            r = requests.post(FIGI_URL, json=body, headers=head, timeout=60)
+            if r.status_code == 429:                 # rate limited, back off and retry
+                time.sleep(PAUSE * (2 ** attempt) + 1)
+                continue
+            r.raise_for_status()
+            for isin_code, res in zip(chunk, r.json()):
+                cache[isin_code] = res.get("data", []) if isinstance(res, dict) else []
+            break
+        else:
+            raise RuntimeError("OpenFIGI kept returning 429. Wait a minute and rerun.")
+        time.sleep(PAUSE)
+    return {i: cache.get(i, []) for i in isins}
+
+
+def equity_rows(records):
+    """Keep only listed common stock. This is the whole point of the exercise."""
+    return [d for d in records
+            if d.get("marketSector") == "Equity"
+            and d.get("securityType2") in ("Common Stock", "Depositary Receipt")
+            and d.get("ticker") and d.get("exchCode")]
+
+
+resolved   = {}                        # lei -> list of equity records
+unresolved = list(universe.lei.dropna().unique())
+
+# Caps deliberately stop at 500 rather than running to exhaustion. A listed company's
+# equity ISIN is issued in its home country, and the sort above puts domestic ISINs
+# first, so a firm with no equity in its first 500 domestic-first ISINs is a bond issuer
+# rather than a listing this search is missing. Removing the cap costs roughly 60,000
+# extra lookups to change almost nothing. Firms still unresolved at 500 are reported
+# separately below rather than being silently recorded as unlisted.
+CAPS = [20, 100, 500]
+
+for wave, cap in enumerate(CAPS, start=1):
+    if not unresolved:
+        break
+    seen, batch_isins = set(), []
+    for lei in unresolved:
+        for i in BY_LEI.get(lei, [])[:cap]:
+            if i not in seen and i not in cache:
+                seen.add(i)
+                batch_isins.append(i)
+
+    print(f"\nwave {wave}, cap {cap}: {len(unresolved)} firms unresolved, "
+          f"{len(batch_isins):,} new ISINs to look up")
+    if batch_isins:
+        figi_lookup(batch_isins)
+        CACHE.write_text(json.dumps(cache))
+
+    still = []
+    for lei in unresolved:
+        eqs = [d for i in BY_LEI.get(lei, [])[:cap] for d in equity_rows(cache.get(i, []))]
+        if eqs:
+            resolved[lei] = eqs
+        else:
+            still.append(lei)
+    print(f"  resolved so far: {len(resolved)}  still unresolved: {len(still)}")
+    unresolved = still
+
+no_isin  = [l for l in universe.lei.dropna().unique() if not BY_LEI.get(l)]
+hit_cap  = [l for l in unresolved if len(BY_LEI.get(l, [])) > CAPS[-1]]
+
+print(f"\ndone. {len(resolved)} of {len(universe)} firms have listed common stock")
+print(f"  no ISIN at all in GLEIF        : {len(no_isin)}")
+print(f"  ISINs, but none is equity      : {len(unresolved) - len(hit_cap)}")
+print(f"  unresolved at the {CAPS[-1]} cap      : {len(hit_cap)}  <- check these by hand")
+if hit_cap:
+    nm = universe.set_index("lei")["name"]
+    for l in hit_cap[:15]:
+        print(f"      {nm.get(l, '?')[:44]:46s} {len(BY_LEI.get(l, [])):>6,} ISINs")
+'''))
+
+cells.append(md(r"""
+### The table that decides the plan
+
+`listed` below counts firms with at least one common stock line anywhere in the world.
+Read the two summary lines under it: they are the Premium and Ultimate reach, measured
+rather than assumed.
+
+One caveat to carry into the methods section. A firm resolving to *some* listed equity
+is not the same as that equity being the right one to price. Subsidiaries with their own
+listings, dual-class structures and depositary receipts all need a deliberate choice of
+which line represents the firm. `config/tickers_v1.csv` keeps every candidate so that
+choice is visible and revisable rather than baked in.
+"""))
+
+cells.append(code(r'''
+rows = []
+for lei, recs in resolved.items():
+    for d in recs:
+        rows.append({"lei": lei, "ticker": d["ticker"], "exchange": d["exchCode"],
+                     "figi_name": d.get("name"), "type": d.get("securityType2")})
+cand = pd.DataFrame(rows)
+
+out = universe.merge(cand, on="lei", how="left")
+out["listed"] = out.ticker.notna()
+out.to_csv(REPO / "config" / "tickers_v1.csv", index=False)
+
+firm = out.groupby("entity_id").agg(hq=("hq", "first"), n_assets=("n_assets", "first"),
+                                    listed=("listed", "max"))
+tab = firm.groupby("hq").agg(firms=("listed", "size"), listed=("listed", "sum"),
+                             assets=("n_assets", "sum")).sort_values("firms", ascending=False)
+tab["listed_assets"] = firm[firm.listed].groupby("hq").n_assets.sum().reindex(tab.index).fillna(0).astype(int)
+display(tab)
+
+PREMIUM = ["United States", "United Kingdom", "Canada"]
+p = firm[firm.hq.isin(PREMIUM) & firm.listed]
+u = firm[firm.listed]
+print(f"\nPREMIUM  $49: {len(p):3d} listed firms, {int(p.n_assets.sum()):5,} assets")
+print(f"ULTIMATE $99: {len(u):3d} listed firms, {int(u.n_assets.sum()):5,} assets")
+print(f"the extra $50 buys {len(u) - len(p)} firms and {int(u.n_assets.sum() - p.n_assets.sum()):,} assets")
+print(f"\nwrote {REPO / 'config' / 'tickers_v1.csv'}")
+'''))
+
+cells.append(md(r"""
+### Before you read this as settled
+
+Two things this cell does not tell you, both worth a line in the methods section.
+
+**A ticker is not a price series.** OpenFIGI says the instrument exists; whether FMP
+covers it, and from what date, is a separate question that only the paid key answers.
+Expect attrition between this count and the delivered panel, and report both numbers.
+
+**Some of these entities are owners only in a financing sense.** Deutsche Bank,
+JPMorgan, Goldman Sachs, Santander and Crédit Agricole all appear in the 328. Their
+presence almost certainly reflects lookthrough of financing stakes rather than
+operational control, and a bank's hazard exposure computed that way is an artefact of
+the ownership graph rather than a fact about its balance sheet. Decide explicitly
+whether financial holders belong in the cross-section, and say which way you went.
+"""))
+
 nb = {
     "cells": cells,
     "metadata": {

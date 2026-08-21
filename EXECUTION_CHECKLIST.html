@@ -394,13 +394,24 @@ branch 'main' set up to track 'origin/main'.</pre><button class="copy">copy</but
     <div class="box warn">
       <p><strong>Why this must come before the payment, not after.</strong> The tier choice below is between $49 for US, UK and Canada and $99 for global. That comparison assumes 143 continental European <em>listed</em> firms are waiting on the other side of the global tier. If most of those 143 are state and municipal utilities, which is exactly what you would expect in a European energy ownership file, then the $99 tier buys far less than the firm count suggests and Premium may be the right call after all. You cannot answer that from the pricing page. You can only answer it from your own data.</p>
     </div>
-    <p>What to produce: extend <code>cross_section.csv</code> with a <code>ticker</code>, <code>exchange</code> and <code>listed</code> column, then count listed firms by country. Two routes, and they are complementary rather than alternatives:</p>
+    <p><strong>This is now built. Run section 4 of the notebook.</strong> It needs no FMP key. I already did the first half: joining your LEIs against the GLEIF ISIN file gives 296 of 328 firms with at least one ISIN, including 137 of the 143 continental European ones. Both files are committed as <code>config/universe.csv</code> and <code>config/universe_isins.csv</code>.</p>
+    <div class="box warn">
+      <p><strong>296 is an upper bound, not the answer.</strong> ISINs are issued for bonds as readily as for shares, and heavily indebted utilities are precisely the entities that carry many ISINs and no listed equity. The file holds 98,104 pairs and the biggest holder is Deutsche Bank with 21,793, almost all structured notes. Section 4 sends them to OpenFIGI, which returns a security type per instrument and so separates common stock from debt.</p>
+    </div>
+    <p><strong>Get a free OpenFIGI API key first</strong>, at <code>openfigi.com/api</code>, and add it to Colab Secrets as <code>OPENFIGI_API_KEY</code>. It is free and takes about a minute. The cell runs either way, but the rate limits differ enormously:</p>
     <table>
-      <tr><th>Route</th><th>Covers</th><th>Cost</th></tr>
-      <tr><td>LEI to ISIN mapping, which you already have in <code>Data/GLEIF Data/lei-isin-20260818T071512.csv</code></td><td>Global, and free. An ISIN existing does not prove listed equity, but no ISIN is strong evidence of no listing.</td><td>Zero, the file is on disk</td></tr>
-      <tr><td>FMP's <code>stable/search-name</code> and <code>stable/company-screener</code> endpoints</td><td>Resolves name to ticker and exchange directly</td><td>Free tier allows 250 calls a day, so 328 names takes two days, or one day if you filter first</td></tr>
+      <tr><th>Setup</th><th>Limit</th><th>Run time on your data</th></tr>
+      <tr><td>With a key</td><td>25 requests per 6 seconds, 100 ISINs each</td><td>About a minute</td></tr>
+      <tr><td>Without a key</td><td>25 requests per minute, 10 ISINs each</td><td>Just under an hour</td></tr>
     </table>
-    <p><strong>Send me the country by listing-status counts.</strong> That table, not the pricing page, decides between the $49 and the $99 tier. It is also the sample size line in your methods section, so it has to be produced eventually regardless of which plan you buy.</p>
+    <p>I dry ran the whole section against a mocked OpenFIGI to check the loop, the rate limiting and the summary table. It resolves in three waves, trying each firm's home-country ISINs first, and caps at 500 per firm rather than running to exhaustion, which saves roughly 60,000 pointless lookups on the bond issuers. Firms still unresolved at the cap are listed by name for you to check by hand rather than being silently recorded as unlisted.</p>
+    <p>Output is <code>config/tickers_v1.csv</code> plus a printed table. The two lines to send me are at the bottom:</p>
+    <div class="cmd"><pre>PREMIUM  $49: ___ listed firms, ___ assets
+ULTIMATE $99: ___ listed firms, ___ assets</pre><button class="copy">copy</button></div>
+    <p>That comparison, not the pricing page, decides the tier. It is also the sample size line in your methods section, so it has to exist regardless of which plan you buy.</p>
+    <div class="box key">
+      <p><strong>One thing section 4 will surface that is not about pricing.</strong> Deutsche Bank, JPMorgan, Goldman Sachs, Santander and Crédit Agricole are all in your 328. That is almost certainly lookthrough of financing stakes rather than operational ownership, and a bank's hazard exposure computed that way is an artefact of the ownership graph rather than a fact about its balance sheet. Decide explicitly whether financial holders belong in the cross-section, and record which way you went. Easier to settle now than after a coefficient depends on it.</p>
+    </div>
   </div>
 </div>
 
