@@ -51,19 +51,73 @@ cells.append(md("## 0. Setup"))
 
 cells.append(code(r'''
 # Standard library only, plus pandas/requests which Colab already has.
-import os, io, re, zipfile, json, time, hashlib, datetime as dt
+import os, io, re, sys, zipfile, json, time, hashlib, subprocess, datetime as dt
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import requests
 
+REPO_URL  = "https://github.com/ochofer/paper1-hazard-exposure-data.git"
+REPO_NAME = "paper1-hazard-exposure-data"
+MARKER    = Path("config") / "tickers_draft_v0.csv"   # a file that exists only inside the repo
+
+IN_COLAB = "google.colab" in sys.modules
+
+
+def _find_repo(start: Path):
+    """Walk up from `start` looking for the repo root. Returns None if not found."""
+    for cand in [start, *start.parents]:
+        if (cand / MARKER).exists():
+            return cand
+    return None
+
+
 # ---------------------------------------------------------------- paths
-# In Colab, clone the repo first (see the cell below) so that REPO points at it.
-# Locally, the notebook sits in notebooks/ so the repo root is one level up.
-REPO = Path.cwd() if (Path.cwd() / "data").exists() else Path.cwd().parent
-RAW  = REPO / "data" / "raw"
+# Do NOT restore the old one-liner:
+#     REPO = Path.cwd() if (Path.cwd() / "data").exists() else Path.cwd().parent
+# It failed silently and expensively. On Colab cwd is /content, so the fallback
+# resolved REPO to "/". Every path then became /data/... or /config/..., and because
+# Colab runs as root the mkdir SUCCEEDED rather than raising. Panel A downloaded itself
+# to the filesystem root, section 0 printed a repo line nobody looks at twice, and the
+# failure surfaced four cells later as FileNotFoundError on '/config/tickers_draft_v0.csv'.
+# A wrong path that works is worse than one that crashes. Resolve against a file that
+# only exists inside the repo, and raise if it is missing.
+REPO = _find_repo(Path.cwd())
+
+if REPO is None and IN_COLAB:
+    if Path(REPO_NAME).exists():
+        print(f"{REPO_NAME} already cloned, pulling latest")
+        subprocess.run(["git", "-C", REPO_NAME, "pull", "--ff-only"], check=False)
+    else:
+        print(f"cloning {REPO_URL}")
+        subprocess.run(["git", "clone", "--depth", "1", REPO_URL], check=True)
+    os.chdir(REPO_NAME)
+    REPO = _find_repo(Path.cwd())
+
+if REPO is None:
+    raise FileNotFoundError(
+        "Could not locate the repository root.\n"
+        f"  Looked for {MARKER} in {Path.cwd()} and every parent directory.\n"
+        "  On Colab this cell clones the repo for you, so reaching this line means the\n"
+        "  clone failed. Check REPO_URL above and that the repo is public.\n"
+        "  Locally, start the notebook from inside the checkout."
+    )
+
+RAW = REPO / "data" / "raw"
 RAW.mkdir(parents=True, exist_ok=True)
+
+# ---------------------------------------------------------------- API key
+# Read from Colab Secrets automatically. Nothing to uncomment: the previous version
+# shipped this commented out, which is how the run above ended up with REPO = "/".
+if IN_COLAB and not os.environ.get("FMP_API_KEY"):
+    try:
+        from google.colab import userdata
+        os.environ["FMP_API_KEY"] = userdata.get("FMP_API_KEY")
+    except Exception as exc:
+        print(f"could not read the Colab secret FMP_API_KEY: {exc}")
+        print("Section 2 needs it. Key icon in the left sidebar, name it exactly")
+        print("FMP_API_KEY, switch on notebook access, then rerun this cell.")
 
 # ---------------------------------------------------------------- window
 # Fixed in advance so a rerun on a different day produces the same file.
@@ -71,30 +125,37 @@ RAW.mkdir(parents=True, exist_ok=True)
 START = "2010-01-01"
 END   = "2025-12-31"
 
+print(f"colab  : {IN_COLAB}")
 print(f"repo   : {REPO}")
 print(f"raw out: {RAW}")
+print(f"api key: {'set' if os.environ.get('FMP_API_KEY') else 'MISSING'}")
 print(f"window : {START} .. {END}")
 '''))
 
 cells.append(md(r"""
-### Running in Colab
+### Confirm where you are before going further
 
-Uncomment and run this cell if you are on Colab rather than a local checkout. Replace
-the URL with your repo. The FMP key is read from Colab's **Secrets** panel (the key
-icon in the left sidebar), then add a secret named `FMP_API_KEY` and enable it for this
-notebook. Do not paste the key into a cell; it would end up in the committed output.
+The cell above clones the repository and reads the API key by itself, on Colab and
+locally. There is nothing to uncomment. The one thing you still have to do by hand is
+add the secret: **key icon in the left sidebar**, name it exactly `FMP_API_KEY`, and
+switch on notebook access for this notebook. Never paste the key into a cell, because
+it would be saved into the notebook output and pushed to a public repository.
+
+Run the check below and read the three lines it prints. **If `repo` is `/` or anything
+outside a folder named `paper1-hazard-exposure-data`, stop and rerun the setup cell.**
+An earlier version of this notebook silently accepted `/` as the repo root and wrote
+Panel A to the filesystem root; the assertion below exists so that cannot recur.
 """))
 
 cells.append(code(r'''
-# --- Colab bootstrap (uncomment on Colab) ---------------------------------
-# !git clone https://github.com/ochofer/paper1-hazard-exposure-data.git
-# %cd paper1-hazard-exposure-data
-# REPO = Path.cwd(); RAW = REPO / "data" / "raw"; RAW.mkdir(parents=True, exist_ok=True)
-#
-# from google.colab import userdata
-# os.environ["FMP_API_KEY"] = userdata.get("FMP_API_KEY")
-# --------------------------------------------------------------------------
-pass
+print("cwd     :", Path.cwd())
+print("repo    :", REPO)
+print("raw out :", RAW)
+print("contents:", sorted(p.name for p in REPO.iterdir() if not p.name.startswith(".")))
+
+assert (REPO / MARKER).exists(), f"repo root resolved wrongly: {REPO}. Rerun the setup cell."
+assert str(REPO) != "/", "REPO is the filesystem root. Rerun the setup cell."
+print("\nrepo root confirmed")
 '''))
 
 # ------------------------------------------------------------------ Panel A
@@ -356,7 +417,7 @@ if not us_ok:
     print("      403 on every row at once means the path is retired, not that you need to pay.")
     print("      401 on every row means the key is wrong, or the account email is unverified.")
     print("      Also confirm the Colab secret is named exactly FMP_API_KEY, with notebook")
-    print("      access switched on, and that the bootstrap cell copying it into os.environ ran.")
+    print("      access switched on. Section 0 prints 'api key: set' when it read correctly.")
 else:
     tier = "paid (international coverage present)" if eu_ok else "free or entry tier (no international)"
     print(f"Assessment: {tier}")

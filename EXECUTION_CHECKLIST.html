@@ -249,10 +249,14 @@ branch 'main' set up to track 'origin/main'.</pre><button class="copy">copy</but
 </div>
 
 <div class="step">
-  <div class="row"><input type="checkbox"><div class="title">B3. Run the setup and bootstrap cells <span class="st s-you">YOU</span></div></div>
+  <div class="row"><input type="checkbox"><div class="title">B3. Run the setup and the location check <span class="st s-you">YOU</span></div></div>
   <div class="body">
-    <p>Run the first code cell, then the second. In the second, uncomment every line between the dashed markers by deleting the leading <code>#</code>. It clones the repository, moves into it, repoints the paths, and loads the secret.</p>
-    <p>Check the printed <code>repo</code> path points inside <code>paper1-hazard-exposure-data</code> and not at <code>/content</code>. If it says <code>/content</code>, the bootstrap cell did not run.</p>
+    <p>Run the first code cell, then the second. <strong>Nothing needs uncommenting any more.</strong> The setup cell now detects Colab, clones the repository, moves into it and reads the secret by itself. The second cell prints where it landed and asserts it is right.</p>
+    <p>Read the five lines the setup cell prints. <code>repo</code> must end in <code>paper1-hazard-exposure-data</code>, and <code>api key</code> must say <code>set</code>.</p>
+    <div class="box stop">
+      <p><strong>Why this step got rewritten on 20 August.</strong> The old bootstrap cell shipped commented out, so skipping it was easy and silent. When it was skipped, <code>REPO</code> fell back to the parent of <code>/content</code>, which is <code>/</code>. Colab runs as root, so <code>mkdir</code> on <code>/data/raw</code> succeeded instead of raising, Panel A downloaded itself to the filesystem root, and the failure only surfaced four cells later as <code>FileNotFoundError: '/config/tickers_draft_v0.csv'</code>, a path that looks like nothing in this project. My fault, in the generator, and the fix is not "remember to uncomment": the notebook now resolves the repo root by looking for a file that exists only inside the repo, and raises immediately if it cannot find one.</p>
+    </div>
+    <div class="box warn"><p>If you already had a bad run in this Colab session, use <strong>Runtime, Restart session and run all</strong> rather than rerunning cells individually. A stale <code>REPO</code> or a half-written <code>/data/raw</code> at the filesystem root will otherwise persist in the live kernel.</p></div>
   </div>
 </div>
 
