@@ -119,6 +119,21 @@ if IN_COLAB and not os.environ.get("FMP_API_KEY"):
         print("Section 2 needs it. Key icon in the left sidebar, name it exactly")
         print("FMP_API_KEY, switch on notebook access, then rerun this cell.")
 
+# ---------------------------------------------------------------- FMP endpoints
+# Defined here rather than in the Panel B section, because section 2b resolves ISINs to
+# FMP symbols and now runs BEFORE Panel B. Anything used by two sections belongs in setup.
+#
+# Everything lives under /stable/. The /api/v3/ paths that older tutorials and FMP's own
+# legacy examples still show are retired for keys issued now, and they answer HTTP 403.
+# That status is the trap: it reads as "not on your plan" when the real cause is a dead
+# path, so a working key on a paid plan produces an identical failure table to no key at
+# all. Checked against the August 2026 documentation, in which every listed endpoint is
+# /stable/ and none is /api/v3/. Do not "restore" v3 as a fallback.
+API_KEY = os.environ.get("FMP_API_KEY")
+BASE    = "https://financialmodelingprep.com/stable"
+EOD     = f"{BASE}/historical-price-eod/full"               # split-adjusted, no dividends
+EOD_TR  = f"{BASE}/historical-price-eod/dividend-adjusted"  # total return, use for returns
+
 # ---------------------------------------------------------------- window
 # Fixed in advance so a rerun on a different day produces the same file.
 # Do not change these to "whatever improves the result" later.
@@ -297,16 +312,30 @@ cells.append(code(r'''
 # only if section 2 has not been run yet, and say clearly which one is in use, because
 # the two mean very different things: one is a research universe, the other is a
 # plumbing test made of firms that happen to still trade in 2026.
-V1    = REPO / "config" / "tickers_v1.csv"
-DRAFT = REPO / "config" / "tickers_draft_v0.csv"
+PRIMARY = REPO / "config" / "tickers_primary.csv"
+V1      = REPO / "config" / "tickers_v1.csv"
+DRAFT   = REPO / "config" / "tickers_draft_v0.csv"
 
-if V1.exists():
-    tick    = pd.read_csv(V1)
-    tick    = tick[tick.listed & tick.ticker.notna()]
-    TICKERS = sorted(tick.ticker.unique().tolist())
-    SOURCE  = "tickers_v1.csv (resolved from GEM entities via GLEIF and OpenFIGI)"
-    print(f"{len(TICKERS)} resolved tickers from {tick.entity_id.nunique()} firms")
+# Order matters. tickers_v1.csv holds EVERY listing line per firm, so using it directly
+# downloads a company three or four times over: ALV, ALIZY and ALIZF are all Allianz.
+# Section 2b collapses those to one primary listing each. Never fall back from primary
+# to v1 silently; raise instead, because a duplicated panel inflates cross-sectional
+# precision and nothing downstream would reveal it.
+if PRIMARY.exists():
+    tick    = pd.read_csv(PRIMARY)
+    tick    = tick[tick.priceable & tick.primary_symbol.notna()]
+    TICKERS = sorted(tick.primary_symbol.unique().tolist())
+    SOURCE  = "tickers_primary.csv (one listing per firm, chosen by dollar volume)"
+    print(f"{len(TICKERS)} primary listings from {tick.entity_id.nunique()} firms")
     print(tick.groupby("hq").entity_id.nunique().sort_values(ascending=False).to_string())
+    if "currency" in tick.columns:
+        print("\ncurrencies:", tick.currency.value_counts(dropna=False).to_dict())
+elif V1.exists():
+    raise SystemExit(
+        "config/tickers_v1.csv exists but config/tickers_primary.csv does not.\n"
+        "  v1 holds every listing line per firm, several per company. Downloading it\n"
+        "  would build a panel that double counts. Run section 2b first."
+    )
 else:
     tick    = pd.read_csv(DRAFT)
     TICKERS = tick.ticker.tolist()
@@ -367,26 +396,13 @@ survivorship problem stays unquantified rather than merely unquantified-so-far.
 """))
 
 cells.append(code(r'''
-API_KEY = os.environ.get("FMP_API_KEY")
 if not API_KEY:
     raise SystemExit(
-        "FMP_API_KEY is not set.\n"
-        "  Colab : add it in the Secrets panel and switch on notebook access, "
-        "then run the bootstrap cell above.\n"
+        "FMP_API_KEY is not set. Section 0 prints 'api key: MISSING' when this happens.\n"
+        "  Colab : add it in the Secrets panel, switch on notebook access, rerun section 0.\n"
         "  Local : export FMP_API_KEY='...'"
     )
 
-# Endpoint bases, defined here because the preflight below uses them too.
-#
-# Everything lives under /stable/. The /api/v3/ paths that older tutorials and FMP's own
-# legacy examples still show are retired for keys issued now, and they answer HTTP 403.
-# That status is the trap: it reads as "not on your plan" when the real cause is a dead
-# path, so a working key on a paid plan produces an identical failure table to no key at
-# all. Checked against the August 2026 documentation, in which every listed endpoint is
-# /stable/ and none is /api/v3/. Do not "restore" v3 as a fallback.
-BASE   = "https://financialmodelingprep.com/stable"
-EOD    = f"{BASE}/historical-price-eod/full"               # split-adjusted, dividends NOT included
-EOD_TR = f"{BASE}/historical-price-eod/dividend-adjusted"  # total return, use this for returns
 
 def probe(label, url, params, want, ok_if=None):
     """One capability probe. Returns a row describing what happened.
@@ -545,7 +561,11 @@ open_ = set(w.loc[w.status == "200", "test"])
 def got(prefix): return any(t.startswith(prefix) for t in open_)
 
 print()
-if got("DUK  light") and not got("DUK  full"):
+if len(open_) == len(w) and (w["rows"] > 0).all():
+    print("DIAGNOSIS: no wall. Every variant, symbol and history depth returned data.")
+    print("  This is the expected result on a paid tier. Nothing below applies; the")
+    print("  branches after this one exist to name a paywall, and there is not one.")
+elif got("DUK  light") and not got("DUK  full"):
     print("DIAGNOSIS: the variant is the wall. 'light' is open, 'full' is not.")
     print("  light returns date, price and volume only, split-adjusted, no dividends.")
     print("  Workable for a plumbing test. NOT sufficient for factor regressions on its own.")
@@ -1057,7 +1077,8 @@ def run_wave(leis, cap, label):
 
     still = []
     for lei in leis:
-        eqs = [d for i in BY_LEI.get(lei, [])[:cap] for d in equity_rows(cache.get(i, []))]
+        eqs = [(i, d) for i in BY_LEI.get(lei, [])[:cap]
+               for d in equity_rows(cache.get(i, []))]
         if eqs:
             resolved[lei] = eqs
         else:
@@ -1121,10 +1142,13 @@ choice is visible and revisable rather than baked in.
 cells.append(code(r'''
 rows = []
 for lei, recs in resolved.items():
-    for d in recs:
-        rows.append({"lei": lei, "ticker": d["ticker"], "exchange": d["exchCode"],
+    for isin_code, d in recs:
+        rows.append({"lei": lei, "isin": isin_code,
+                     "ticker": d["ticker"], "exchange": d["exchCode"],
                      "figi_name": d.get("name"), "type": d.get("securityType2")})
-cand = pd.DataFrame(rows)
+cand = pd.DataFrame(rows).drop_duplicates(["lei", "ticker", "exchange"])
+print(f"{len(cand):,} candidate listing lines across {cand.lei.nunique()} firms, "
+      f"median {cand.groupby('lei').size().median():.0f} per firm")
 
 out = universe.merge(cand, on="lei", how="left")
 out["listed"] = out.ticker.notna()
@@ -1144,6 +1168,229 @@ print(f"\nPREMIUM  $49: {len(p):3d} listed firms, {int(p.n_assets.sum()):5,} ass
 print(f"ULTIMATE $99: {len(u):3d} listed firms, {int(u.n_assets.sum()):5,} assets")
 print(f"the extra $50 buys {len(u) - len(p)} firms and {int(u.n_assets.sum() - p.n_assets.sum()):,} assets")
 print(f"\nwrote {REPO / 'config' / 'tickers_v1.csv'}")
+'''))
+
+cells.append(md(r"""
+### 2b. Choosing one listing per firm
+
+**Needs a paid FMP key. Do not run Panel B before this.**
+
+`tickers_v1.csv` above holds every listing line OpenFIGI knows about, which is several
+per firm rather than one. Allianz appears as `ALV` in Frankfurt, `ALIZY` as a US
+depositary receipt and `ALIZF` on the US foreign board. Akzo Nobel appears as `AKZOY`
+and `AKZOF`. Archer Daniels appears as `ADM` and as `ADMUSD`, a currency-denominated
+line on an international order book. These are the same company.
+
+Keeping all of them is wrong three times over, and the first reason is the one that
+actually matters:
+
+1. **The panel would double count.** A hazard-sorted portfolio holding `ALV`, `ALIZY`
+   and `ALIZF` holds one bet with three weights. Cross-sectional standard errors
+   computed on that panel are wrong in a direction that flatters you, because the
+   duplicate lines are perfectly correlated and look like independent observations.
+2. **Depositary receipts are not the security.** An ADR carries the underlying return
+   plus an exchange rate move plus a sponsorship spread, and it trades on US hours
+   against a European close. Mixing ADRs and ordinaries puts a currency factor into
+   your cross-section that has nothing to do with climate hazard.
+3. Downloading them costs a multiple of the time, which matters while the subscription
+   is running.
+
+The rule used here is to let **liquidity arbitrate**, measured rather than assumed.
+For every candidate, ask FMP what it can price, pull one recent quarter, and keep the
+line with the highest median daily dollar volume. That reliably picks the primary
+listing without needing a hand-maintained table of exchange codes, and it records why
+each choice was made so the decision is auditable rather than buried.
+
+The first cell probes the ISIN search endpoint and prints one raw response. **Read
+that output before running the rest.** If the field names differ from what the next
+cell expects, send it to me rather than guessing, because a silent mis-parse here
+becomes a wrong universe that nothing downstream will flag.
+"""))
+
+cells.append(code(r'''
+# Probe first, parse second. This prints the raw shape of one response so a field-name
+# change in the vendor API is visible immediately rather than becoming a silent
+# mis-parse in the cell below.
+SEARCH_ISIN = f"{BASE}/search-isin"
+
+_probe_isins = cand["isin"].dropna().unique()[:3].tolist()
+for _i in _probe_isins:
+    _r = requests.get(SEARCH_ISIN, params={"isin": _i, "apikey": API_KEY}, timeout=45)
+    print(f"{_i}  HTTP {_r.status_code}")
+    if _r.status_code == 200:
+        print("   ", json.dumps(_r.json())[:400])
+    time.sleep(0.1)
+'''))
+
+cells.append(code(r'''
+ISIN_CACHE = RAW / "fmp_isin_cache.json"
+isin_map = json.loads(ISIN_CACHE.read_text()) if ISIN_CACHE.exists() else {}
+print(f"isin cache: {len(isin_map):,} already looked up")
+
+
+def fmp_symbols_for_isin(isin_code):
+    """FMP's own symbols for an ISIN. Parsed defensively: the payload has been a bare
+    list and a dict-wrapped list at different times, and a KeyError here would be
+    indistinguishable from 'this ISIN is not covered'."""
+    if isin_code in isin_map:
+        return isin_map[isin_code]
+    try:
+        r = requests.get(SEARCH_ISIN, params={"isin": isin_code, "apikey": API_KEY},
+                         timeout=45)
+        payload = r.json() if r.status_code == 200 else []
+    except Exception:
+        payload = []
+    if isinstance(payload, dict):
+        payload = payload.get("data") or payload.get("results") or []
+    out = []
+    for d in payload if isinstance(payload, list) else []:
+        if isinstance(d, dict) and d.get("symbol"):
+            out.append({"symbol": d["symbol"],
+                        "currency": d.get("currency"),
+                        "exchange": d.get("exchange") or d.get("exchangeShortName"),
+                        "name": d.get("name") or d.get("companyName")})
+    isin_map[isin_code] = out
+    return out
+
+
+PROBE_FROM, PROBE_TO = "2024-01-02", "2024-03-28"
+
+
+def liquidity(symbol):
+    """Median daily dollar volume over one recent quarter, and the bar count.
+
+    Dollar volume rather than share volume, because share counts are not comparable
+    across a EUR ordinary and a USD receipt. Median rather than mean, because a single
+    index-rebalance day would otherwise decide the primary listing.
+    """
+    try:
+        r = requests.get(EOD, params={"symbol": symbol, "from": PROBE_FROM,
+                                      "to": PROBE_TO, "apikey": API_KEY}, timeout=45)
+        rows = r.json() if r.status_code == 200 else []
+    except Exception:
+        rows = []
+    if isinstance(rows, dict):
+        rows = rows.get("historical", [])
+    if not rows:
+        return 0.0, 0
+    d = pd.DataFrame(rows)
+    if not {"close", "volume"}.issubset(d.columns):
+        return 0.0, len(d)
+    dv = (pd.to_numeric(d["close"], errors="coerce")
+          * pd.to_numeric(d["volume"], errors="coerce")).dropna()
+    return float(dv.median()) if len(dv) else 0.0, len(d)
+
+
+scored = []
+uniq_isins = cand["isin"].dropna().unique().tolist()
+print(f"resolving {len(uniq_isins):,} equity ISINs to FMP symbols")
+
+for k, isin_code in enumerate(uniq_isins, 1):
+    if k % 100 == 0:
+        print(f"  {k}/{len(uniq_isins)}")
+        ISIN_CACHE.write_text(json.dumps(isin_map))
+    for s in fmp_symbols_for_isin(isin_code):
+        scored.append({"isin": isin_code, **s})
+ISIN_CACHE.write_text(json.dumps(isin_map))
+
+sc = pd.DataFrame(scored).drop_duplicates("symbol")
+print(f"{len(sc):,} distinct FMP symbols to score")
+
+liq = {}
+for k, s in enumerate(sc["symbol"].tolist(), 1):
+    if k % 100 == 0:
+        print(f"  scored {k}/{len(sc)}")
+    liq[s] = liquidity(s)
+sc["dollar_vol"] = sc["symbol"].map(lambda s: liq[s][0])
+sc["bars_q1_24"] = sc["symbol"].map(lambda s: liq[s][1])
+'''))
+
+cells.append(code(r'''
+# One line per firm: the most liquid FMP-priceable listing.
+lei_of = dict(zip(cand["isin"], cand["lei"]))   # cand.isin is the method, not the column
+sc["lei"] = sc["isin"].map(lei_of)
+
+alive = sc[(sc.dollar_vol > 0) & (sc.bars_q1_24 > 30)]
+pick  = (alive.sort_values("dollar_vol", ascending=False)
+              .drop_duplicates("lei")
+              .rename(columns={"symbol": "primary_symbol"}))
+
+# Map through dictionaries rather than pd.merge(on="lei"). pandas joins NaN keys to each
+# other, so any firm without a LEI would be matched to every other firm without one. The
+# 13 firms whose `lei` column read the literal string "not found", Chevron among them,
+# are exactly that case.
+LEICOLS = ["primary_symbol", "currency", "exchange", "dollar_vol"]
+by_lei  = pick.set_index("lei")[LEICOLS].to_dict("index")
+
+primary = universe.copy()
+for c in LEICOLS:
+    primary[c] = primary["lei"].map(lambda l: (by_lei.get(l) or {}).get(c)
+                                    if pd.notna(l) else None)
+primary["route"] = primary.primary_symbol.notna().map({True: "isin", False: None})
+
+# ---- fallback for firms with no usable LEI, resolved through their SEC CIK instead.
+need_cik = primary[primary.primary_symbol.isna() & primary["cik"].notna()]
+print(f"\n{len(need_cik)} firms unresolved by ISIN but carrying a CIK, trying CIK route")
+for _, row in need_cik.iterrows():
+    try:
+        r = requests.get(f"{BASE}/search-cik",
+                         params={"cik": int(row["cik"]), "apikey": API_KEY}, timeout=45)
+        hits = r.json() if r.status_code == 200 else []
+    except Exception:
+        hits = []
+    if isinstance(hits, dict):
+        hits = hits.get("data") or []
+    best, best_dv = None, 0.0
+    for h in hits if isinstance(hits, list) else []:
+        s = h.get("symbol")
+        if not s:
+            continue
+        dv, bars = liquidity(s)
+        if dv > best_dv and bars > 30:
+            best, best_dv = h, dv
+    if best:
+        i = row.name
+        primary.loc[i, "primary_symbol"] = best["symbol"]
+        primary.loc[i, "currency"]  = best.get("currency")
+        primary.loc[i, "exchange"]  = best.get("exchange") or best.get("exchangeShortName")
+        primary.loc[i, "dollar_vol"] = best_dv
+        primary.loc[i, "route"] = "cik"
+        print(f"  {row['name'][:38]:40s} -> {best['symbol']}")
+
+primary["priceable"] = primary.primary_symbol.notna()
+
+# A symbol standing for two different GEM entities means the crosswalk collapsed two
+# firms into one, which would double the assets attributed to that firm.
+dupes = primary.loc[primary.priceable & primary.primary_symbol.duplicated(keep=False)]
+if len(dupes):
+    print(f"\nWARNING: {len(dupes)} rows share a primary_symbol with another entity:")
+    print(dupes[["entity_id", "name", "primary_symbol"]].to_string(index=False))
+else:
+    print("\nno symbol is claimed by two entities")
+
+primary.to_csv(REPO / "config" / "tickers_primary.csv", index=False)
+
+n_cand   = cand["lei"].nunique()
+n_priced = int(primary.priceable.sum())
+print(f"\nfirms with an equity line found by OpenFIGI : {n_cand}")
+print(f"firms FMP can actually price               : {n_priced}"
+      f"  ({int((primary.route == 'isin').sum())} via ISIN, "
+      f"{int((primary.route == 'cik').sum())} via CIK)")
+print(f"candidate lines collapsed: {len(sc):,} symbols -> {n_priced} primaries")
+
+print("\ncurrency of the chosen listings:")
+print(primary.currency.value_counts(dropna=False).to_string())
+
+tab2 = (primary.groupby("hq")
+        .agg(firms=("entity_id", "size"), priceable=("priceable", "sum"),
+             assets=("n_assets", "sum"))
+        .sort_values("firms", ascending=False))
+tab2["priceable_assets"] = (primary[primary.priceable].groupby("hq").n_assets.sum()
+                            .reindex(tab2.index).fillna(0).astype(int))
+display(tab2)
+print(f"\nTOTAL priceable: {n_priced} firms, "
+      f"{int(primary[primary.priceable].n_assets.sum()):,} assets")
+print(f"wrote {REPO / 'config' / 'tickers_primary.csv'}")
 '''))
 
 cells.append(md(r"""

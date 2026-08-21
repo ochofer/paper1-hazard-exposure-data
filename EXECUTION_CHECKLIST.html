@@ -518,23 +518,27 @@ git commit -m "Record first successful data pull" &amp;&amp; git push</pre><butt
 </div>
 
 <div class="step">
-  <div class="row"><input type="checkbox"><div class="title">F2. Pull more than the paper needs <span class="st s-you">YOU</span></div></div>
+  <div class="row"><input type="checkbox"><div class="title">F2. Run section 2b, then Panel B <span class="st s-you">YOU</span></div></div>
   <div class="body">
-    <p>Seven things, in this order. The first four are load bearing, the last three are cheap insurance.</p>
-    <table>
-      <tr><th></th><th>What</th><th>Endpoint</th><th>Why it is on the list</th></tr>
-      <tr><td>1</td><td>Daily prices, every resolved ticker, 2005 to today</td><td><code>stable/historical-price-eod/dividend-adjusted</code></td><td>Panel B itself. Start at 2005, not 2010: the extra five years costs nothing now and lets you show the result is not a sample-window artefact.</td></tr>
-      <tr><td>2</td><td>The same tickers, split-adjusted</td><td><code>stable/historical-price-eod/full</code></td><td>The difference between the two series is the dividend contribution. Holding both lets you demonstrate the total-return correction rather than assert it.</td></tr>
-      <tr><td>3</td><td>Dividend events</td><td><code>stable/dividends</code></td><td>An independent check on series 1 and 2. If the reconstructed total return does not match the vendor's, one of them is wrong and you want to find out now.</td></tr>
-      <tr><td>4</td><td>The full delisted companies list, every page</td><td><code>stable/delisted-companies</code></td><td>Blocking test 1. Page through it completely, do not stop at page 0.</td></tr>
-      <tr><td>5</td><td>Prices for the delisted names too</td><td>as row 1</td><td>This is the half the free key refused, and the half that turns the list into a measurable hit rate.</td></tr>
-      <tr><td>6</td><td>Company profiles for every ticker</td><td><code>stable/profile</code></td><td>Exchange, currency, sector, market cap, and the listing status you had to infer in D1d. Cheap, one call per symbol.</td></tr>
-      <tr><td>7</td><td>The full symbol directory</td><td><code>stable/stock-list</code></td><td>Lets every future ticker resolution be done offline against a local file instead of against a subscription you no longer have.</td></tr>
-    </table>
-    <div class="box warn">
-      <p><strong>Currency will bite you if you buy the global tier.</strong> A price series from Frankfurt is in euros, from Milan in euros, from London in pence rather than pounds on many tickers. Ken French's US factors are in dollars. Mixing them silently produces returns that are part asset return and part exchange rate move. Record the currency from the profile call alongside every series, and decide the conversion explicitly. This is the single most common way a cross-country return panel goes quietly wrong.</p>
+    <div class="box stop">
+      <p><strong>Do not run Panel B before section 2b. Your interrupted run on 21 August is why.</strong> It was downloading <code>ALIZY</code>, <code>ALIZF</code>, <code>AKZOY</code>, <code>AKZOF</code>, <code>ADMUSD</code> and hundreds more. Those are American depositary receipts, US foreign-board lines and currency-denominated order-book lines of companies you already had. <code>ALV</code>, <code>ALIZY</code> and <code>ALIZF</code> are all Allianz.</p>
+      <p>Three problems, and the first is the one that matters. <strong>The panel would double count:</strong> a hazard-sorted portfolio holding all three Allianz lines holds one bet with three weights, and because the duplicates are near perfectly correlated they look like independent observations, so your cross-sectional standard errors come out too small. <strong>A receipt is not the security:</strong> an ADR carries the underlying return plus an exchange rate move, traded on US hours against a European close, which injects a currency factor into a climate-hazard sort. And it costs a multiple of the download time while the subscription is running.</p>
     </div>
-    <div class="box"><p><strong>On rate limits.</strong> Premium allows 750 calls a minute and Ultimate 3,000, so 328 symbols across four endpoint families is a few minutes of wall clock, not hours. The binding constraint is the trailing 30 day bandwidth cap, 50GB on Premium and 150GB on Ultimate. Daily bars for a few hundred symbols over twenty years is on the order of hundreds of megabytes, so you are nowhere near it. Do not add long sleeps out of caution; you are paying for the throughput.</p></div>
+    <p>Section 2b fixes it by letting liquidity arbitrate rather than by hand-maintaining a table of exchange codes. For every candidate it asks FMP what it can price, pulls one recent quarter, and keeps the line with the highest median daily dollar volume. Median rather than mean, so a single index-rebalance day cannot decide a listing; dollar rather than share volume, because share counts are not comparable between a euro ordinary and a dollar receipt.</p>
+    <p><strong>Run it in this order.</strong> Nothing here needs editing.</p>
+    <table>
+      <tr><th>Step</th><th>Cell</th><th>What to check before moving on</th></tr>
+      <tr><td>1</td><td>Section 0, both cells</td><td><code>repo</code> ends in the repo name, <code>api key: set</code></td></tr>
+      <tr><td>2</td><td>Section 2, three cells</td><td>Cached, so seconds. Ends at <code>271 of 328</code> or better</td></tr>
+      <tr><td>3</td><td>Section 2b, <strong>probe cell first</strong></td><td>It prints three raw API responses. If they do not contain a <code>symbol</code> field, stop and send them to me</td></tr>
+      <tr><td>4</td><td>Section 2b, remaining two cells</td><td><code>no symbol is claimed by two entities</code>, and a firm count near 270</td></tr>
+      <tr><td>5</td><td>Section 3, ticker cell</td><td>Must say <code>tickers_primary.csv</code>. If it raises, step 4 did not finish</td></tr>
+      <tr><td>6</td><td>Section 3, fetch loop</td><td>Roughly 270 symbols rather than thousands</td></tr>
+    </table>
+    <div class="box key">
+      <p><strong>Two bugs the dry run caught before you paid for them.</strong> The <code>lei</code> column held the literal string <code>"not found"</code> for 13 firms, Chevron among them with 73 assets. Left as a string it is a valid join key, so all 13 were being merged into each other, and pandas joins missing keys to each other too. Those 13 now resolve through their SEC CIK instead, which recovers all of them. Section 2b also asserts that no ticker is claimed by two entities, because a collapsed crosswalk would silently double the assets attributed to one firm.</p>
+    </div>
+    <p><strong>Send me the section 2b summary and the Panel B row count.</strong> The number that matters is how many of the 271 firms FMP can actually price, since a resolved ticker and a delivered price series are different things and both belong in the methods section.</p>
   </div>
 </div>
 
