@@ -742,7 +742,7 @@ if dl:
 '''))
 
 cells.append(code(r'''
-def fetch_prices(symbol: str, start: str, end: str) -> pd.DataFrame:
+def fetch_prices(symbol: str, start: str, end: str, quiet: bool = False) -> pd.DataFrame:
     """Daily EOD bars for one symbol, as a tidy frame. Empty frame if unavailable.
 
     Tries the dividend-adjusted series first and falls back to the split-adjusted one.
@@ -763,17 +763,20 @@ def fetch_prices(symbol: str, start: str, end: str) -> pd.DataFrame:
         try:
             r = requests.get(url, params=params, timeout=45)
         except requests.RequestException as e:
-            print(f"    {symbol}: request error on {base.split('/')[-1]} ({e})")
+            if not quiet:
+                print(f"    {symbol}: request error on {base.split('/')[-1]} ({e})")
             continue
 
         if r.status_code != 200:
-            print(f"    {symbol}: HTTP {r.status_code} on {base.split('/')[-1]}")
+            if not quiet:
+                print(f"    {symbol}: HTTP {r.status_code} on {base.split('/')[-1]}")
             continue
 
         payload = r.json()
         rows = payload.get("historical") if isinstance(payload, dict) else payload
         if not rows:
-            print(f"    {symbol}: HTTP 200 but empty payload -> counted as MISS")
+            if not quiet:
+                print(f"    {symbol}: HTTP 200 but empty payload -> counted as MISS")
             continue
 
         df = pd.DataFrame(rows)
@@ -789,7 +792,8 @@ def fetch_prices(symbol: str, start: str, end: str) -> pd.DataFrame:
         # dividend-adjusted panel because of exactly this.
         src_col = next((c for c in ("adjClose", "close", "price") if c in df.columns), None)
         if src_col is None:
-            print(f"    {symbol}: no recognisable close column in {list(df.columns)}")
+            if not quiet:
+                print(f"    {symbol}: no recognisable close column in {list(df.columns)}")
             return pd.DataFrame()
         df["price"] = pd.to_numeric(df[src_col], errors="coerce")
         df["price_field"] = src_col
@@ -2098,7 +2102,7 @@ for _, row in targets.iterrows():
     end_d   = row.delisted_on
     start_d = end_d - pd.Timedelta(days=365)
     d = fetch_prices(row["symbol"], start_d.strftime("%Y-%m-%d"),
-                     end_d.strftime("%Y-%m-%d"))
+                     end_d.strftime("%Y-%m-%d"), quiet=True)
     if d.empty or len(d) < 60:
         nodata += 1
         continue
@@ -2128,6 +2132,119 @@ if len(g):
 else:
     print("\nNo return gaps computed. Do not read that as 'no bias'. Read it as")
     print("'not measured', and write it in the paper that way.")
+'''))
+
+cells.append(md(r"""
+### 5b. The rate above is measured on the wrong population
+
+The 21 August run returned an 8.2 percent lower-bound delisting rate and a 20.8 percent
+sector share. **Neither is usable as it stands**, and the reason is visible in the names
+that came back: `MMS.V` and `PNRL.V` are TSX Venture, `AHQ.AX` and `ROO.AX` are ASX small
+caps, `AMTE.L` and `VRS.L` are AIM, and `TBLTW` is a warrant rather than a company. FMP's
+delisted list spans every venue it covers, most of which are populated by micro-caps and
+shells that delist constantly.
+
+Your universe is 302 established asset owners on main boards in developed markets. The
+delisting hazard for Duke Energy is not the delisting hazard for a TSX Venture explorer,
+so a rate computed across both says nothing about your sample. Applying the thresholds
+written above to a number built this way would be worse than not measuring at all,
+because it carries the authority of a computation.
+
+Two corrections, both cheap:
+
+**Match the exchanges.** Compute the numerator and the denominator on the same venue set,
+namely the exchanges your own firms actually trade on. This is the rate that belongs in
+the paper.
+
+**Check the vendor's list for recency bias.** 8,174 delistings over sixteen years against
+roughly 100,000 live symbols is implausibly low: the US alone lost listings at a far
+higher rate over that period. If the by-year counts are thin before about 2018 and thick
+after, the list is a recent-history snapshot rather than a sixteen-year record, and every
+rate computed from it understates the truth by a factor nobody can pin down.
+"""))
+
+cells.append(code(r'''
+# Recency bias first, because if the list is a recent snapshot then no rate from it is
+# trustworthy and the exchange matching below is polishing a number that cannot be used.
+by_year = win.delisted_on.dt.year.value_counts().sort_index()
+print("delistings recorded per year:")
+print(by_year.to_string())
+
+early = by_year.loc[by_year.index <= 2017].sum()
+late  = by_year.loc[by_year.index >= 2018].sum()
+print(f"\n2010-2017: {early:,}   2018-2025: {late:,}   ratio {late / max(early, 1):.1f}x")
+if late > 3 * max(early, 1):
+    print("\nWARNING: the vendor's delisted list is heavily skewed to recent years.")
+    print("  Delisting rates do not rise fourfold in a decade, so this is coverage,")
+    print("  not history. Any rate computed from it is a floor of unknown tightness,")
+    print("  and the honest move is to report the recent-window rate separately.")
+'''))
+
+cells.append(code(r'''
+# Exchange-matched rate. Numerator and denominator restricted to the venues the universe
+# actually trades on, so a TSX Venture shell cannot inflate a figure about main-board
+# asset owners.
+MY_EX = set(primary.loc[primary.priceable, "exchange"].dropna().astype(str).str.upper())
+print(f"exchanges in the universe: {sorted(MY_EX)}")
+
+live_df = pd.DataFrame(live) if live else pd.DataFrame()
+_lex = next((c for c in ("exchangeShortName", "exchange") if c in live_df.columns), None)
+_dex = next((c for c in ("exchange", "exchangeShortName") if c in win.columns), None)
+
+if _lex is None or _dex is None:
+    print("no exchange column available on one of the two lists, cannot match")
+else:
+    live_m = live_df[live_df[_lex].astype(str).str.upper().isin(MY_EX)]
+    win_m  = win[win[_dex].astype(str).str.upper().isin(MY_EX)]
+    denom_m = len(live_m) + len(win_m)
+    print(f"\nlive symbols on those venues    : {len(live_m):,}")
+    print(f"delistings on those venues      : {len(win_m):,}")
+    if denom_m:
+        print(f"EXCHANGE-MATCHED delisting rate : {len(win_m) / denom_m:.1%}  "
+              f"({len(win_m):,} of {denom_m:,})")
+        print("\nStill a lower bound, for the same denominator reason as before, and now")
+        print("also because the vendor's list under-records older delistings.")
+
+    # Recent window only. If the list is recency biased, the last few years are the part
+    # that is actually complete, so a rate computed there is the tighter estimate even
+    # though it covers less of the sample period.
+    recent = win_m[win_m.delisted_on >= "2021-01-01"]
+    if denom_m and len(recent):
+        r5 = len(recent) / denom_m
+        print(f"\n2021-2025 only: {len(recent):,} delistings, {r5:.1%} over five years")
+        print(f"  implied 16-year rate at that pace: {r5 * 16 / 5:.1%}")
+        print("  Use this as the upper of the two estimates and say which is which.")
+'''))
+
+cells.append(code(r'''
+# Does the gap depend on size? A shell delisting at zero tells you nothing about whether
+# Duke Energy would have. Split the measured gaps by the firm's own final-year dollar
+# volume, which is the only size proxy available for companies that no longer exist.
+if len(g):
+    dv = []
+    for _, row in g.iterrows():
+        d = fetch_prices(row["symbol"],
+                         (row.delisted_on - pd.Timedelta(days=365)).strftime("%Y-%m-%d"),
+                         row.delisted_on.strftime("%Y-%m-%d"), quiet=True)
+        if d.empty or "volume" not in d.columns:
+            dv.append(0.0)
+            continue
+        v = (pd.to_numeric(d["price"], errors="coerce")
+             * pd.to_numeric(d["volume"], errors="coerce")).dropna()
+        dv.append(float(v.median()) if len(v) else 0.0)
+    g2 = g.assign(dollar_vol=dv)
+    g2["size_band"] = pd.cut(g2.dollar_vol,
+                             [-1, 1e5, 1e6, 1e7, float("inf")],
+                             labels=["<$100k", "$100k-1m", "$1m-10m", ">$10m"])
+    print("median gap by final-year dollar volume:\n")
+    print(g2.groupby("size_band", observed=False)
+            .agg(n=("gap", "size"), median_gap=("gap", "median"),
+                 share_negative=("gap", lambda s: (s < 0).mean()))
+            .to_string())
+    print("\nRead the >$10m row, not the overall median. That band is the one that")
+    print("resembles the firms in your universe, and if it is thin, say so: the honest")
+    print("statement is then that the bias is unmeasured for firms of your size.")
+    g2.to_csv(RAW / "blocking_test_1_return_gaps.csv", index=False)
 '''))
 
 # ---------------------------------------------------------------- run order
