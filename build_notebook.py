@@ -738,6 +738,19 @@ def fetch_prices(symbol: str, start: str, end: str) -> pd.DataFrame:
         df["symbol"] = symbol
         df["series"] = series
         df["date"] = pd.to_datetime(df["date"])
+
+        # The two variants do not share a column name for the closing price. /full
+        # returns open/high/low/close, while /dividend-adjusted returns adjOpen/adjHigh/
+        # adjLow/adjClose and no plain `close`. Everything downstream wants one column,
+        # so normalise here and record which field it came from rather than leaving each
+        # consumer to guess. Section 4 crashed with KeyError('close') on the first
+        # dividend-adjusted panel because of exactly this.
+        src_col = next((c for c in ("adjClose", "close", "price") if c in df.columns), None)
+        if src_col is None:
+            print(f"    {symbol}: no recognisable close column in {list(df.columns)}")
+            return pd.DataFrame()
+        df["price"] = pd.to_numeric(df[src_col], errors="coerce")
+        df["price_field"] = src_col
         if series != "dividend-adjusted":
             print(f"    {symbol}: fell back to {series}, PRICE returns only for this symbol")
         return df.sort_values("date").reset_index(drop=True)
@@ -765,13 +778,18 @@ if not frames:
 prices = pd.concat(frames, ignore_index=True)
 
 # Keep a stable column order; retain whatever extra columns FMP returns.
-lead = [c for c in ["symbol", "date", "open", "high", "low", "close", "adjClose", "volume"]
+lead = [c for c in ["symbol", "date", "price", "price_field", "series",
+                    "open", "high", "low", "close", "adjOpen", "adjHigh", "adjLow",
+                    "adjClose", "volume"]
         if c in prices.columns]
 prices = prices[lead + [c for c in prices.columns if c not in lead]]
 
 prices.to_csv(RAW / "panel_b_prices_daily.csv", index=False)
 
 print(f"{len(prices):,} rows, {prices.symbol.nunique()} symbols")
+print("columns returned:", list(prices.columns))
+print("price taken from:", prices.price_field.value_counts().to_dict())
+print("series:", prices.series.value_counts().to_dict())
 display(
     prices.groupby("symbol")
           .agg(rows=("date", "size"), start=("date", "min"), end=("date", "max"))
@@ -813,8 +831,14 @@ check("ff3: RF non-negative", (ff3.RF.dropna() >= 0).all())
 check("prices: no duplicate (symbol, date)",
       prices.duplicated(["symbol", "date"]).sum() == 0,
       f"{prices.duplicated(['symbol','date']).sum()} dupes")
-check("prices: all closes strictly positive",
-      (prices["close"].dropna() > 0).all())
+check("prices: a canonical price column exists", "price" in prices.columns,
+      f"columns: {list(prices.columns)[:12]}")
+check("prices: all prices strictly positive",
+      (prices["price"].dropna() > 0).all() if "price" in prices else False)
+_eqf = prices.loc[~prices.symbol.isin(BENCHMARKS), "price_field"] \
+       if "price_field" in prices.columns else pd.Series(dtype=object)
+check("prices: one price field across the EQUITY panel", _eqf.nunique() == 1,
+      f"fields: {sorted(_eqf.unique())}")
 check("prices: S&P 500 index present", "^GSPC" in set(prices.symbol))
 check("prices: every requested symbol returned data",
       len(missing) == 0, f"missing: {missing}")
@@ -822,12 +846,25 @@ check("prices: every requested symbol returned data",
 # symbols, and the difference is a dividend yield, so it loads on exactly the kind of
 # firm characteristic a hazard sort is likely to pick up. Fail loudly rather than let
 # the mixture pass as a footnote.
-_series = sorted(prices["series"].unique()) if "series" in prices.columns else ["unknown"]
-check("prices: one return convention across the whole panel", len(_series) == 1,
+# Scope the convention checks to the equity panel. A price index has no dividends to
+# reinvest, so ^GSPC has no dividend-adjusted series at any price and will always fall
+# back. Letting that fail the check permanently would teach us to ignore a red row,
+# which is worse than not having the check. SPY is the total-return benchmark; ^GSPC is
+# carried as a price index and labelled as one.
+_eq = prices[~prices.symbol.isin(BENCHMARKS)]
+_series = sorted(_eq["series"].unique()) if "series" in _eq.columns else ["unknown"]
+check("prices: one return convention across the EQUITY panel", len(_series) == 1,
       f"series present: {_series}")
-check("prices: convention is dividend-adjusted (total return)",
+check("prices: equity convention is dividend-adjusted (total return)",
       _series == ["dividend-adjusted"],
       "price returns are not comparable with Fama-French total-return factors")
+
+_bench = (prices[prices.symbol.isin(BENCHMARKS)]
+          .groupby("symbol").series.first().to_dict())
+check("benchmarks: at least one total-return benchmark present",
+      "dividend-adjusted" in _bench.values(),
+      f"{_bench}. ^GSPC is a price index and legitimately has no total-return series; "
+      f"use SPY where a total-return benchmark is needed.")
 
 # Trading-day overlap is the join key sanity check for the (later) merge step.
 common = set(ff3.date) & set(prices.loc[prices.symbol == "^GSPC", "date"])
@@ -866,7 +903,12 @@ manifest = {
         "requested": TICKERS + BENCHMARKS,
         "missing": missing,
         "rows": int(len(prices)),
-        "currency_note": "no FX applied; SHEL.L is GBp (pence); EU names EUR/CHF",
+        "price_field": sorted(prices["price_field"].unique()) if "price_field" in prices.columns else ["unknown"],
+        "currencies": (pd.read_csv(REPO / "config" / "tickers_primary.csv")
+                         .query("priceable").currency.value_counts().to_dict()
+                       if (REPO / "config" / "tickers_primary.csv").exists() else {}),
+        "currency_note": ("no FX conversion applied. GBp is pence, one hundredth of a "
+                          "pound. Convert before any dollar-value weighting."),
     },
     "checks_failed": n_fail,
     "files": {p.name: {"sha256": sha256(p), "bytes": p.stat().st_size}
