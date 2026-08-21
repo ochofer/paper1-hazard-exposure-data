@@ -10,6 +10,12 @@ portfolio construction.
 Two commitments are stated here before any result exists, so that they cannot be
 quietly relaxed once results start appearing.
 
+**Results so far are in [`FINDINGS_2026-08-21.md`](FINDINGS_2026-08-21.md).** That file
+records the data accessed, all three blocking tests with their numbers, the crosswalk
+faults found and fixed, and five pre-commitments made before any hazard variable exists.
+Step-by-step instructions for running any of it are in
+[`EXECUTION_CHECKLIST.html`](EXECUTION_CHECKLIST.html).
+
 ---
 
 ## 1. Survivorship bias: how it will be handled
