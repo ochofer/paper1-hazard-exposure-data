@@ -235,6 +235,11 @@ branch 'main' set up to track 'origin/main'.</pre><button class="copy">copy</but
   <div class="body">
     <p>Once A6 has pushed, this link works. It is also the badge at the top of the README:</p>
     <div class="cmd"><pre>https://colab.research.google.com/github/ochofer/paper1-hazard-exposure-data/blob/main/notebooks/01_raw_panels.ipynb</pre><button class="copy">copy</button></div>
+    <div class="box key">
+      <p><strong>This link is "opening from GitHub".</strong> If I ever say reopen from GitHub, this is what I mean. It fetches the current notebook from the repository every time, so the code you see is never stale.</p>
+      <p><strong>Two copies exist, and the link only refreshes one of them.</strong> The notebook comes from GitHub. The <code>config/</code> files it reads come from a second copy that the notebook clones into <code>/content/paper1-hazard-exposure-data</code> inside the Colab machine. Section 0 syncs that clone, prints the commit before and after, and lists the config files it found. On 21 August the sync was being skipped whenever the working directory was already inside the clone, so the notebook ran current code against a six-commit-old <code>config/</code> and the ticker overrides never applied.</p>
+      <p><strong>If section 0 reports an old commit</strong>, run <code>!rm -rf /content/paper1-hazard-exposure-data</code> in a cell and run again to force a fresh clone. Also close the Colab tab and paste the link into a new one rather than reloading, because a reload sometimes serves the cached notebook.</p>
+    </div>
     <p>Opening it this way gives you a scratch copy, not a live link back to the repository. Saving inside Colab does <strong>not</strong> push anything to GitHub. Use <em>File, then Save a copy in GitHub</em> if you want a change to land, though editing <code>build_notebook.py</code> locally is cleaner.</p>
   </div>
 </div>
