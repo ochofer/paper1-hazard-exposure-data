@@ -3052,12 +3052,45 @@ cells.append(code(r'''
 # Fallback, and also worth doing anyway: a single zip is the easiest thing to archive and
 # the easiest thing to check later. Google Drive is one copy, not a backup.
 zip_path = Path("/content") / f"{EXPORT_NAME}.zip" if IN_COLAB else REPO.parent / f"{EXPORT_NAME}.zip"
+
+# A checksum manifest travels INSIDE the zip. The Drive copy is hash-verified above, but
+# when the mount fails there is no verification on the download path at all, and the
+# copy that actually matters is the one extracted on the laptop. Shipping the sums with
+# the data means that copy can be checked at any point in the future, by Carlo or by
+# anyone he sends it to.
+sums = {f: sha256_of(RAW / f) for f in present}
+for f in (REPO / "config").glob("*.csv"):
+    sums[f"config/{f.name}"] = sha256_of(f)
+sums_txt = "\n".join(f"{h}  {n}" for n, h in sorted(sums.items())) + "\n"
+
 with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED, compresslevel=6) as z:
     for f in present:
         z.write(RAW / f, arcname=f"data/raw/{f}")
     for f in (REPO / "config").glob("*.csv"):
         z.write(f, arcname=f"config/{f.name}")
-print(f"{zip_path.name}: {zip_path.stat().st_size / 1e6:.0f} MB")
+    z.writestr("SHA256SUMS.txt", sums_txt)
+
+print(f"{zip_path.name}: {zip_path.stat().st_size / 1e6:.0f} MB, "
+      f"{len(sums)} files, checksums included")
+
+# Verify the archive by reading it back, rather than trusting that writing worked.
+bad_zip = []
+with zipfile.ZipFile(zip_path) as z:
+    if z.testzip() is not None:
+        print("ZIP IS CORRUPT. Do not rely on it.")
+    for f in present:
+        h = hashlib.sha256()
+        with z.open(f"data/raw/{f}") as fh:
+            for blk in iter(lambda: fh.read(1 << 20), b""):
+                h.update(blk)
+        if h.hexdigest() != sums[f]:
+            bad_zip.append(f)
+if bad_zip:
+    print(f"HASH MISMATCH INSIDE THE ZIP: {bad_zip}")
+else:
+    print("every file inside the zip matches its source, byte for byte")
+print("\nAfter extracting on your laptop, verify with:")
+print(f"  cd <extracted folder> && shasum -a 256 -c SHA256SUMS.txt")
 
 if IN_COLAB:
     try:
