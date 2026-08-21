@@ -1710,6 +1710,80 @@ for i, row in todo.iterrows():
 LIQ_CACHE.write_text(json.dumps(_liq))
 primary["priceable"] = primary.primary_symbol.notna()
 
+# ---------------------------------------------------------- home-listing correction
+# A European firm resolved to a US over-the-counter line is almost always wrong. OUTKY,
+# FOJCY and SEOAY are the OTC receipts of Outokumpu, Fortum and Stora Enso, trading
+# $887, $9,898 and $302,574 a day against Helsinki lines that trade orders of magnitude
+# more. This is not merely thin: a receipt carries a currency move and a stale US close
+# against a European session, so it is the wrong series rather than a noisy one. It gets
+# chosen when FMP's ISIN lookup returns only the receipt, leaving the liquidity test
+# nothing to compare.
+#
+# The rule is evidence-based rather than dogmatic: look for a home-exchange listing by
+# name, and switch only if it trades at least three times the current pick. Ireland is
+# the reason for that caution, since CRH genuinely moved its primary listing to the NYSE.
+HOME_EX = {
+    "Finland": {"HEL"}, "Germany": {"XETRA"}, "France": {"PAR"}, "Italy": {"MIL"},
+    "Spain": {"BME"}, "Norway": {"OSL"}, "Sweden": {"STO"}, "Denmark": {"CPH"},
+    "Netherlands": {"AMS"}, "Belgium": {"BRU"}, "Portugal": {"LIS"},
+    "Austria": {"VIE"}, "Greece": {"ATH"}, "Switzerland": {"SIX"},
+    "United Kingdom": {"LSE"},
+}
+# Check any firm listed away from its home exchange, not just those on US venues.
+# The narrower rule missed two: BAS.F is BASF on the Frankfurt regional floor rather
+# than XETRA, and 0DXG.L is CropEnergies on a London international board. Both are
+# away-from-home lines that are not US.
+_ex = primary.exchange.astype(str).str.upper()
+_home_ok = [str(h) in HOME_EX and e in HOME_EX.get(str(h), set())
+            for h, e in zip(primary.hq, _ex)]
+parked = primary[primary.priceable & primary.hq.isin(HOME_EX) & ~pd.Series(_home_ok, index=primary.index)]
+print(f"\n{len(parked)} firms are listed away from their home exchange, checking")
+moved = 0
+for i, row in parked.iterrows():
+    want = HOME_EX[row["hq"]]
+    try:
+        r = requests.get(f"{BASE}/search-name",
+                         params={"query": row["name"], "limit": 20, "apikey": API_KEY},
+                         timeout=45)
+        hits = r.json() if r.status_code == 200 else []
+    except (requests.RequestException, ValueError):
+        hits = []
+    if isinstance(hits, dict):
+        hits = hits.get("data") or []
+    best, best_dv = None, 0.0
+    for h in hits if isinstance(hits, list) else []:
+        sym = h.get("symbol")
+        ex  = str(h.get("exchangeShortName") or h.get("exchange") or "").upper()
+        if not sym or ex not in want:
+            continue
+        if similar(row["name"], h.get("name") or h.get("companyName") or "") < NAME_MIN:
+            continue
+        dv, bars = liquidity(sym)
+        if bars > 30 and dv > best_dv:
+            best, best_dv = sym, dv
+    cur = float(row["dollar_vol"] or 0)
+    if best and best_dv > max(cur * 3, 1.0):
+        print(f"  {row['name'][:34]:36s} {str(row.primary_symbol):9s} "
+              f"${cur:>12,.0f}  ->  {best:9s} ${best_dv:>12,.0f}")
+        primary.loc[i, "primary_symbol"] = best
+        primary.loc[i, "dollar_vol"] = best_dv
+        primary.loc[i, "route"] = "home-exchange"
+        moved += 1
+print(f"  moved {moved} firms to their home listing")
+LIQ_CACHE.write_text(json.dumps(_liq))
+
+# A line with literally zero traded value is not a listing you can hold. Two came
+# through the name route on 21 August: HMS Bergbau and Savannah Energy, the latter
+# suspended from AIM. Keeping them would put untradeable names in a tradeable portfolio.
+dead = primary.priceable & (primary.dollar_vol.fillna(0) <= 0)
+if dead.any():
+    print(f"\ndropping {int(dead.sum())} listings with zero traded value:")
+    for _, r in primary[dead].iterrows():
+        print(f"  {r['name'][:38]:40s} {r.primary_symbol}")
+    primary.loc[dead, "primary_symbol"] = None
+    primary.loc[dead, "route"] = None
+    primary["priceable"] = primary.primary_symbol.notna()
+
 dupes = primary.loc[primary.priceable & primary.primary_symbol.duplicated(keep=False)]
 print(f"\nrecovered {found} firms by name")
 print("duplicate symbols after the name pass:",
@@ -1748,6 +1822,10 @@ if OVR.exists():
             was = primary.loc[i, "primary_symbol"]
             primary.loc[i, "primary_symbol"] = new
             primary.loc[i, "route"] = "override" if new else None
+            # Recompute liquidity for the new symbol. Carrying the old figure over made
+            # PCG look like it traded $77k a day, which was PCG-PA's number, and that
+            # in turn put PCG on the thin-listing report for no reason.
+            primary.loc[i, "dollar_vol"] = liquidity(new)[0] if new else None
             print(f"  {o['name'][:34]:36s} {str(was):10s} -> {str(new)}")
     primary["priceable"] = primary.primary_symbol.notna()
 
