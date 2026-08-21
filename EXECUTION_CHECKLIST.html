@@ -532,8 +532,10 @@ git commit -m "Record first successful data pull" &amp;&amp; git push</pre><butt
       <tr><td>2</td><td>Section 2, three cells</td><td>Cached, so seconds. Ends at <code>271 of 328</code> or better</td></tr>
       <tr><td>3</td><td>Section 2b, <strong>probe cell first</strong></td><td>It prints three raw API responses. If they do not contain a <code>symbol</code> field, stop and send them to me</td></tr>
       <tr><td>4</td><td>Section 2b, remaining two cells</td><td><code>no symbol is claimed by two entities</code>, and a firm count near 270</td></tr>
-      <tr><td>5</td><td>Section 3, ticker cell</td><td>Must say <code>tickers_primary.csv</code>. If it raises, step 4 did not finish</td></tr>
-      <tr><td>6</td><td>Section 3, fetch loop</td><td>Roughly 270 symbols rather than thousands</td></tr>
+      <tr><td>5</td><td>Section 2c, both cells</td><td>Currency is filled for every priceable firm, and the spot-check table shows European firms on European exchanges</td></tr>
+      <tr><td>6</td><td>Section 3, ticker cell</td><td>Must say <code>tickers_primary.csv</code>. If it raises, step 4 did not finish</td></tr>
+      <tr><td>7</td><td>Section 3, fetch loop</td><td>Roughly 290 symbols rather than thousands</td></tr>
+      <tr><td>8</td><td>Section 4, both cells</td><td>Read every row of the check table before trusting the files</td></tr>
     </table>
     <div class="box key">
       <p><strong>Two bugs the dry run caught before you paid for them.</strong> The <code>lei</code> column held the literal string <code>"not found"</code> for 13 firms, Chevron among them with 73 assets. Left as a string it is a valid join key, so all 13 were being merged into each other, and pandas joins missing keys to each other too. Those 13 now resolve through their SEC CIK instead, which recovers all of them. Section 2b also asserts that no ticker is claimed by two entities, because a collapsed crosswalk would silently double the assets attributed to one firm.</p>

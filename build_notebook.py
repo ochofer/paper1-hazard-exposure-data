@@ -1394,6 +1394,108 @@ print(f"wrote {REPO / 'config' / 'tickers_primary.csv'}")
 '''))
 
 cells.append(md(r"""
+### 2c. Fill in currency, and look at what was lost
+
+Two gaps in the cell above, both worth closing before any download.
+
+**`search-isin` does not return a currency.** The 21 August run left `currency` empty
+for 295 of 328 firms. That field is not cosmetic: a price series from Paris is in euros,
+from Milan in euros, from London often in *pence* rather than pounds, and Ken French's
+factors are in dollars. Mixing them without conversion produces returns that are part
+asset return and part exchange rate move, and the contamination is invisible in the
+data. The `profile` endpoint returns currency and exchange per symbol, so this fills
+them from there while the subscription is live. After you cancel it is unrecoverable.
+
+**Nothing yet shows which firms were dropped.** 37 of 328 came back unpriceable, and an
+aggregate count cannot tell you whether those are 37 tiny holders or one firm with 61
+assets. Ireland went from 2 firms to 0, and CRH is a large owner that trades on the
+NYSE, so at least one of those two is a resolution failure rather than a genuinely
+unlisted entity. The cell prints the losses ordered by asset count so the expensive ones
+are at the top, and prints the chosen listing for the largest firms so a wrong pick,
+a US over-the-counter line standing in for a European primary, is visible at a glance
+rather than buried in a CSV.
+"""))
+
+cells.append(code(r'''
+PROFILE   = f"{BASE}/profile"
+PROF_CACHE = RAW / "fmp_profile_cache.json"
+prof = json.loads(PROF_CACHE.read_text()) if PROF_CACHE.exists() else {}
+
+
+def profile_of(symbol):
+    if symbol in prof:
+        return prof[symbol]
+    try:
+        r = requests.get(PROFILE, params={"symbol": symbol, "apikey": API_KEY}, timeout=45)
+        payload = r.json() if r.status_code == 200 else []
+    except Exception:
+        payload = []
+    if isinstance(payload, dict):
+        payload = payload.get("data") or [payload]
+    rec = payload[0] if isinstance(payload, list) and payload else {}
+    prof[symbol] = rec if isinstance(rec, dict) else {}
+    return prof[symbol]
+
+
+syms = primary.loc[primary.priceable, "primary_symbol"].tolist()
+print(f"fetching profiles for {len(syms)} primary listings")
+for k, s in enumerate(syms, 1):
+    profile_of(s)
+    if k % 100 == 0:
+        print(f"  {k}/{len(syms)}")
+        PROF_CACHE.write_text(json.dumps(prof))
+PROF_CACHE.write_text(json.dumps(prof))
+
+
+def field(sym, *names):
+    p = prof.get(sym) or {}
+    for n in names:
+        if p.get(n):
+            return p[n]
+    return None
+
+
+for col, keys in [("currency", ("currency",)),
+                  ("exchange", ("exchangeShortName", "exchange")),
+                  ("listed_country", ("country",)),
+                  ("ipo_date", ("ipoDate",))]:
+    primary[col] = primary.primary_symbol.map(
+        lambda s: field(s, *keys) if pd.notna(s) else None)
+
+primary.to_csv(REPO / "config" / "tickers_primary.csv", index=False)
+
+print("\ncurrency of the chosen listings:")
+print(primary.loc[primary.priceable, "currency"].value_counts(dropna=False).to_string())
+print("\nexchange:")
+print(primary.loc[primary.priceable, "exchange"].value_counts(dropna=False).head(15).to_string())
+
+# GBp is pence, one hundredth of a pound. Left unconverted it inflates a UK price level
+# by 100x. It does not affect simple returns, but it does affect anything scaled by
+# price, and it will silently wreck a dollar-value weighting scheme.
+gbp = primary[primary.currency.astype(str).str.upper().isin(["GBP", "GBX", "GBP PENCE"])]
+if len(gbp):
+    print(f"\n{len(gbp)} UK listings: check GBp (pence) versus GBP before any conversion")
+'''))
+
+cells.append(code(r'''
+lost = (primary[~primary.priceable]
+        .sort_values("n_assets", ascending=False)[["name", "hq", "n_assets", "lei", "cik"]])
+print(f"{len(lost)} firms not priceable, holding "
+      f"{int(lost.n_assets.sum()):,} of {int(primary.n_assets.sum()):,} assets "
+      f"({lost.n_assets.sum() / primary.n_assets.sum():.1%})")
+print("\nlargest losses first. A well-known listed company here is a resolution failure,")
+print("not evidence that it is unlisted, and it should be chased before you cancel:")
+display(lost.head(25))
+
+print("\nspot check. The chosen listing for the 20 largest owners. A European firm showing")
+print("a US over-the-counter symbol here means the liquidity test picked the wrong line:")
+display(primary[primary.priceable]
+        .sort_values("n_assets", ascending=False)
+        .head(20)[["name", "hq", "n_assets", "primary_symbol", "exchange",
+                   "currency", "route"]])
+'''))
+
+cells.append(md(r"""
 ### Before you read this as settled
 
 Two things this cell does not tell you, both worth a line in the methods section.
