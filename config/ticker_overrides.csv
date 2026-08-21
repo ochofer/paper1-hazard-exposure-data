@@ -2,4 +2,6 @@ name,symbol,reason
 Berkshire Hathaway Inc,BRK-B,"GLEIF maps only the A-share ISIN, so the tie-break had nothing to compare. BRK-A trades a few hundred shares a day at ~1500x the price: same firm, but stale prices and coarse discreteness in a daily series."
 Pacific Gas and Electric Co,PCG,"Name search returned PCG-PA, a preferred share. Preferred is a bond-like claim and does not carry the equity return. PCG is the common line of the listed parent."
 Union Electric Co,,"Only listed security is preferred (UEPEP). Union Electric is a wholly owned subsidiary of Ameren; its common equity does not trade. Dropped rather than silently substituting the parent, because rolling subsidiaries up is a design decision, not a lookup. 42 assets."
-CHS Inc,,"Only listed securities are preferred series (CHSCL). CHS is a co-operative with no common equity. Correctly excluded."
+CHS Inc,,Only listed securities are preferred series (CHSCL). CHS is a co-operative with no common equity. Correctly excluded.
+BASF SE,BAS.DE,"Chosen line was BAS.F, the Frankfurt regional floor at ~$11k a day. The automatic home-exchange rule could not catch it because FMP reports BAS.F's exchange as XETRA, so it looked like it was already home. BAS.DE is the actual XETRA line."
+CropEnergies AG,,"Only line found is 0DXG.L, a London international order book quote of a German company at ~$44k a day. CropEnergies was squeezed out by Suedzucker in 2024 so no current home listing exists to move to. An international board quote is a poor return series and this is 1 asset, so dropped rather than carried."

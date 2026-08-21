@@ -600,9 +600,13 @@ config/
 <p>These are the things that stand between a working download and a defensible result. None is blocked by anything except the data pull, and the first two decide whether the paper's central estimate can be trusted at all.</p>
 
 <div class="step">
-  <div class="row"><input type="checkbox"><div class="title">G1. Blocking test 1, the survivorship hit rate <span class="st s-no">BLOCKED</span></div></div>
+  <div class="row"><input type="checkbox"><div class="title">G1. Blocking test 1, the survivorship hit rate <span class="st s-you">YOU</span></div></div>
   <div class="body">
-    <p>Blocked on the paid key, and it is the first thing to run once you have one. <code>code/01_survivorship_test_fmp.py</code> exists but has never returned a number, and it still points at the retired <code>/api/v3/</code> paths, so it needs the same URL fix the notebook got before it will run at all.</p>
+    <p><strong>Unblocked and built. It is section 5 of the notebook.</strong> Your F1 run showed delisted price history returns data on the Ultimate tier, which is what the free key refused, so this can finally produce a number. It supersedes <code>code/01_survivorship_test_fmp.py</code>, which never ran and still points at the retired <code>/api/v3/</code> paths.</p>
+    <div class="box stop"><p><strong>Run it before you cancel.</strong> It needs price history for companies that no longer exist, which is the one thing that becomes unavailable the moment the subscription lapses.</p></div>
+    <p>It reports three things, and only the third turns a rate into a bias: the base delisting count for 2010 to 2025, the share falling in your sectors with a confidence interval, and the final-year return of delisted firms against the market over identical windows. A 10 percent attrition rate with no return gap barely matters; the same rate with a large negative gap changes the headline number.</p>
+    <div class="box warn"><p><strong>The rate it prints is a lower bound and says so.</strong> A delisting count is not a rate without knowing how many firms were listed in 2010, and FMP publishes no historical constituent list. The denominator used is today's survivors plus the delistings, which undercounts the 2010 population. Quote it as a floor, not an estimate.</p></div>
+    <p>The thresholds are written into the notebook above the cell, before you see the result: under 5 percent, report and proceed; 5 to 15 percent, bound the effect by recomputing the headline assuming delisted firms earned the observed gap; over 15 percent, the survivor-only cross-section cannot carry the main claim.</p>
     <p>The question it answers: of the firms that owned assets in the GEM file at the start of the sample, what fraction had left the listed universe by the end, and how do their returns compare with the survivors. <strong>Until that fraction is a number, survivorship bias in this paper is of unknown size, which is not the same as small.</strong> Commit to how you will handle it before you see the figure, so the threshold cannot move to accommodate the result.</p>
   </div>
 </div>

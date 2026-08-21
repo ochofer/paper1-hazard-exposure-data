@@ -966,7 +966,7 @@ PANELB_END = len(cells)
 # Held back and appended last: this is the closing scope statement, so it has to come
 # after every section, including ones added later.
 absent_cell = md(r"""
-## 5. What is deliberately absent
+## 6. What is deliberately absent
 
 No returns, no regressions, no portfolio construction, no merge of the two panels, and
 no survivorship correction. Those belong downstream of this file. This section is the
@@ -1932,15 +1932,216 @@ the ownership graph rather than a fact about its balance sheet. Decide explicitl
 whether financial holders belong in the cross-section, and say which way you went.
 """))
 
-# ---------------------------------------------------------------- run order
-# Written order is not run order. Ticker resolution was added after Panel B but has to
-# come before it, because it produces the symbol list Panel B prices. Reassemble here
-# rather than shuffling hundreds of lines of text above.
-head    = cells[:PANELB_START]    # title, setup, Panel A
-panel_b = cells[PANELB_START:PANELB_END]
-tickers = cells[PANELB_END:]      # everything appended after the marker
+TICKERS_END = len(cells)
 
-cells = head + tickers + panel_b + [absent_cell]
+# ------------------------------------------------- Section 5: blocking test 1
+cells.append(md(r"""
+---
+
+## 5. Blocking test 1: how big is the survivorship problem?
+
+**Run this while the subscription is live.** It is the one test that cannot be done
+afterwards, because it needs price history for companies that no longer exist.
+
+### Why this is the blocking test
+
+The universe was built from a GEM snapshot dated August 2026, so **every firm in it is a
+firm that still existed in August 2026**. A firm that owned power assets in 2010 and was
+then acquired, delisted or wound up is absent, and it is absent precisely because of what
+happened to it. If hazard-exposed firms failed more often, the sample systematically
+drops the worst outcomes and the estimated hazard premium is biased upward. That is not a
+caveat. It is a mechanism that manufactures the result the paper is looking for.
+
+This cell does not fix that, and nothing in this repository can, because the exposure
+data for dead firms does not exist. What it does is **measure the size of the hole**, so
+the bias can be bounded and reported rather than acknowledged and waved through.
+
+### What is measured, in increasing order of usefulness
+
+1. **The base rate.** How many companies FMP records as delisting between 2010 and 2025.
+   This says delisting is common, and nothing more.
+2. **The sector rate.** The same, restricted to utilities, energy, materials and
+   industrials. This is the number that matters, because delisting rates differ sharply
+   across sectors and a market-wide figure would understate a utility-heavy sample.
+3. **The return gap.** For delisted firms with price history, the cumulative return over
+   their final year against the market over the identical window. This is what turns a
+   survivorship *rate* into a survivorship *bias*: a 10 percent attrition rate with no
+   return gap barely matters, the same rate with a large negative gap matters a lot.
+
+### Commit to the threshold before seeing the number
+
+| If the sector delisting rate is | Then |
+|---|---|
+| under 5 percent over the window | Report it, note the direction of the bias, proceed |
+| 5 to 15 percent | Proceed, but bound the effect: recompute the headline result assuming the delisted firms earned the observed gap |
+| over 15 percent | The survivor-only cross-section cannot carry the main claim. Either rebuild the universe from historical GEM vintages, or reframe the paper around what this sample can support |
+
+The third row is the uncomfortable one, which is exactly why it is written down here
+rather than in a discussion section composed after the fact.
+"""))
+
+cells.append(code(r'''
+DELISTED_CACHE = RAW / "fmp_delisted.json"
+
+if DELISTED_CACHE.exists():
+    delisted = json.loads(DELISTED_CACHE.read_text())
+    print(f"delisted list from cache: {len(delisted):,} rows")
+else:
+    # Page until a short or empty page. Stopping at page 0, which the earlier probe did,
+    # returns 100 names out of thousands and would understate every rate below.
+    delisted, page = [], 0
+    while True:
+        try:
+            r = requests.get(f"{BASE}/delisted-companies",
+                             params={"page": page, "limit": 100, "apikey": API_KEY},
+                             timeout=45)
+            batch = r.json() if r.status_code == 200 else []
+        except (requests.RequestException, ValueError):
+            batch = []
+        if not isinstance(batch, list) or not batch:
+            break
+        delisted.extend(batch)
+        page += 1
+        if page % 20 == 0:
+            print(f"  page {page}, {len(delisted):,} rows so far")
+        if len(batch) < 100 or page > 500:      # guard against an endless loop
+            break
+        time.sleep(0.05)
+    DELISTED_CACHE.write_text(json.dumps(delisted))
+    print(f"pulled {len(delisted):,} delisted companies across {page} pages")
+
+dl = pd.DataFrame(delisted)
+print("columns:", list(dl.columns))
+display(dl.head(3))
+'''))
+
+cells.append(code(r'''
+# Normalise whatever the vendor called the date column rather than assuming a name.
+_dcol = next((c for c in ("delistedDate", "delisted_date", "date") if c in dl.columns), None)
+if _dcol is None:
+    raise SystemExit(f"no delisting date column found in {list(dl.columns)}")
+
+dl["delisted_on"] = pd.to_datetime(dl[_dcol], errors="coerce")
+win = dl[(dl.delisted_on >= START) & (dl.delisted_on <= END)].copy()
+print(f"{len(win):,} of {len(dl):,} delistings fall inside {START} to {END}")
+
+print("\nby year:")
+print(win.delisted_on.dt.year.value_counts().sort_index().to_string())
+
+if "exchange" in win.columns:
+    print("\ntop exchanges:")
+    print(win.exchange.value_counts().head(12).to_string())
+
+# The denominator problem, stated plainly. A delisting COUNT is not a RATE: a rate needs
+# the number of firms listed at the START of the window. FMP publishes no historical
+# constituent list, so the honest denominator available here is today's survivors plus
+# the delistings, which undercounts the 2010 population and therefore understates the
+# rate. Report it as a lower bound and say so.
+try:
+    _r = requests.get(f"{BASE}/stock-list", params={"apikey": API_KEY}, timeout=120)
+    live = _r.json() if _r.status_code == 200 else []
+except (requests.RequestException, ValueError):
+    live = []
+print(f"\ncurrently listed symbols: {len(live):,}")
+if live:
+    denom = len(live) + len(win)
+    print(f"crude LOWER BOUND delisting rate over the window: "
+          f"{len(win) / denom:.1%}  ({len(win):,} of {denom:,})")
+    print("Lower bound because the denominator counts today's survivors, not the")
+    print("2010 population, which was larger.")
+'''))
+
+cells.append(code(r'''
+# Sector rate. A market-wide figure is the wrong comparison for a utility-heavy sample.
+# Sector comes from the profile endpoint, one call per symbol, so this is capped: a
+# random sample estimates a proportion perfectly well, and sampling at random rather
+# than taking the first N avoids any ordering in the vendor's list.
+SECTORS  = {"Utilities", "Energy", "Basic Materials", "Industrials", "Materials"}
+SAMPLE_N = 400
+
+pool = win.dropna(subset=["symbol"]).drop_duplicates("symbol")
+samp = pool.sample(min(SAMPLE_N, len(pool)), random_state=0)
+print(f"profiling a random {len(samp)} of {len(pool):,} delisted symbols")
+
+sect = []
+for k, s in enumerate(samp.symbol.tolist(), 1):
+    sect.append((profile_of(s) or {}).get("sector"))
+    if k % 100 == 0:
+        print(f"  {k}/{len(samp)}")
+        PROF_CACHE.write_text(json.dumps(prof))
+PROF_CACHE.write_text(json.dumps(prof))
+
+samp = samp.assign(sector=sect)
+share = samp.sector.isin(SECTORS).mean()
+n_se  = int(samp.sector.isin(SECTORS).sum())
+# Binomial standard error on the sector share, because this is an estimate from 400
+# draws and quoting it to one decimal place without a margin would overstate precision.
+se = (share * (1 - share) / max(len(samp), 1)) ** 0.5
+print(f"\nshare of delistings in {sorted(SECTORS)}: {share:.1%} "
+      f"(+/- {1.96 * se:.1%}, from {n_se} of {len(samp)})")
+print("\nsector breakdown of the sample:")
+print(samp.sector.value_counts(dropna=False).head(12).to_string())
+print(f"\nimplied delistings in your sectors over the window: ~{int(share * len(pool)):,}")
+'''))
+
+cells.append(code(r'''
+# The return gap. This converts a rate into a bias. Take delisted firms in the relevant
+# sectors, pull their final year, and compare against SPY over the identical window so
+# the comparison is not contaminated by when in the cycle the delisting happened.
+targets = samp[samp.sector.isin(SECTORS)].head(120)
+print(f"pricing {len(targets)} delisted names in the relevant sectors\n")
+
+spy = prices[prices.symbol == "SPY"].set_index("date")["price"].sort_index()
+
+gaps, priced, nodata = [], 0, 0
+for _, row in targets.iterrows():
+    end_d   = row.delisted_on
+    start_d = end_d - pd.Timedelta(days=365)
+    d = fetch_prices(row["symbol"], start_d.strftime("%Y-%m-%d"),
+                     end_d.strftime("%Y-%m-%d"))
+    if d.empty or len(d) < 60:
+        nodata += 1
+        continue
+    priced += 1
+    firm_ret = d["price"].iloc[-1] / d["price"].iloc[0] - 1
+    mkt = spy.loc[(spy.index >= d.date.min()) & (spy.index <= d.date.max())]
+    if len(mkt) < 2:
+        continue
+    mkt_ret = mkt.iloc[-1] / mkt.iloc[0] - 1
+    gaps.append({"symbol": row["symbol"], "delisted_on": end_d, "sector": row["sector"],
+                 "firm_ret": firm_ret, "mkt_ret": mkt_ret, "gap": firm_ret - mkt_ret})
+    time.sleep(0.02)
+
+g = pd.DataFrame(gaps)
+print(f"priced {priced}, no usable history {nodata}, gap computed for {len(g)}")
+if len(g):
+    display(g.sort_values("gap").head(15))
+    print(f"\nmedian final-year return, delisted firms : {g.firm_ret.median():+.1%}")
+    print(f"median market return over same windows   : {g.mkt_ret.median():+.1%}")
+    print(f"MEDIAN GAP                               : {g.gap.median():+.1%}")
+    print(f"share underperforming the market          : {(g.gap < 0).mean():.1%}")
+    print("\nThat gap is the survivorship correction. A sample excluding these firms")
+    print("overstates average returns by roughly (delisting rate) x (this gap), before")
+    print("any relationship with hazard exposure is considered.")
+    g.to_csv(RAW / "blocking_test_1_return_gaps.csv", index=False)
+    print(f"\nwrote {RAW / 'blocking_test_1_return_gaps.csv'}")
+else:
+    print("\nNo return gaps computed. Do not read that as 'no bias'. Read it as")
+    print("'not measured', and write it in the paper that way.")
+'''))
+
+# ---------------------------------------------------------------- run order
+# Written order is not run order. Ticker resolution was added after Panel B but must run
+# before it, because it produces the symbol list Panel B prices. Blocking test 1 was
+# added last and must run after Panel B, because it compares delisted firms against the
+# SPY series Panel B downloads. Reassemble here rather than shuffling hundreds of lines
+# of text above.
+head      = cells[:PANELB_START]              # title, setup, Panel A
+panel_b   = cells[PANELB_START:PANELB_END]
+tickers   = cells[PANELB_END:TICKERS_END]
+blocking1 = cells[TICKERS_END:]
+
+cells = head + tickers + panel_b + blocking1 + [absent_cell]
 
 nb = {
     "cells": cells,
