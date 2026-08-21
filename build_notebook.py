@@ -2596,6 +2596,149 @@ if rows:
             print("energy. Check the crosswalk before going further.")
 '''))
 
+cells.append(md(r"""
+### 6b. Where the +4.33% alpha comes from
+
+The test passed, but it produced a significant positive alpha on a portfolio that has no
+business having one: 4.33 percent a year, t of 2.16, on an equal-weighted basket of
+utilities, energy and materials. **That number is roughly the size of any hazard premium
+this paper might report**, so if it is an artefact it will contaminate the headline
+result, and if it is real it needs a name. Either way it cannot be left alone.
+
+There are four candidate explanations and three of them are mechanical.
+
+**Equal weighting with daily rebalancing.** Computing a daily equal-weighted return
+implicitly rebalances every day, which buys whatever fell and sells whatever rose. With
+bid-ask bounce, that harvests the bounce as return. This is the Blume-Stambaugh bias and
+it scales with the cross-sectional variance of returns, so it is largest in exactly the
+illiquid names this panel contains: 26 listings trade under a million dollars a day.
+
+**Survivorship.** The universe is survivor-only by construction. A basket of firms
+selected for still existing in 2026 should out-perform, and blocking test 1 found that
+firms of this size which delisted were mostly *acquired*, which cuts the other way. The
+net sign is unknown, which is the point.
+
+**Missing factors.** FF3 omits profitability, investment and momentum. Utilities are
+low-profitability and high-investment, energy the reverse, so a three-factor model
+leaves real structure in the residual and calls it alpha.
+
+**A genuine sector effect.** Possible, and it would be a finding rather than a bug, but
+it is the last explanation to reach for, not the first.
+
+The cell below separates the mechanical part. It runs the same regression four ways:
+equal versus value weighted, daily versus monthly buy-and-hold. **If the alpha collapses
+when you value-weight or move to monthly, it was microstructure.** If it survives all
+four, it is worth investigating.
+"""))
+
+cells.append(code(r'''
+# Symbols with repeated extreme moves are almost certainly broken series rather than
+# volatile firms. CRC shows a 1,065 percent single-day move, which is the California
+# Resources post-bankruptcy share exchange, and BNOR.OL shows eight, which looks like a
+# split adjustment problem. Excluding them is a judgement call, so it is made explicitly
+# and the result is reported both ways.
+bad_syms = set(extreme.groupby("symbol").size().loc[lambda s: s >= 2].index)
+print(f"excluding {len(bad_syms)} symbols with 2 or more extreme daily moves:")
+print(f"  {sorted(bad_syms)}")
+
+clean = px[~px.symbol.isin(bad_syms)].copy()
+
+# Weights. Market cap from the profile endpoint where available, dollar volume as a
+# fallback, and the fallback is reported rather than hidden because the two are not the
+# same thing and a reader should know which was used.
+_mc = {}
+for s in clean.symbol.unique():
+    p_ = prof.get(s) or {}
+    v = p_.get("marketCap") or p_.get("mktCap")
+    if v:
+        _mc[s] = float(v)
+dv_map = dict(zip(tp.primary_symbol, tp.dollar_vol))
+n_mc = len(_mc)
+for s in clean.symbol.unique():
+    if s not in _mc and dv_map.get(s):
+        _mc[s] = float(dv_map[s])
+print(f"\nweights: {n_mc} from market cap, {len(_mc) - n_mc} from dollar volume as proxy")
+clean["w"] = clean.symbol.map(_mc)
+'''))
+
+cells.append(code(r'''
+def portfolio(df, weight, freq):
+    """Portfolio return series. weight in {'ew','vw'}, freq in {'D','M'}.
+
+    Monthly returns are buy-and-hold compounded within the month, NOT an average of
+    daily returns, because the whole point is to remove the implicit daily rebalancing.
+    """
+    d = df.dropna(subset=["ret"]).copy()
+    if freq == "M":
+        d["period"] = d.date.dt.to_period("M")
+        # compound each firm within the month first, then form the portfolio
+        firm = (d.groupby(["symbol", "period"])
+                  .agg(r=("ret", lambda s: (1 + s).prod() - 1),
+                       w=("w", "first")).reset_index())
+    else:
+        firm = d.rename(columns={"date": "period", "ret": "r"})[["symbol", "period", "r", "w"]]
+
+    if weight == "ew":
+        out = firm.groupby("period")["r"].mean()
+    else:
+        firm = firm.dropna(subset=["w"])
+        out = (firm.assign(wr=lambda x: x.r * x.w)
+                   .groupby("period")
+                   .apply(lambda x: x.wr.sum() / x.w.sum(), include_groups=False))
+    return out
+
+
+def factors(freq):
+    f = ff3.set_index("date")[["Mkt-RF", "SMB", "HML", "RF"]] / 100.0
+    if freq == "D":
+        return f
+    g = f.copy()
+    g["period"] = g.index.to_period("M")
+    return g.groupby("period").apply(lambda x: (1 + x).prod() - 1, include_groups=False)
+
+
+rows6 = []
+for weight in ("ew", "vw"):
+    for freq in ("D", "M"):
+        p_ = portfolio(clean[clean.hq == "United States"], weight, freq)
+        f_ = factors(freq)
+        d = pd.DataFrame({"port": p_}).join(f_, how="inner").dropna()
+        if len(d) < 60:
+            continue
+        y = (d["port"] - d["RF"]).values
+        X = d[["Mkt-RF", "SMB", "HML"]].values
+        lags = 5 if freq == "D" else 3
+        b, se, t = newey_west_ols(y, X, lags=lags)
+        fit = np.column_stack([np.ones(len(X)), X]) @ b
+        r2 = 1 - ((y - fit) ** 2).sum() / ((y - y.mean()) ** 2).sum()
+        ann = 25150 if freq == "D" else 1200      # to percent a year
+        rows6.append({"weight": weight.upper(), "freq": freq, "obs": len(d),
+                      "alpha_pct_yr": b[0] * ann, "t_alpha": t[0],
+                      "beta_mkt": b[1], "R2": r2})
+
+r6 = pd.DataFrame(rows6)
+display(r6.round(3))
+
+if len(r6):
+    ew_d = r6[(r6.weight == "EW") & (r6.freq == "D")]
+    vw_m = r6[(r6.weight == "VW") & (r6.freq == "M")]
+    if len(ew_d) and len(vw_m):
+        a1, a2 = float(ew_d.alpha_pct_yr.iloc[0]), float(vw_m.alpha_pct_yr.iloc[0])
+        print(f"\nEW daily alpha {a1:+.2f}%/yr  ->  VW monthly alpha {a2:+.2f}%/yr")
+        print(f"the mechanical part is about {a1 - a2:+.2f} percentage points")
+        if abs(a2) < 2 or abs(float(vw_m.t_alpha.iloc[0])) < 2:
+            print("\nThe alpha does not survive value weighting and monthly compounding.")
+            print("It was microstructure, not a sector effect. USE VALUE-WEIGHTED")
+            print("MONTHLY RETURNS for the headline result, and say so in the methods.")
+        else:
+            print("\nThe alpha survives all four specifications. That makes it worth")
+            print("investigating rather than dismissing: add profitability, investment")
+            print("and momentum before concluding anything, since FF3 leaves real")
+            print("structure in the residual for utilities and energy.")
+    r6.to_csv(RAW / "blocking_test_2_weighting.csv", index=False)
+    print(f"\nwrote {RAW / 'blocking_test_2_weighting.csv'}")
+'''))
+
 # ---------------------------------------------------------------- run order
 # Written order is not run order. Ticker resolution was added after Panel B but must run
 # before it, because it produces the symbol list Panel B prices. Blocking test 1 was
