@@ -1858,6 +1858,11 @@ display(still[["name", "hq", "n_assets"]].head(20))
 # root only, keep just the patterns that are nearly always right, and let liquidity do
 # the real work. A preferred share, a warrant and a secondary international line are all
 # thinly traded, which is a property of the security rather than a guess about its name.
+# Diagnostics run LAST, on purpose. These used to print in section 2c, before the name
+# retry, the home-exchange correction and the overrides had run, so they described an
+# intermediate state: BAS.F and 0DXG.L stayed on the flag list after both had already
+# been moved. A report that does not describe the file actually written is worse than no
+# report, because it invites chasing problems that are already fixed.
 SUSPECT = [
     (re.compile(r"-P[A-Z]?$"),        "US preferred share"),
     (re.compile(r"^[A-Z]{1,4}PR[A-Z]?$"), "preferred series"),
