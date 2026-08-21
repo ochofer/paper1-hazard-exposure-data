@@ -1035,50 +1035,72 @@ def equity_rows(records):
 resolved   = {}                        # lei -> list of equity records
 unresolved = list(universe.lei.dropna().unique())
 
-# Caps deliberately stop at 500 rather than running to exhaustion. A listed company's
-# equity ISIN is issued in its home country, and the sort above puts domestic ISINs
-# first, so a firm with no equity in its first 500 domestic-first ISINs is a bond issuer
-# rather than a listing this search is missing. Removing the cap costs roughly 60,000
-# extra lookups to change almost nothing. Firms still unresolved at 500 are reported
-# separately below rather than being silently recorded as unlisted.
+# Caps keep the early waves cheap: most firms resolve on their first few domestic ISINs,
+# so there is no reason to send Deutsche Bank's 21,793 in wave 1.
 CAPS = [20, 100, 500]
 
-for wave, cap in enumerate(CAPS, start=1):
-    if not unresolved:
-        break
+
+def run_wave(leis, cap, label):
+    """Look up at most `cap` ISINs per firm, then re-test which firms resolved."""
     seen, batch_isins = set(), []
-    for lei in unresolved:
+    for lei in leis:
         for i in BY_LEI.get(lei, [])[:cap]:
             if i not in seen and i not in cache:
                 seen.add(i)
                 batch_isins.append(i)
 
-    print(f"\nwave {wave}, cap {cap}: {len(unresolved)} firms unresolved, "
+    print(f"\n{label}: {len(leis)} firms unresolved, "
           f"{len(batch_isins):,} new ISINs to look up")
     if batch_isins:
         figi_lookup(batch_isins)
         CACHE.write_text(json.dumps(cache))
 
     still = []
-    for lei in unresolved:
+    for lei in leis:
         eqs = [d for i in BY_LEI.get(lei, [])[:cap] for d in equity_rows(cache.get(i, []))]
         if eqs:
             resolved[lei] = eqs
         else:
             still.append(lei)
     print(f"  resolved so far: {len(resolved)}  still unresolved: {len(still)}")
-    unresolved = still
+    return still
 
-no_isin  = [l for l in universe.lei.dropna().unique() if not BY_LEI.get(l)]
-hit_cap  = [l for l in unresolved if len(BY_LEI.get(l, [])) > CAPS[-1]]
+
+for wave, cap in enumerate(CAPS, start=1):
+    if not unresolved:
+        break
+    unresolved = run_wave(unresolved, cap, f"wave {wave}, cap {cap}")
+
+# A cap is a budget, not a finding. The 20 August run stopped at 500 and reported seven
+# firms unresolved, among them Exxon Mobil, Alphabet and JPMorgan, which are obviously
+# listed. Their equity ISIN simply sorts late: ISINs are ordered alphabetically within
+# home country, so US30231G1022 sits behind every US0, US1 and US2 code Exxon has ever
+# issued. Dropping Exxon and its 72 assets because of an alphabetical tiebreak would be
+# a sampling error introduced by an implementation detail, which is the worst kind
+# because nothing downstream would ever reveal it.
+#
+# Uncapping looked prohibitive when this was first written, but that estimate came from
+# a mocked dry run where over a hundred firms were unresolved. In the real data it is a
+# handful, so finishing them properly costs well under a minute. Measure, then decide.
+capped = [l for l in unresolved if len(BY_LEI.get(l, [])) > CAPS[-1]]
+if capped:
+    rest = [l for l in unresolved if l not in set(capped)]
+    total = sum(len(BY_LEI[l]) for l in capped)
+    unresolved = rest + run_wave(capped, 10 ** 9,
+                                 f"final pass, no cap, {total:,} ISINs across "
+                                 f"{len(capped)} firms")
+
+no_isin = [l for l in universe.lei.dropna().unique() if not BY_LEI.get(l)]
 
 print(f"\ndone. {len(resolved)} of {len(universe)} firms have listed common stock")
-print(f"  no ISIN at all in GLEIF        : {len(no_isin)}")
-print(f"  ISINs, but none is equity      : {len(unresolved) - len(hit_cap)}")
-print(f"  unresolved at the {CAPS[-1]} cap      : {len(hit_cap)}  <- check these by hand")
-if hit_cap:
-    nm = universe.set_index("lei")["name"]
-    for l in hit_cap[:15]:
+print(f"  no ISIN at all in GLEIF   : {len(no_isin)}")
+print(f"  ISINs, but none is equity : {len(unresolved) - len(no_isin)}")
+if unresolved:
+    nm  = universe.set_index("lei")["name"]
+    big = sorted(unresolved, key=lambda l: -len(BY_LEI.get(l, [])))[:12]
+    print("\n  largest unresolved, by ISIN count. A well-known listed name appearing")
+    print("  here means the search missed it, not that it is unlisted:")
+    for l in big:
         print(f"      {nm.get(l, '?')[:44]:46s} {len(BY_LEI.get(l, [])):>6,} ISINs")
 '''))
 
