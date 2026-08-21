@@ -2247,6 +2247,150 @@ if len(g):
     g2.to_csv(RAW / "blocking_test_1_return_gaps.csv", index=False)
 '''))
 
+cells.append(md(r"""
+### 5c. What the vendor can and cannot tell you about survivorship
+
+The 21 August run settled two things and broke one.
+
+**Settled, and bad: FMP cannot measure a 2010 to 2025 delisting rate.** The recorded
+counts run 7 delistings in 2010, 3 in 2012, 10 in 2015, then 1,843 in 2023 and 2,353 in
+2025. That is a 28-fold jump. Delisting rates do not move like that; coverage does. The
+list is effectively empty before about 2016 and only dense from 2021, so it is a recent
+snapshot wearing the costume of a historical record. **Any rate computed across the full
+window from this source is not a lower bound, it is an artefact**, and the earlier 8.2
+percent figure should be discarded rather than quoted with a caveat.
+
+**Settled, and genuinely surprising: the sign of the bias may be the opposite of the
+usual worry.** Splitting the return gap by the firm's own final-year dollar volume:
+
+| Final-year dollar volume | n | Median gap | Share negative |
+|---|---|---|---|
+| under $100k | 32 | -14.6% | 59% |
+| $100k to $1m | 16 | -67.9% | 88% |
+| $1m to $10m | 13 | +0.7% | 46% |
+| over $10m | 10 | **+18.1%** | 30% |
+
+Small firms delist because they fail. Firms of the size in your universe mostly delist
+because they are **acquired**, and acquisitions pay a premium. So excluding delisted
+firms may bias your returns *downward*, not upward. That reverses the standard
+survivorship story for a large-cap sample, and it is worth saying in the paper. With n
+of 10 it is a hint rather than a finding, which is what the cell below is for.
+
+**Broken: the exchange match.** `stock-list` returns symbols without an exchange field,
+so numerator and denominator could not be put on the same venue set. The screener
+endpoint carries both exchange and market cap, which is better anyway: it lets the
+denominator be matched on *size* as well as venue, and size is what the table above
+shows to be the variable that matters.
+"""))
+
+cells.append(code(r'''
+# Size-and-venue-matched denominator. The screener carries exchange and market cap, which
+# stock-list does not, and matching on size matters more than matching on venue given
+# what the size split showed.
+CAP_FLOOR = 1_000_000_000       # $1bn, roughly the small end of the universe
+SCREENER  = f"{BASE}/company-screener"
+
+MY_EX = sorted(set(primary.loc[primary.priceable, "exchange"]
+                   .dropna().astype(str).str.upper()) - {"OTC"})
+print(f"matching on {len(MY_EX)} exchanges, market cap above ${CAP_FLOOR:,}")
+
+big_live = []
+for ex in MY_EX:
+    got, page = 0, 0
+    while True:
+        try:
+            r = requests.get(SCREENER, params={"exchange": ex,
+                                               "marketCapMoreThan": CAP_FLOOR,
+                                               "isActivelyTrading": "true",
+                                               "limit": 1000, "page": page,
+                                               "apikey": API_KEY}, timeout=60)
+            batch = r.json() if r.status_code == 200 else []
+        except (requests.RequestException, ValueError):
+            batch = []
+        if not isinstance(batch, list) or not batch:
+            break
+        big_live.extend(batch)
+        got += len(batch)
+        page += 1
+        if len(batch) < 1000 or page > 20:
+            break
+    print(f"  {ex:8s} {got:>6,} firms above the cap floor")
+
+print(f"\ntotal size-matched live population: {len(big_live):,}")
+'''))
+
+cells.append(code(r'''
+# Numerator matched the same way. Market cap is unavailable for dead companies, so size
+# is proxied by final-year median dollar volume, and the threshold is calibrated against
+# the live universe rather than picked out of the air.
+uni_dv = primary.loc[primary.priceable, "dollar_vol"].dropna()
+DV_FLOOR = float(uni_dv.quantile(0.10)) if len(uni_dv) else 1e6
+print(f"size proxy floor: ${DV_FLOOR:,.0f} a day, the 10th percentile of your own universe")
+
+RECENT_FROM = "2021-01-01"      # the part of the vendor list that is actually populated
+cand_dl = win[(win.delisted_on >= RECENT_FROM)]
+if "exchange" in cand_dl.columns:
+    cand_dl = cand_dl[cand_dl.exchange.astype(str).str.upper().isin(MY_EX)]
+cand_dl = cand_dl.dropna(subset=["symbol"]).drop_duplicates("symbol")
+print(f"{len(cand_dl):,} delistings since {RECENT_FROM} on matched exchanges")
+
+CHECK_N = 300
+probe = cand_dl.sample(min(CHECK_N, len(cand_dl)), random_state=1)
+print(f"sizing a random {len(probe)} of them\n")
+
+big_dead = []
+for k, row in enumerate(probe.itertuples(), 1):
+    end_d = row.delisted_on
+    d = fetch_prices(row.symbol,
+                     (end_d - pd.Timedelta(days=365)).strftime("%Y-%m-%d"),
+                     end_d.strftime("%Y-%m-%d"), quiet=True)
+    if not d.empty and "volume" in d.columns and len(d) >= 60:
+        v = (pd.to_numeric(d["price"], errors="coerce")
+             * pd.to_numeric(d["volume"], errors="coerce")).dropna()
+        if len(v) and float(v.median()) >= DV_FLOOR:
+            big_dead.append({"symbol": row.symbol, "delisted_on": end_d,
+                             "dollar_vol": float(v.median())})
+    if k % 50 == 0:
+        print(f"  {k}/{len(probe)}, {len(big_dead)} above the floor so far")
+
+share_big = len(big_dead) / max(len(probe), 1)
+n_big = share_big * len(cand_dl)
+print(f"\n{len(big_dead)} of {len(probe)} sampled delistings clear the size floor "
+      f"({share_big:.1%})")
+print(f"implied size-matched delistings since {RECENT_FROM}: ~{n_big:,.0f}")
+
+if len(big_live):
+    rate5 = n_big / (len(big_live) + n_big)
+    print(f"\nSIZE-AND-VENUE-MATCHED RATE, {RECENT_FROM} to {END}: {rate5:.1%}")
+    print(f"  annualised: {rate5 / 5:.2%} a year")
+    print(f"  extrapolated to the full 16-year window: {rate5 * 16 / 5:.1%}")
+    print("\nThe extrapolation assumes the 2021-2025 pace held since 2010, which is an")
+    print("assumption and not a measurement. Report the five-year figure as measured and")
+    print("the sixteen-year figure as an extrapolation, and never merge the two.")
+'''))
+
+cells.append(md(r"""
+### What to write in the paper, and what to do next
+
+Three statements are now defensible, and one thing is still missing.
+
+**Defensible.** The vendor's delisting record is unusable before roughly 2021, so the
+survivorship rate is measured over 2021 to 2025 and extrapolated, with both figures
+reported separately. Among delisted firms of comparable trading size, the median final
+year *beat* the market, consistent with large-firm delisting being dominated by
+acquisition rather than failure. The direction of the survivorship bias for this sample
+is therefore ambiguous, and plausibly negative rather than positive.
+
+**Still missing: a real delisting history.** If your institution has WRDS access, CRSP's
+delisting codes are the standard instrument for exactly this question: complete from
+1926, distinguishing merger, exchange, liquidation and dropped-for-cause, with delisting
+returns attached. That is a free lookup for a doctoral student and it turns this entire
+section from an estimate into a citation. **Check whether you have WRDS before spending
+more subscription time here.** FMP is the wrong tool for this measurement and no amount
+of care with it will fix that.
+"""))
+
+
 # ---------------------------------------------------------------- run order
 # Written order is not run order. Ticker resolution was added after Panel B but must run
 # before it, because it produces the symbol list Panel B prices. Blocking test 1 was
