@@ -2878,21 +2878,42 @@ if len(s_df):
         print(f"NOTE: only {len(s_df)} of {len(PERIODS)} subperiods had enough data.")
     print("Subperiods carry 36 observations against 6 factors, so read the alphas as")
     print("indicative magnitudes and the t-statistics as weak evidence.")
+    # Read the verdict off the table rather than asserting a hypothesis. The first
+    # version of this text announced the data-centre trade regardless of which period
+    # actually won, and on the real data 2020-2022 won. A diagnostic that narrates a
+    # prior instead of a result is worse than no diagnostic.
     worst = s_df.loc[s_df.alpha_pct_yr.idxmax()]
-    print(f"\nlargest alpha: {worst['period']} at {worst['alpha_pct_yr']:+.2f}%/yr")
     early = s_df[s_df.period.str.startswith("2010")]
-    if len(early) and abs(float(early.t_alpha.iloc[0])) < 2:
-        print("\nThe pre-COVID decade shows no significant alpha. The whole effect sits")
-        print("in the recent period, which points at the data-centre power trade rather")
-        print("than a persistent sector premium.")
-        print("\nCONSEQUENCE FOR THE PAPER: if hazard-exposed firms are disproportionately")
-        print("independent power producers, a hazard sort will pick that trade up and")
-        print("report it as a climate risk premium. Before running the sort, check the")
-        print("overlap between high-hazard firms and Vistra, Constellation, Talen and NRG,")
-        print("and pre-commit to reporting the result with and without them.")
-    else:
-        print("\nThe alpha is spread across subperiods rather than concentrated, which")
-        print("makes a one-off sector episode a weaker explanation.")
+    print(f"\nlargest alpha: {worst['period']} at {worst['alpha_pct_yr']:+.2f}%/yr "
+          f"(t = {worst['t_alpha']:.2f})")
+
+    if len(early):
+        a0, t0 = float(early.alpha_pct_yr.iloc[0]), float(early.t_alpha.iloc[0])
+        flat_early = abs(t0) < 2
+        print(f"pre-COVID decade: {a0:+.2f}%/yr (t = {t0:.2f}), "
+              f"{'indistinguishable from zero' if flat_early else 'significant'}")
+        if flat_early:
+            print("\nOver a normal decade this portfolio has no alpha. The pipeline is")
+            print("not manufacturing a premium. Everything sits after 2020, which is a")
+            print("period effect rather than a defect, and it is dateable:")
+            print("  2020-2022  COVID collapse and recovery, then the 2022 European gas")
+            print("             crisis, which handed windfalls to power and energy names")
+            print("  2023-2025  data-centre electricity demand repricing the IPPs")
+            print("\nCONSEQUENCE FOR THE PAPER. Two thirds of the return variation in this")
+            print("sample comes from the last third of the window, so ANY cross-sectional")
+            print("sort will be dominated by it. Worse, both episodes are correlated with")
+            print("the sort variable by construction: the 2022 crisis was a shock to")
+            print("European energy assets, and the data-centre trade is concentrated in")
+            print("US independent power producers. A hazard sort can load on either and")
+            print("report it as a climate risk premium.")
+            print("\nPre-commit now: report the full sample as headline, the pre-2020 and")
+            print("post-2020 splits alongside it as standard rather than as robustness,")
+            print("and state that the sample contains one large energy-market regime")
+            print("change. Deciding that after seeing the hazard sort is not a decision.")
+        else:
+            print("\nThe alpha is present in the pre-COVID decade too, so it is not a")
+            print("one-off episode. Survivorship becomes the leading explanation, and")
+            print("blocking test 1 cannot currently bound it. Say so plainly.")
     s_df.to_csv(RAW / "blocking_test_2_subperiods.csv", index=False)
     print(f"\nwrote {RAW / 'blocking_test_2_subperiods.csv'}")
 '''))
