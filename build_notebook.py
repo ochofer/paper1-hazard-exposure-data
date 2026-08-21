@@ -1677,6 +1677,30 @@ if len(dupes):
 '''))
 
 cells.append(code(r'''
+# ---------------------------------------------------------------- hand overrides
+# Applied last, after every automatic route, because the automatic routes cannot see
+# what a security IS. The name search matches on company name alone, so it happily
+# returned PCG-PA and UEPEP, which are preferred shares: bond-like claims that do not
+# carry the equity return and would sit in a hazard-sorted portfolio behaving like debt.
+# An override file keeps each correction explicit, reasoned and diffable, which is what
+# a hand-checked crosswalk should be. A blank symbol means drop the firm.
+OVR = REPO / "config" / "ticker_overrides.csv"
+if OVR.exists():
+    ov = pd.read_csv(OVR)
+    print(f"\napplying {len(ov)} hand overrides from {OVR.name}")
+    for _, o in ov.iterrows():
+        hit = primary.name.astype(str).str.strip() == str(o["name"]).strip()
+        if not hit.any():
+            print(f"  WARNING no match for {o['name']!r}, override not applied")
+            continue
+        new = o["symbol"] if isinstance(o["symbol"], str) and o["symbol"].strip() else None
+        for i in primary.index[hit]:
+            was = primary.loc[i, "primary_symbol"]
+            primary.loc[i, "primary_symbol"] = new
+            primary.loc[i, "route"] = "override" if new else None
+            print(f"  {o['name'][:34]:36s} {str(was):10s} -> {str(new)}")
+    primary["priceable"] = primary.primary_symbol.notna()
+
 # Refresh currency and exchange for anything the name pass added, then write.
 for s in primary.loc[primary.priceable, "primary_symbol"]:
     profile_of(s)
@@ -1699,6 +1723,27 @@ print(f"FINAL: {int(primary.priceable.sum())} of {len(primary)} firms priceable,
 print("\nby route:", primary.route.value_counts(dropna=False).to_dict())
 print(f"\nstill unpriceable: {len(still)} firms, {int(still.n_assets.sum())} assets")
 display(still[["name", "hq", "n_assets"]].head(20))
+
+SUSPECT = [
+    (re.compile(r"-P[A-Z]?$"),      "US preferred share"),
+    (re.compile(r"^[A-Z]{2,4}P[A-Z]?$"), "possible preferred series"),
+    (re.compile(r"W[SI]?$"),        "possible warrant"),
+    (re.compile(r"^0[A-Z0-9]{3}\.L$"), "London international line, not a primary listing"),
+    (re.compile(r"\.F$"),           "Frankfurt floor rather than XETRA"),
+]
+flags = []
+for _, r in primary[primary.priceable].iterrows():
+    for rx, why in SUSPECT:
+        if rx.search(str(r.primary_symbol)):
+            flags.append({"name": r["name"], "symbol": r.primary_symbol,
+                          "n_assets": r["n_assets"], "why": why})
+            break
+print(f"\n{len(flags)} symbols match a suspicious pattern. Preferred shares and warrants")
+print("are not the common equity and do not carry the equity return, so read these:")
+if flags:
+    display(pd.DataFrame(flags).sort_values("n_assets", ascending=False))
+print("\nAnything wrong goes in config/ticker_overrides.csv, which is applied above and")
+print("committed, so every hand correction stays visible and reviewable in git.")
 
 print("\nwholly owned subsidiaries of listed parents, YOUR CALL, not merged here:")
 SUBS = ["Entergy Louisiana", "Pacific Gas and Electric Co", "Union Electric"]

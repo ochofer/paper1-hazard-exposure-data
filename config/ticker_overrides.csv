@@ -1,0 +1,5 @@
+name,symbol,reason
+Berkshire Hathaway Inc,BRK-B,"GLEIF maps only the A-share ISIN, so the tie-break had nothing to compare. BRK-A trades a few hundred shares a day at ~1500x the price: same firm, but stale prices and coarse discreteness in a daily series."
+Pacific Gas and Electric Co,PCG,"Name search returned PCG-PA, a preferred share. Preferred is a bond-like claim and does not carry the equity return. PCG is the common line of the listed parent."
+Union Electric Co,,"Only listed security is preferred (UEPEP). Union Electric is a wholly owned subsidiary of Ameren; its common equity does not trade. Dropped rather than silently substituting the parent, because rolling subsidiaries up is a design decision, not a lookup. 42 assets."
+CHS Inc,,"Only listed securities are preferred series (CHSCL). CHS is a co-operative with no common equity. Correctly excluded."
