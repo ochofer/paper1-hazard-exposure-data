@@ -970,7 +970,7 @@ PANELB_END = len(cells)
 # Held back and appended last: this is the closing scope statement, so it has to come
 # after every section, including ones added later.
 absent_cell = md(r"""
-## 7. What is deliberately absent
+## 8. What is deliberately absent
 
 No returns, no regressions, no portfolio construction, no merge of the two panels, and
 no survivorship correction. Those belong downstream of this file. This section is the
@@ -2917,6 +2917,169 @@ if len(s_df):
     s_df.to_csv(RAW / "blocking_test_2_subperiods.csv", index=False)
     print(f"\nwrote {RAW / 'blocking_test_2_subperiods.csv'}")
 '''))
+
+cells.append(md(r"""
+---
+
+## 7. Take the data with you before cancelling
+
+**Run this before you cancel the subscription, and before the Colab runtime recycles.**
+
+Everything built so far lives in `/content/` on a Google virtual machine that is deleted
+when the session ends. That includes the price panel, which cost $166 and roughly two
+hours of API calls, and the caches, which are what make every rerun cheap. Losing them
+means paying again.
+
+Three things get saved, and they are not equally replaceable.
+
+| What | Replaceable after cancelling? |
+|---|---|
+| `panel_b_prices_daily.csv`, the price panel | **No.** Needs a live paid key |
+| `fmp_delisted.json`, `fmp_profile_cache.json` | **No.** Same |
+| `openfigi_cache.json`, `fmp_isin_cache.json`, `fmp_liquidity_cache.json` | Yes, but slowly and OpenFIGI is free |
+| `ff3_daily.csv`, Panel A | Yes, free public download |
+
+The cell mounts your Google Drive and copies everything there. If the mount fails it falls
+back to a zip you download through the browser. It then **re-hashes every file after
+copying and compares against the source**, because a copy that silently truncated is worse
+than no copy: you would not find out until the subscription was gone.
+
+It also writes the price panel as Parquet alongside the CSV. Same data, roughly a tenth
+the size and far faster to reload, which matters when you are reading it repeatedly from
+Drive rather than from local disk.
+"""))
+
+cells.append(code(r'''
+import shutil
+
+EXPORT_NAME = f"paper1_data_{dt.datetime.now():%Y%m%d}"
+
+# Parquet copy first. A 1.1 million row CSV is slow to reload and large to store; the
+# same frame in Parquet is roughly a tenth the size and keeps dtypes, so dates do not
+# come back as strings.
+try:
+    pq = RAW / "panel_b_prices_daily.parquet"
+    prices.to_parquet(pq, index=False)
+    csv_mb = (RAW / "panel_b_prices_daily.csv").stat().st_size / 1e6
+    pq_mb = pq.stat().st_size / 1e6
+    print(f"parquet written: {pq_mb:.1f} MB against {csv_mb:.1f} MB for the CSV")
+except Exception as exc:
+    print(f"parquet failed ({exc}); the CSV is still the authoritative copy")
+
+# What must exist. Named explicitly rather than globbed, so a missing file is an error
+# rather than a silently shorter list.
+REQUIRED = ["panel_b_prices_daily.csv", "ff3_daily.csv", "manifest.json",
+            "fmp_delisted.json", "fmp_profile_cache.json", "openfigi_cache.json",
+            "fmp_isin_cache.json", "fmp_liquidity_cache.json"]
+OPTIONAL = ["panel_b_prices_daily.parquet", "blocking_test_1_return_gaps.csv",
+            "blocking_test_2_ff3.csv", "blocking_test_2_weighting.csv",
+            "blocking_test_2_subperiods.csv"]
+
+missing_req = [f for f in REQUIRED if not (RAW / f).exists()]
+present = [f for f in REQUIRED + OPTIONAL if (RAW / f).exists()]
+
+print(f"\n{len(present)} files to export, {(sum((RAW / f).stat().st_size for f in present) / 1e6):.0f} MB total")
+for f in present:
+    print(f"  {f:38s} {(RAW / f).stat().st_size / 1e6:8.1f} MB")
+if missing_req:
+    print(f"\nMISSING REQUIRED FILES: {missing_req}")
+    print("Run the sections that produce them before exporting, or you will cancel")
+    print("the subscription with a hole in the archive.")
+'''))
+
+cells.append(code(r'''
+def sha256_of(p):
+    h = hashlib.sha256()
+    with open(p, "rb") as fh:
+        for blk in iter(lambda: fh.read(1 << 20), b""):
+            h.update(blk)
+    return h.hexdigest()
+
+
+dest = None
+if IN_COLAB:
+    try:
+        from google.colab import drive
+        drive.mount("/content/drive")
+        dest = Path("/content/drive/MyDrive") / EXPORT_NAME
+        dest.mkdir(parents=True, exist_ok=True)
+        print(f"copying to {dest}")
+    except Exception as exc:
+        print(f"Drive mount failed ({exc}); falling back to a browser download")
+        dest = None
+else:
+    dest = REPO.parent / EXPORT_NAME
+    dest.mkdir(parents=True, exist_ok=True)
+
+if dest is not None:
+    (dest / "config").mkdir(exist_ok=True)
+    ok, bad = 0, []
+    for f in present:
+        src = RAW / f
+        shutil.copy2(src, dest / f)
+        # Verify by hash, not by size. A truncated copy can match on neither, but a
+        # corrupted one matches on size and would pass a length check.
+        if sha256_of(src) == sha256_of(dest / f):
+            ok += 1
+        else:
+            bad.append(f)
+    for f in ["universe.csv", "universe_isins.csv", "tickers_primary.csv",
+              "ticker_overrides.csv", "tickers_draft_v0.csv"]:
+        s = REPO / "config" / f
+        if s.exists():
+            shutil.copy2(s, dest / "config" / f)
+
+    print(f"\n{ok} of {len(present)} data files copied and hash-verified")
+    if bad:
+        print(f"HASH MISMATCH on {bad}. Recopy those before cancelling anything.")
+    else:
+        print("Every copied file matches its source byte for byte.")
+    print(f"config files copied: {len(list((dest / 'config').glob('*.csv')))}")
+    print(f"\nlocation: {dest}")
+'''))
+
+cells.append(code(r'''
+# Fallback, and also worth doing anyway: a single zip is the easiest thing to archive and
+# the easiest thing to check later. Google Drive is one copy, not a backup.
+zip_path = Path("/content") / f"{EXPORT_NAME}.zip" if IN_COLAB else REPO.parent / f"{EXPORT_NAME}.zip"
+with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED, compresslevel=6) as z:
+    for f in present:
+        z.write(RAW / f, arcname=f"data/raw/{f}")
+    for f in (REPO / "config").glob("*.csv"):
+        z.write(f, arcname=f"config/{f.name}")
+print(f"{zip_path.name}: {zip_path.stat().st_size / 1e6:.0f} MB")
+
+if IN_COLAB:
+    try:
+        from google.colab import files
+        print("\nStarting the browser download. A large file can take a few minutes and")
+        print("Colab sometimes drops it silently, so check your downloads folder and")
+        print("rerun this cell if nothing arrives.")
+        files.download(str(zip_path))
+    except Exception as exc:
+        print(f"browser download unavailable ({exc})")
+        print(f"Use the file browser in the left sidebar instead: navigate to {zip_path}")
+        print("right-click, Download.")
+'''))
+
+cells.append(md(r"""
+### Before you cancel, in this order
+
+1. **Check the hash line above says every file matches.** Not the file count, the hashes.
+2. **Open the zip on your own machine and confirm it is not empty.** Colab drops large
+   browser downloads silently more often than you would expect.
+3. **Keep two copies in different places.** Drive and your laptop, or Drive and an
+   external disk. One copy is not a backup, and this data cannot be regenerated without
+   paying again.
+4. **Note today's date and the subscription tier in your methods file.** A reader needs to
+   know which tier and which day the panel was pulled, because vendor coverage changes.
+5. Only then cancel, and **set a calendar reminder two days before the renewal date** in
+   case the cancellation does not take.
+
+Everything remaining in this project runs on free data: the GEM sector trackers, a hazard
+dataset, the join, and the estimation itself. The subscription bought exactly one thing
+that cannot be bought later, which is this price panel. Treat it accordingly.
+"""))
 
 # ---------------------------------------------------------------- run order
 # Written order is not run order. Ticker resolution was added after Panel B but must run

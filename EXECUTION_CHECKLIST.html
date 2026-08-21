@@ -580,7 +580,26 @@ config/
 </div>
 
 <div class="step">
-  <div class="row"><input type="checkbox"><div class="title">F4. Verify, then cancel <span class="st s-you">YOU</span></div></div>
+  <div class="row"><input type="checkbox"><div class="title">F4. Export the data, then cancel <span class="st s-you">YOU</span></div></div>
+  <div class="body">
+    <div class="box stop">
+      <p><strong>Everything built so far lives on a Google virtual machine that is deleted when the session ends.</strong> That includes the price panel, which cost $166 and about two hours of API calls. Section 7 of the notebook exports it. Run that before you cancel and before the runtime recycles.</p>
+    </div>
+    <p>Section 7 mounts your Drive, copies the raw folder and the config folder across, then <strong>re-hashes every file after copying and compares against the source</strong>. Size checks are not enough: a corrupted copy matches on size. It also builds a single zip for the browser download, and writes the price panel as Parquet alongside the CSV, roughly a tenth the size and much faster to reload.</p>
+    <table>
+      <tr><th>File</th><th>Replaceable after cancelling?</th></tr>
+      <tr><td><code>panel_b_prices_daily.csv</code></td><td><strong>No.</strong> Needs a live paid key</td></tr>
+      <tr><td><code>fmp_delisted.json</code>, <code>fmp_profile_cache.json</code></td><td><strong>No.</strong> Same</td></tr>
+      <tr><td><code>openfigi_cache.json</code>, <code>fmp_isin_cache.json</code>, <code>fmp_liquidity_cache.json</code></td><td>Yes, slowly. OpenFIGI is free</td></tr>
+      <tr><td><code>ff3_daily.csv</code></td><td>Yes, free public download</td></tr>
+    </table>
+    <p><strong>Then, in this order:</strong> confirm the hash line says every file matches, not just the count; open the zip on your own machine and check it is not empty, because Colab drops large browser downloads silently; keep two copies in different places, since Drive alone is one copy rather than a backup; note today's date and the tier in your methods file, because vendor coverage changes; then cancel, and set a calendar reminder two days before the renewal date in case the cancellation does not take.</p>
+    <div class="box key"><p>Everything left in the project runs on free data: the GEM sector trackers, a hazard dataset, the join, and the estimation. The subscription bought exactly one thing that cannot be bought later, and that is the price panel.</p></div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="row"><input type="checkbox"><div class="title">F5. Final pre-cancellation sweep <span class="st s-you">YOU</span></div></div>
   <div class="body">
     <p>Run the section 3 integrity checks and regenerate <code>manifest.json</code> against the full pull. Then, before you cancel, go down this list once. Everything on it is free while the subscription is live and impossible afterwards:</p>
     <table>
