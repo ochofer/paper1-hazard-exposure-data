@@ -85,10 +85,29 @@ def _find_repo(start: Path):
 # only exists inside the repo, and raise if it is missing.
 REPO = _find_repo(Path.cwd())
 
+def _git(*args, cwd=None):
+    r = subprocess.run(["git", *args], cwd=cwd, capture_output=True, text=True)
+    return r.returncode, (r.stdout + r.stderr).strip()
+
+
 if REPO is None and IN_COLAB:
     if Path(REPO_NAME).exists():
-        print(f"{REPO_NAME} already cloned, pulling latest")
-        subprocess.run(["git", "-C", REPO_NAME, "pull", "--ff-only"], check=False)
+        # Hard reset rather than pull. This clone is a disposable read-only copy, so
+        # there is nothing here worth preserving, and --ff-only fails on any local
+        # divergence. It previously ran with check=False, so a FAILED PULL WAS SILENT:
+        # reopening the notebook from GitHub gave fresh notebook code while the repo
+        # files stayed old, and config/ticker_overrides.csv simply never arrived. The
+        # overrides were skipped without a word. Never make this quiet again.
+        print(f"{REPO_NAME} present, resetting to origin")
+        for args in (["fetch", "--depth", "1", "origin"],
+                     ["reset", "--hard", "origin/HEAD"],
+                     ["clean", "-fd", "config", "notebooks"]):
+            rc, out = _git(*args, cwd=REPO_NAME)
+            if rc != 0:
+                print(f"  git {args[0]} FAILED: {out}")
+        rc, out = _git("reset", "--hard", "origin/main", cwd=REPO_NAME)
+        if rc != 0:
+            print(f"  reset to origin/main failed: {out}")
     else:
         print(f"cloning {REPO_URL}")
         subprocess.run(["git", "clone", "--depth", "1", REPO_URL], check=True)
@@ -142,6 +161,11 @@ PROFILE     = f"{BASE}/profile"
 START = "2010-01-01"
 END   = "2025-12-31"
 
+# Print which commit is actually running. Without this, "the code is new but the data
+# files are old" is invisible, and that exact state cost a full Panel B refetch.
+_rc, _head = _git("-C", str(REPO), "log", "-1", "--format=%h %ad %s", "--date=short")
+print(f"commit : {_head if _rc == 0 else 'unknown'}")
+print(f"config : {sorted(p.name for p in (REPO / 'config').glob('*.csv'))}")
 print(f"colab  : {IN_COLAB}")
 print(f"repo   : {REPO}")
 print(f"raw out: {RAW}")
@@ -1685,6 +1709,14 @@ cells.append(code(r'''
 # An override file keeps each correction explicit, reasoned and diffable, which is what
 # a hand-checked crosswalk should be. A blank symbol means drop the firm.
 OVR = REPO / "config" / "ticker_overrides.csv"
+if not OVR.exists():
+    raise SystemExit(
+        f"config/ticker_overrides.csv is missing from {REPO}.\n"
+        "  It is committed, so this means the Colab clone is behind the repository.\n"
+        "  Check the `commit :` line printed by section 0 against your latest push.\n"
+        "  Refusing to continue: silently skipping the overrides ships preferred\n"
+        "  shares into the price panel, which is what happened on 21 August."
+    )
 if OVR.exists():
     ov = pd.read_csv(OVR)
     print(f"\napplying {len(ov)} hand overrides from {OVR.name}")
@@ -1724,24 +1756,54 @@ print("\nby route:", primary.route.value_counts(dropna=False).to_dict())
 print(f"\nstill unpriceable: {len(still)} firms, {int(still.n_assets.sum())} assets")
 display(still[["name", "hq", "n_assets"]].head(20))
 
+# Symbol patterns are a weak signal and the first version proved it: 23 flags of which
+# 20 were false. "HOLN.SW" matched a warrant rule because the Swiss exchange suffix ends
+# in W, and AEP, COP and CNP matched a preferred rule for containing a P. So: test the
+# root only, keep just the patterns that are nearly always right, and let liquidity do
+# the real work. A preferred share, a warrant and a secondary international line are all
+# thinly traded, which is a property of the security rather than a guess about its name.
 SUSPECT = [
-    (re.compile(r"-P[A-Z]?$"),      "US preferred share"),
-    (re.compile(r"^[A-Z]{2,4}P[A-Z]?$"), "possible preferred series"),
-    (re.compile(r"W[SI]?$"),        "possible warrant"),
-    (re.compile(r"^0[A-Z0-9]{3}\.L$"), "London international line, not a primary listing"),
-    (re.compile(r"\.F$"),           "Frankfurt floor rather than XETRA"),
+    (re.compile(r"-P[A-Z]?$"),        "US preferred share"),
+    (re.compile(r"^[A-Z]{1,4}PR[A-Z]?$"), "preferred series"),
+    # No trailing-W warrant rule. Three-letter tickers ending in W are ordinary common
+    # stock far more often than they are warrants: DOW, PNW, CLW and LOW would all be
+    # flagged for nothing. Warrants are rare here and the liquidity screen below catches
+    # them anyway, which is the better trade.
+    (re.compile(r"^0[A-Z0-9]{3}$"),   "London international line, not a primary listing"),
 ]
+SUFFIX_OK = re.compile(r"\.(F|BE|MU|SG|DU|HM)$")     # German regional floors, not XETRA
+
 flags = []
 for _, r in primary[primary.priceable].iterrows():
-    for rx, why in SUSPECT:
-        if rx.search(str(r.primary_symbol)):
-            flags.append({"name": r["name"], "symbol": r.primary_symbol,
-                          "n_assets": r["n_assets"], "why": why})
+    sym  = str(r.primary_symbol)
+    root = sym.split(".")[0]
+    why  = None
+    for rx, label in SUSPECT:
+        if rx.search(root):
+            why = label
             break
-print(f"\n{len(flags)} symbols match a suspicious pattern. Preferred shares and warrants")
-print("are not the common equity and do not carry the equity return, so read these:")
+    if why is None and SUFFIX_OK.search(sym):
+        why = "regional German floor rather than the primary XETRA line"
+    if why:
+        flags.append({"name": r["name"], "symbol": sym,
+                      "n_assets": r["n_assets"], "why": why})
+
+print(f"\n{len(flags)} symbols match a high-precision pattern:")
 if flags:
     display(pd.DataFrame(flags).sort_values("n_assets", ascending=False))
+
+# The stronger signal. Median daily dollar volume was already measured in 2b, and a
+# genuinely primary listing of a firm large enough to own power assets does not trade
+# a few thousand dollars a day. Anything down here is a preferred line, a secondary
+# venue, or a firm too illiquid to hold in a tradeable portfolio, and all three matter.
+THIN = 1_000_000
+thin = (primary[primary.priceable & (primary.dollar_vol.fillna(0) < THIN)]
+        .sort_values("dollar_vol")[["name", "hq", "n_assets", "primary_symbol",
+                                    "exchange", "dollar_vol", "route"]])
+print(f"\n{len(thin)} listings trade under ${THIN:,} a day. Read these: the reason a line")
+print("is thin is usually that it is not the security you meant to buy.")
+display(thin.head(25))
+
 print("\nAnything wrong goes in config/ticker_overrides.csv, which is applied above and")
 print("committed, so every hand correction stays visible and reviewable in git.")
 
