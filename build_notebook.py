@@ -822,8 +822,10 @@ manifest = {
 print(json.dumps(manifest, indent=2)[:1500])
 '''))
 
-cells.append(md(r"""
-## 4. What is deliberately absent
+# Held back and appended last: this is the closing scope statement, so it has to come
+# after every section, including ones added later.
+absent_cell = md(r"""
+## 5. What is deliberately absent
 
 No returns, no regressions, no portfolio construction, no merge of the two panels, and
 no survivorship correction. Those belong downstream of this file.
@@ -838,7 +840,7 @@ close, both carried over from the 19 August handover:
 2. **The ownership snapshot is undated.** The GEM Ownership Tracker is a single snapshot
    with sector vintages spanning roughly sixteen months, so the exposure variable
    currently carries look-ahead of unknown size.
-"""))
+""")
 
 # ------------------------------------------------------- Section 4: ticker resolution
 cells.append(md(r"""
@@ -847,6 +849,10 @@ cells.append(md(r"""
 ## 4. Resolving the universe to tickers
 
 **Run this once, before buying an FMP plan. It needs no FMP key and costs nothing.**
+
+**It does not depend on sections 1 to 3**, so it works whether or not the price panel
+came back empty. Section 0 is the only prerequisite, because it sets `REPO` and reads
+the Colab secrets.
 
 The problem it solves: `outputs/cross_section.csv` identifies 328 asset owners by name,
 LEI, PermID and CIK, and by no ticker at all. So there is no symbol list to buy prices
@@ -1087,6 +1093,8 @@ operational control, and a bank's hazard exposure computed that way is an artefa
 the ownership graph rather than a fact about its balance sheet. Decide explicitly
 whether financial holders belong in the cross-section, and say which way you went.
 """))
+
+cells.append(absent_cell)
 
 nb = {
     "cells": cells,
