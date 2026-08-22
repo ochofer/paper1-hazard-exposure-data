@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Execution Checklist: Paper 1 data layer</title>
+<title>Reproducing this analysis</title>
 <style>
   body { font-family: Georgia, 'Times New Roman', serif; max-width: 50em; margin: 2.5em auto; padding: 0 1.5em 6em;
          line-height: 1.55; color: #1c1c1c; background: #fdfdfb; }
@@ -22,10 +22,10 @@
   a { color: #2f5c8a; }
   .st { display: inline-block; font-size: 0.7em; padding: 0.12em 0.5em; border-radius: 3px; font-family: sans-serif;
         letter-spacing: 0.03em; white-space: nowrap; font-weight: bold; }
-  .s-conf { background: #dde8d6; color: #35502a; }
-  .s-you  { background: #d6e2ee; color: #22456b; }
-  .s-no   { background: #f0d8d8; color: #8a2f2f; }
-  .s-pend { background: #e4dcee; color: #4a3a6b; }
+  .s-free { background: #dde8d6; color: #35502a; }
+  .s-opt  { background: #d6e2ee; color: #22456b; }
+  .s-paid { background: #f0d8d8; color: #8a2f2f; }
+  .s-note { background: #e4dcee; color: #4a3a6b; }
   ul { padding-left: 1.4em; } li { margin-bottom: 0.35em; }
   .footer { margin-top: 3em; padding-top: 1em; border-top: 1px solid #d8d5cc; font-size: 0.84em; color: #5c5c5c; }
 
@@ -69,17 +69,26 @@
 </head>
 <body>
 
-<h1>Execution checklist: Paper 1 data layer</h1>
+<h1>Reproducing this analysis</h1>
 <p class="meta">
-Companion to <code>README.md</code> in <code>repo_paper1_data</code> · written 19 August 2026, revised 20 August · Carlo Hofer<br>
-Sections A to E get the scaffolding onto GitHub and both raw panels downloaded. F and G are what comes after the data source is paid for.<br>
-Status key: <span class="st s-conf">DONE</span> already completed · <span class="st s-you">YOU</span> needs you at a keyboard · <span class="st s-pend">UNTESTED</span> never run against live data · <span class="st s-no">BLOCKED</span> cannot proceed yet
+Companion to <code>notebooks/01_raw_panels.ipynb</code> · Carlo Hofer · last revised 22 August 2026<br>
+Cost key: <span class="st s-free">FREE</span> no account needed · <span class="st s-opt">FREE KEY</span> free registration · <span class="st s-paid">PAID</span> requires a subscription · <span class="st s-note">READ</span> nothing to run
 </p>
 
-<div class="box stop">
-<p><strong>Where this stands on 20 August, after the 3a, 3b and 3c runs.</strong></p>
-<p>The repository is pushed. Panel A, the Fama-French factors, is downloaded and verified: 4,024 daily rows, 2010 to 2025, at 251.5 trading days a year, with the March 2020 extremes landing on the right dates. That half is finished and fully reproducible by anyone.</p>
-<p><strong>Panel B is blocked, and not by a bug.</strong> Three rounds of probing established that the free FMP key serves a hand-picked demo list of about fifteen household-name tickers plus three indices. Five of your 328 firms fall inside it, holding 3.3 percent of the assets. Delisted price history is refused entirely, which blocks the survivorship test. There is no free path to a price panel, so steps D1d and D1e are a decision rather than a debugging exercise.</p>
+<p>This page explains how to run the data-building notebook from scratch, what each step
+should produce, and what to do when it produces something else. It also states plainly
+which parts of the analysis you can reproduce for nothing and which part you cannot.</p>
+
+<p>If you are here to read rather than to run, the notebook itself is the better
+document. This page is the operational companion: the practical detail that would clutter
+the notebook but that you need if you are actually going to execute it.</p>
+
+<div class="box key">
+  <p><strong>The short version.</strong> Roughly two thirds of this project runs on free
+  public data and needs about twenty minutes. The share price panel requires a paid
+  subscription of about $150 for one month, and cannot legally be redistributed, so it is
+  not in this repository. Everything else, including both blocking tests and the entire
+  company-matching pipeline, is free.</p>
 </div>
 
 <div class="prog">
@@ -87,586 +96,290 @@ Status key: <span class="st s-conf">DONE</span> already completed · <span class
   <div class="bar"><div class="fill" id="fill"></div></div>
 </div>
 
-<h2>A. Create and push the repository</h2>
+<h2>What this project is</h2>
+
+<p>An empirical asset pricing study asking whether a company's exposure to physical
+climate hazards, measured from the locations of the physical assets it owns, helps
+explain its stock returns after controlling for the usual risk factors.</p>
+
+<p>The notebook builds and audits the data for that study. It does not test the
+hypothesis. Three datasets are involved:</p>
+
+<table>
+  <tr><th>Dataset</th><th>What it provides</th><th>Cost</th></tr>
+  <tr><td>Global Energy Monitor, Energy Ownership Tracker</td><td>Which company owns which power station, mine or pipeline</td><td><span class="st s-free">FREE</span> with registration</td></tr>
+  <tr><td>Kenneth French Data Library</td><td>The risk factors used as controls</td><td><span class="st s-free">FREE</span></td></tr>
+  <tr><td>GLEIF and OpenFIGI</td><td>The identifiers that connect company names to stock tickers</td><td><span class="st s-opt">FREE KEY</span></td></tr>
+  <tr><td>Financial Modeling Prep</td><td>Daily share prices</td><td><span class="st s-paid">PAID</span></td></tr>
+</table>
+
+<h2>Before you start</h2>
 
 <div class="step">
-  <div class="row"><input type="checkbox" checked><div class="title">A1. Create the repository <span class="st s-conf">DONE</span></div></div>
+  <div class="row"><input type="checkbox"><div class="title">1. Decide how much of it you want to run <span class="st s-note">READ</span></div></div>
   <div class="body">
-    <div class="box key"><p><strong>Already done:</strong> <code>github.com/ochofer/paper1-hazard-exposure-data</code>. The Colab bootstrap cell and the README badge now point at it, and no placeholders remain in the tree.</p></div>
-    <p>One repository per paper rather than one for all three. A replication package needs to be self contained when a referee opens it, each paper gets cited independently, and an embargo on one does not drag the others.</p>
-    <p>If you happened to tick "Add a README", ".gitignore" or "Choose a license" when creating it, the remote already has a commit and your first push will be rejected. That is recoverable; see the troubleshooting note in A4.</p>
-  </div>
-</div>
-
-<div class="step">
-  <div class="row"><input type="checkbox"><div class="title">A2. Open Terminal and point it at the repo folder <span class="st s-you">YOU</span></div></div>
-  <div class="body">
-    <p><strong>What Terminal is.</strong> The Mac app where you type commands instead of clicking. Press <code>Cmd</code> and <code>Space</code> together, type <em>Terminal</em>, press Enter. A window opens with a blinking cursor.</p>
-    <p><strong>Why it needs pointing at a folder.</strong> Terminal is always "inside" one folder at a time, and it starts inside your home folder. Every <code>git</code> command below acts on whatever folder Terminal is currently inside. Skip this and the commands either fail outright or, worse, act on the wrong folder.</p>
-    <p><strong>The method that avoids typing any path:</strong></p>
+    <p>You do not have to run all of it, and the free parts are the more interesting ones
+    to read.</p>
     <table>
-      <tr><th style="width:2.2em">#</th><th>Do this</th></tr>
-      <tr><td>1</td><td>Type <code>cd</code> then one space. <strong>Do not press Enter yet.</strong></td></tr>
-      <tr><td>2</td><td>Open Finder and locate the <code>repo_paper1_data</code> folder, which sits inside <em>Finance Project A</em>.</td></tr>
-      <tr><td>3</td><td><strong>Drag that folder out of Finder and drop it onto the Terminal window.</strong> Its full path is pasted in for you.</td></tr>
-      <tr><td>4</td><td>Now press Enter. The prompt changes to show the folder name.</td></tr>
+      <tr><th>Sections</th><th>What they do</th><th>Needs</th><th>Time</th></tr>
+      <tr><td>0, 1</td><td>Setup and the risk factor data</td><td><span class="st s-free">FREE</span></td><td>2 minutes</td></tr>
+      <tr><td>2, 2b to 2d</td><td>Turn 328 company records into a list of tradeable tickers</td><td><span class="st s-opt">FREE KEY</span> for the first part, <span class="st s-paid">PAID</span> from 2b</td><td>5 to 60 minutes</td></tr>
+      <tr><td>3, 4</td><td>Download prices and check them</td><td><span class="st s-paid">PAID</span></td><td>10 minutes</td></tr>
+      <tr><td>5, 5b, 5c</td><td>Blocking test 1, survivorship bias</td><td><span class="st s-paid">PAID</span></td><td>10 minutes</td></tr>
+      <tr><td>6, 6b, 6c</td><td>Blocking test 2, factor replication</td><td><span class="st s-free">FREE</span> if you already have a price panel</td><td>2 minutes</td></tr>
+      <tr><td>7</td><td>Archive the downloaded data</td><td><span class="st s-free">FREE</span></td><td>5 minutes</td></tr>
+      <tr><td>Appendix A</td><td>How the provider's coverage limits were diagnosed</td><td><span class="st s-paid">PAID</span></td><td>1 minute</td></tr>
     </table>
-    <p>Terminal is now working inside the repository. <strong>You only need to do this once.</strong> It stays there for every command in this checklist unless you close the window.</p>
-    <p><strong>Confirm you landed in the right place</strong> before pushing anything. Paste this and press Enter:</p>
-    <div class="cmd"><pre>git log --oneline &amp;&amp; git ls-files</pre><button class="copy">copy</button></div>
-    <p>The output has two parts. First a list of commits, most recent at the top, the oldest of which reads <code>Add Paper 1 raw data scaffolding</code>. Then <strong>exactly these seven file names</strong>:</p>
-    <div class="cmd"><pre>.gitignore
-EXECUTION_CHECKLIST.html
-README.md
-build_notebook.py
-config/tickers_draft_v0.csv
-data/raw/.gitkeep
-notebooks/01_raw_panels.ipynb</pre><button class="copy">copy</button></div>
-    <p><strong>Check the file list, not the number of commits.</strong> The commit count varies with how many revisions were made before you started, so it is not something to match against. The seven file names are the reliable signal.</p>
-    <div class="box stop"><p><strong>If you see anything else, stop and do not push.</strong> Hundreds of files, or the message <code>not a git repository</code>, means Terminal is pointed at the wrong folder. The most likely mistake is landing on <em>Finance Project A</em> itself rather than <code>repo_paper1_data</code> inside it. Redo the drag with the inner folder.</p></div>
+    <p>Section 6 is the one I would point a sceptical reader at first. It takes the
+    finished price panel and tries to prove it is broken, and the argument it makes is
+    independent of whether you trust anything else here.</p>
   </div>
 </div>
 
 <div class="step">
-  <div class="row"><input type="checkbox"><div class="title">A3. Confirm no data files are staged <span class="st s-you">YOU</span></div></div>
+  <div class="row"><input type="checkbox"><div class="title">2. Get an OpenFIGI key <span class="st s-opt">FREE KEY</span></div></div>
   <div class="body">
-    <div class="box stop">
-      <p><strong>The 1.3 GB trap.</strong> Your <em>Finance Project A</em> folder holds the GEM Ownership Tracker and the GLEIF golden copy. Three of those files exceed 100 MB, which GitHub rejects outright, and both datasets carry licence terms that must not land in a public repository.</p>
-      <p>This is exactly the WRDS style redistribution problem from §1 of the data access checklist, in a different costume. The check below takes two seconds.</p>
-    </div>
-    <div class="cmd"><pre>git ls-files | grep -iE "gleif|gem|\.xlsx|\.zip" || echo "clean - no data files tracked"</pre><button class="copy">copy</button></div>
-    <p>Expect the word <code>clean</code>. Anything else, do not push, and tell me what it listed.</p>
+    <p>Register at <a href="https://www.openfigi.com/api">openfigi.com/api</a>. It is free
+    and takes about a minute.</p>
+    <p>The key is optional, and the difference it makes is large enough to be worth the
+    minute. Without one the service allows 25 requests per minute at 10 identifiers each.
+    With one it allows 25 requests every 6 seconds at 100 each. On this dataset that is
+    the difference between roughly a minute and most of a day.</p>
   </div>
 </div>
 
 <div class="step">
-  <div class="row"><input type="checkbox" checked><div class="title">A4. Add the remote and rename the branch <span class="st s-conf">DONE</span></div></div>
+  <div class="row"><input type="checkbox"><div class="title">3. Decide about the price data <span class="st s-paid">PAID</span></div></div>
   <div class="body">
-    <p>"Remote" just means the copy on GitHub. These two commands told your local folder where to send commits and renamed the branch to <code>main</code>. <strong>You have already run both successfully</strong>, so do not run them again.</p>
-    <div class="cmd"><pre>git remote add origin https://github.com/ochofer/paper1-hazard-exposure-data.git
-git branch -M main</pre><button class="copy">copy</button></div>
-    <p>If you ever need to check what the remote is pointing at, <code>git remote -v</code> shows it. If you ran the first line twice and got <code>remote origin already exists</code>, use <code>git remote set-url origin ...</code> instead.</p>
-  </div>
-</div>
-
-<div class="step">
-  <div class="row"><input type="checkbox"><div class="title">A4a. Create a personal access token <span class="st s-you">YOU</span></div></div>
-  <div class="body">
-    <div class="box warn">
-      <p><strong>Why the push failed, and why there is no password to type.</strong> GitHub stopped accepting account passwords for git operations in 2021. The prompt still says "Password", which is misleading, but what it wants is a <em>personal access token</em>.</p>
-      <p>You sign in to GitHub through Google, so you do not have a GitHub password at all. Nothing you could have typed there would have worked. A token is the replacement.</p>
-    </div>
-    <p>A token is a long generated string that acts as a password for git only. Create one on the website:</p>
+    <p>Sections 3 onwards need a Financial Modeling Prep subscription. Two attributes of
+    the plan matter and nothing else does:</p>
     <table>
-      <tr><th style="width:2.2em">#</th><th>Do this</th></tr>
-      <tr><td>1</td><td>Go to <a href="https://github.com/settings/tokens">github.com/settings/tokens</a>. That link lands you directly on the tokens page. If it asks you to sign in, use Google as usual.</td></tr>
-      <tr><td>2</td><td>Click <strong>Generate new token</strong>, then choose <strong>Generate new token (classic)</strong> from the dropdown.</td></tr>
-      <tr><td>3</td><td>In <strong>Note</strong>, type something you will recognise later, such as <code>paper1 push from laptop</code>.</td></tr>
-      <tr><td>4</td><td>Set <strong>Expiration</strong>. 90 days is a reasonable default. When it expires, pushes start failing again and you repeat this step.</td></tr>
-      <tr><td>5</td><td>Under <strong>Select scopes</strong>, tick the single box labelled <code>repo</code> at the top. That automatically ticks the items beneath it. Tick nothing else.</td></tr>
-      <tr><td>6</td><td>Scroll to the bottom and click <strong>Generate token</strong>.</td></tr>
-      <tr><td>7</td><td><strong>Copy the token now.</strong> It is shown exactly once. Click the copy icon next to it.</td></tr>
-    </table>
-    <div class="box stop">
-      <p><strong>If you navigate away before copying it, the token is gone for good.</strong> That is not a disaster, it just means deleting it and generating another. But copy it now and keep it on the clipboard for the next step.</p>
-      <p><strong>Do not paste the token into a file in this repository</strong>, or into a notebook cell. It is a credential, and the repository is public.</p>
-    </div>
-  </div>
-</div>
-
-<div class="step">
-  <div class="row"><input type="checkbox"><div class="title">A4b. Push, using the token as the password <span class="st s-you">YOU</span></div></div>
-  <div class="body">
-    <p>First, tell git to remember the token in the Mac keychain so you only do this once:</p>
-    <div class="cmd"><pre>git config --global credential.helper osxkeychain</pre><button class="copy">copy</button></div>
-    <p>Then push:</p>
-    <div class="cmd"><pre>git push -u origin main</pre><button class="copy">copy</button></div>
-    <p>It will prompt you twice:</p>
-    <table>
-      <tr><th style="width:9em">Prompt</th><th>What to enter</th></tr>
-      <tr><td><code>Username</code></td><td><code>ochofer</code>. You had this right. It is your GitHub username, not your Google address.</td></tr>
-      <tr><td><code>Password</code></td><td><strong>Paste the token</strong> with <code>Cmd</code> and <code>V</code>. Not your Google password.</td></tr>
+      <tr><th>Attribute</th><th>Requirement</th><th>Why</th></tr>
+      <tr><td>History depth</td><td>at least 16 years</td><td>The sample starts in 2010. Plans offering five years reach back only to 2021</td></tr>
+      <tr><td>Geographic coverage</td><td>global, or at minimum the exchanges in your universe</td><td>Roughly half the companies here are listed outside the US and UK</td></tr>
     </table>
     <div class="box warn">
-      <p><strong>Nothing will appear on screen when you paste the token.</strong> No dots, no stars, no movement at all. This is deliberate, so that a password is never visible, but it looks exactly like a failed paste and it catches almost everyone.</p>
-      <p>Paste once, then press Enter. Resist the urge to paste again because nothing showed up, since that submits the token twice and it will fail.</p>
+      <p><strong>The advertised monthly prices are usually the annually-billed rates.</strong>
+      Paying monthly costs more per month and avoids a twelve-month commitment, which is
+      the right trade for a one-off data pull. I paid about $150 for a single month,
+      downloaded everything, archived it, and cancelled.</p>
     </div>
-    <p>Success looks roughly like this, ending in a line about tracking:</p>
-    <div class="cmd"><pre>Enumerating objects: 14, done.
-Writing objects: 100% (14/14), 12.4 KiB | 6.2 MiB/s, done.
-To https://github.com/ochofer/paper1-hazard-exposure-data.git
- * [new branch]      main -> main
-branch 'main' set up to track 'origin/main'.</pre><button class="copy">copy</button></div>
-    <p>Then reload the repository page on GitHub. You should see seven files and the README rendered underneath, with the Open in Colab badge at the top.</p>
-    <details><summary>If it still fails</summary><div class="inner">
-      <p><strong>"Invalid username or token" again.</strong> Most likely the token was not actually on the clipboard, or the <code>repo</code> scope was not ticked. Generate a fresh token, tick <code>repo</code>, and retry. A token with no scopes ticked authenticates but is refused for pushing.</p>
-      <p><strong>It prompts for username and password every single time.</strong> The keychain helper did not take. Check with <code>git config --global credential.helper</code>, which should print <code>osxkeychain</code>.</p>
-      <p><strong>You want to change the stored token later.</strong> Open the Keychain Access app, search for <code>github.com</code>, delete the entry, then push again to be prompted afresh.</p>
-      <p><strong>"Updates were rejected" or "non-fast-forward".</strong> A different problem entirely: the repository on GitHub is not empty because a README or licence was created with it. Run <code>git pull --rebase origin main</code> then push again.</p>
-      <p><strong>You would rather avoid tokens altogether.</strong> Install GitHub's own command line tool and authenticate through the browser with your Google sign-in: <code>brew install gh</code> then <code>gh auth login</code>, choosing HTTPS and browser authentication. This avoids token expiry, but only if Homebrew is already installed. Do not start down that road mid-task.</p>
-    </div></details>
+    <p>If you would rather not pay, sections 0, 1, 2 and 6 still run, and section 6 will
+    run against any price panel you can supply in the same shape.</p>
   </div>
 </div>
 
 <div class="step">
-  <div class="row"><input type="checkbox" checked><div class="title">A5. Wire the repository URL into the notebook <span class="st s-conf">DONE</span></div></div>
+  <div class="row"><input type="checkbox"><div class="title">4. Store the keys in Colab Secrets, never in a cell <span class="st s-note">READ</span></div></div>
   <div class="body">
-    <div class="box key"><p>The Colab bootstrap cell now clones <code>ochofer/paper1-hazard-exposure-data</code> and the README carries an <strong>Open in Colab</strong> badge. Both are already in the second commit, so pushing in A4 carries them up.</p></div>
-    <div class="box"><p><strong>For later.</strong> If you change the notebook, edit <code>build_notebook.py</code> and re-run <code>python build_notebook.py</code>. Editing the <code>.ipynb</code> directly appears to work, but the generator overwrites the notebook on its next run and your edit is silently discarded.</p></div>
+    <p>Colab has a Secrets panel, reached by the key icon in the left sidebar. Add
+    <code>FMP_API_KEY</code> and <code>OPENFIGI_API_KEY</code> there, and switch on
+    notebook access for each.</p>
+    <div class="box stop">
+      <p><strong>Do not paste a key into a cell.</strong> Notebook outputs are saved into
+      the <code>.ipynb</code> file, so a key printed or pasted once is committed to
+      version control and published along with everything else. This is one of the most
+      common ways credentials leak from research repositories.</p>
+    </div>
   </div>
 </div>
 
-<div class="step">
-  <div class="row"><input type="checkbox"><div class="title">A6. Push the notebook rendering fix <span class="st s-you">YOU</span></div></div>
-  <div class="body">
-    <div class="box stop"><p><strong>Reopen Terminal for this one.</strong> I said you could close it, then found a real bug in the notebook you had just pushed. The keychain now holds your token, so this will not ask you to sign in again. Same move as A2: type <code>cd </code> with a trailing space, drag the <code>repo_paper1_data</code> folder onto the window, press Enter.</p></div>
-    <div class="box warn"><p><strong>Fix one, the run-on text.</strong> A notebook file stores each cell as a list of lines and joins them with nothing at all, not with line breaks. The generator was splitting on line breaks and throwing them away, so every cell collapsed onto a single line. Markdown rendered as one run-on paragraph, which is what you saw. The same fault was in the code cells, where it would have raised a syntax error on the very first run. Every code cell is now parsed by a verification pass before the notebook is written.</p></div>
-    <div class="box warn"><p><strong>Fix two, the FMP 403s.</strong> The preflight was calling <code>/api/v3/</code>, which is retired for keys issued now. It answers <code>HTTP 403</code>, which reads as <em>not on your plan</em> and is nothing of the sort. All endpoints now point at <code>/stable/</code>, checked against the documentation you sent. The preflight also gained a sixth probe for dividend-adjusted prices, which matters more than it sounds and is explained inside the notebook.</p></div>
-    <div class="cmd"><pre>git push</pre><button class="copy">copy</button></div>
-    <p><strong>Then reload Colab.</strong> Close the Colab tab entirely and reopen it from the badge or the link in B1. A refresh alone can serve you the old copy.</p>
-    <p><strong>How to tell it worked:</strong> the first cell reads as a proper heading, <em>Paper 1: raw data panels</em>, followed by separate paragraphs and a three-column table. If it is still one grey blob of text, you reopened a cached tab rather than a fresh one.</p>
-  </div>
-</div>
-
-<h2>B. Set up Colab</h2>
+<h2>Running it</h2>
 
 <div class="step">
-  <div class="row"><input type="checkbox"><div class="title">B1. Open the notebook in Colab <span class="st s-you">YOU</span></div></div>
+  <div class="row"><input type="checkbox"><div class="title">5. Open the notebook and run everything <span class="st s-free">FREE</span></div></div>
   <div class="body">
-    <p>Once A6 has pushed, this link works. It is also the badge at the top of the README:</p>
+    <p>Use the Colab badge in the repository README, or this link:</p>
     <div class="cmd"><pre>https://colab.research.google.com/github/ochofer/paper1-hazard-exposure-data/blob/main/notebooks/01_raw_panels.ipynb</pre><button class="copy">copy</button></div>
-    <div class="box key">
-      <p><strong>This link is "opening from GitHub".</strong> If I ever say reopen from GitHub, this is what I mean. It fetches the current notebook from the repository every time, so the code you see is never stale.</p>
-      <p><strong>Two copies exist, and the link only refreshes one of them.</strong> The notebook comes from GitHub. The <code>config/</code> files it reads come from a second copy that the notebook clones into <code>/content/paper1-hazard-exposure-data</code> inside the Colab machine. Section 0 syncs that clone, prints the commit before and after, and lists the config files it found. On 21 August the sync was being skipped whenever the working directory was already inside the clone, so the notebook ran current code against a six-commit-old <code>config/</code> and the ticker overrides never applied.</p>
-      <p><strong>If section 0 reports an old commit</strong>, run <code>!rm -rf /content/paper1-hazard-exposure-data</code> in a cell and run again to force a fresh clone. Also close the Colab tab and paste the link into a new one rather than reloading, because a reload sometimes serves the cached notebook.</p>
+    <p>Then <strong>Runtime, Run all</strong>. Section 0 clones the repository onto the
+    Colab machine by itself; there is nothing to configure.</p>
+    <div class="box">
+      <p><strong>Two copies exist and only one comes from that link.</strong> The link
+      fetches the current notebook from GitHub. The configuration files it reads come from
+      a second copy that the notebook clones into <code>/content</code> on the Colab
+      machine. Section 0 synchronises that clone and prints the commit before and after,
+      so a stale copy is visible rather than silent.</p>
+      <p>If the printed commit is older than the repository head, run
+      <code>!rm -rf /content/paper1-hazard-exposure-data</code> in a cell and run again.
+      Colab also caches notebooks, so open the link in a fresh tab rather than reloading
+      an existing one.</p>
     </div>
-    <p>Opening it this way gives you a scratch copy, not a live link back to the repository. Saving inside Colab does <strong>not</strong> push anything to GitHub. Use <em>File, then Save a copy in GitHub</em> if you want a change to land, though editing <code>build_notebook.py</code> locally is cleaner.</p>
   </div>
 </div>
 
 <div class="step">
-  <div class="row"><input type="checkbox"><div class="title">B2. Add FMP_API_KEY to Colab Secrets <span class="st s-you">YOU</span></div></div>
+  <div class="row"><input type="checkbox"><div class="title">6. Check section 0 before reading anything else <span class="st s-free">FREE</span></div></div>
   <div class="body">
-    <p>Click the key icon in the left sidebar, then <em>Add new secret</em>. Name it exactly <code>FMP_API_KEY</code>, paste the value, then <strong>switch on notebook access</strong> for it.</p>
-    <div class="box warn"><p><strong>That access toggle is separate from creating the secret</strong> and is easy to miss. It is the usual cause of a "key not found" error when the secret is plainly sitting there in the panel.</p></div>
-    <div class="box stop"><p><strong>Do not paste the key into a notebook cell.</strong> Colab saves cell contents and output inside the <code>.ipynb</code> file, so a key typed into a cell can end up committed to a public repository. Secrets never touch the file.</p></div>
+    <p>Section 0 prints seven lines. Two of them decide whether the rest of the run means
+    anything.</p>
+    <table>
+      <tr><th>Line</th><th>Should say</th><th>If it does not</th></tr>
+      <tr><td><code>commit</code></td><td>The latest commit in the repository</td><td>The Colab clone is stale. Delete it as described above</td></tr>
+      <tr><td><code>repo</code></td><td>A path ending in <code>paper1-hazard-exposure-data</code></td><td>Stop. If it shows <code>/</code> the notebook will write to the filesystem root</td></tr>
+      <tr><td><code>api key</code></td><td><code>set</code></td><td>The secret is missing or notebook access is switched off for it</td></tr>
+    </table>
+    <p>The cell immediately after asserts the second of these, so a misconfigured run
+    fails there rather than several sections later with a confusing error.</p>
   </div>
 </div>
 
-<div class="step">
-  <div class="row"><input type="checkbox"><div class="title">B3. Run the setup and the location check <span class="st s-you">YOU</span></div></div>
-  <div class="body">
-    <p>Run the first code cell, then the second. <strong>Nothing needs uncommenting any more.</strong> The setup cell now detects Colab, clones the repository, moves into it and reads the secret by itself. The second cell prints where it landed and asserts it is right.</p>
-    <p>Read the five lines the setup cell prints. <code>repo</code> must end in <code>paper1-hazard-exposure-data</code>, and <code>api key</code> must say <code>set</code>.</p>
-    <div class="box stop">
-      <p><strong>Why this step got rewritten on 20 August.</strong> The old bootstrap cell shipped commented out, so skipping it was easy and silent. When it was skipped, <code>REPO</code> fell back to the parent of <code>/content</code>, which is <code>/</code>. Colab runs as root, so <code>mkdir</code> on <code>/data/raw</code> succeeded instead of raising, Panel A downloaded itself to the filesystem root, and the failure only surfaced four cells later as <code>FileNotFoundError: '/config/tickers_draft_v0.csv'</code>, a path that looks like nothing in this project. My fault, in the generator, and the fix is not "remember to uncomment": the notebook now resolves the repo root by looking for a file that exists only inside the repo, and raises immediately if it cannot find one.</p>
-    </div>
-    <div class="box warn"><p>If you already had a bad run in this Colab session, use <strong>Runtime, Restart session and run all</strong> rather than rerunning cells individually. A stale <code>REPO</code> or a half-written <code>/data/raw</code> at the filesystem root will otherwise persist in the live kernel.</p></div>
-  </div>
-</div>
-
-<h2>C. Panel A, the Fama-French factors</h2>
+<h2>What each section should produce</h2>
 
 <div class="step">
-  <div class="row"><input type="checkbox"><div class="title">C1. Run the download and parse cell <span class="st s-you">YOU</span></div></div>
+  <div class="row"><input type="checkbox"><div class="title">7. Section 1, the risk factors <span class="st s-free">FREE</span></div></div>
   <div class="body">
-    <p>Pulls <code>F-F_Research_Data_Factors_daily_CSV.zip</code> from Ken French's library and parses it. Expect a full range starting <strong>1926-07-01</strong> and roughly <strong>25,000</strong> rows before clipping.</p>
-    <div class="box key">
-      <p><strong>This parser is the one piece already tested.</strong> It was run against synthetic files reproducing the real format quirks: the copyright preamble, the trailing copyright line, the missing value codes, and the annual block that monthly files append after the monthly rows.</p>
-      <p>That testing found two genuine bugs, both now fixed. Using <code>pd.NA</code> was silently converting the factor columns to <code>object</code> type, which would have broken the summary table and the magnitude check further down. And malformed input raised a bare <code>StopIteration</code> instead of a readable error.</p>
-    </div>
-    <details><summary>If it fails</summary><div class="inner">
-      <p><strong>ValueError: No YYYYMMDD rows found.</strong> The URL is pointing at a monthly file. Monthly dates are six digits and need a different parser plus handling for the annual block. Check the filename contains <code>_daily</code>.</p>
-      <p><strong>HTTP 404.</strong> French occasionally renames files. Open the data library page and copy the current "Fama/French 3 Factors [Daily]" CSV link.</p>
-      <p><strong>Timeout or connection error.</strong> The Dartmouth server is genuinely slow at times. Just run the cell again; nothing is cached, so a retry is clean.</p>
+    <p>Expect roughly 4,000 daily rows for 2010 to 2025, which is about 252 trading days a
+    year.</p>
+    <p>The quickest sanity check is the summary table. The minimum and maximum of the
+    market factor should fall in March 2020, and they should be around -12 and +9 percent.
+    Those are the two extreme days of the COVID crash and recovery. If they fall somewhere
+    else, the dates were parsed wrongly.</p>
+    <details><summary>If the parser raises "No YYYYMMDD rows found"</summary><div class="inner">
+      <p>The URL is pointing at a monthly file rather than a daily one. Monthly files use
+      six-digit dates and additionally append a block of annual data below the monthly
+      data, which needs different handling. The notebook raises rather than returning an
+      empty table precisely so this cannot pass unnoticed.</p>
     </div></details>
   </div>
 </div>
 
 <div class="step">
-  <div class="row"><input type="checkbox"><div class="title">C2. Sanity check the summary table <span class="st s-you">YOU</span></div></div>
+  <div class="row"><input type="checkbox"><div class="title">8. Section 2, building the company list <span class="st s-opt">FREE KEY</span></div></div>
   <div class="body">
-    <p>The window is fixed at <strong>2010-01-01 to 2025-12-31</strong>, set in advance so that a rerun on a different day produces an identical file rather than a quietly longer one. Expect roughly <strong>4,000</strong> rows.</p>
-    <div class="box warn">
-      <p><strong>The values are in percent, not decimals.</strong> <code>Mkt-RF = 0.55</code> means 0.55 percent. They are stored exactly as published, deliberately, because the division by 100 belongs in the analysis layer where it can be seen in a diff.</p>
-      <p>Daily <code>Mkt-RF</code> should sit mostly between minus 3 and plus 3, with a standard deviation near 1. If the standard deviation is near 0.01, something has already divided by 100 and everything downstream will be wrong by two orders of magnitude.</p>
-    </div>
-  </div>
-</div>
-
-<h2>D. Panel B, the prices</h2>
-
-<div class="step">
-  <div class="row"><input type="checkbox"><div class="title">D1. Run the ticker list cell <span class="st s-you">YOU</span></div></div>
-  <div class="body">
-    <p>Reads <code>config/tickers_draft_v0.csv</code>: 14 US names, 6 European, plus <code>^GSPC</code> and <code>SPY</code>. Drawn from the top of <code>cross_section.csv</code> by operating asset count.</p>
-    <div class="box warn">
-      <p><strong>This list is survivorship biased, and that is intentional.</strong> All twenty names still trade today. It exists to prove the data path works. It is not a research universe and no return based result may be reported from it.</p>
-      <p>Revising it means editing that one CSV. Nothing downstream hardcodes a ticker.</p>
-    </div>
-  </div>
-</div>
-
-<div class="step">
-  <div class="row"><input type="checkbox"><div class="title">D1a. Run the preflight cell and read the table <span class="st s-you">YOU</span></div></div>
-  <div class="body">
-    <p>Five cheap calls that report what your API key is actually allowed to fetch, before the main loop spends a minute finding out the hard way. You said you were not sure which FMP plan you are on; this answers it by measurement rather than by reading a pricing page.</p>
-    <p>Read the <code>status</code> column. <code>200</code> with a detail like <code>2 bars</code> is a pass. <code>200 empty</code> or <code>HTTP 403</code> means that capability is closed to your key.</p>
+    <p>This is the longest section and the one where most of the judgement lives. It turns
+    328 ownership records into a list of tickers.</p>
+    <p>Expect the resolution to run in waves, most companies resolving in the first, and a
+    final uncapped pass over a handful of large bond issuers. Results are cached to disk,
+    so a second run costs almost nothing.</p>
     <table>
-      <tr><th>Probe</th><th>What a failure means for this project</th></tr>
-      <tr><td>US daily prices</td><td>Nothing works at all. This is authentication, not a plan tier. Stop and fix the key.</td></tr>
-      <tr><td>European ticker</td><td>Free or entry tier. The six EU names will return empty. Drop the EU leg for now or upgrade.</td></tr>
-      <tr><td>S&amp;P 500 index</td><td>Use SPY alone and record the substitution. SPY includes dividends and a fee drag; <code>^GSPC</code> is price only. They are not interchangeable.</td></tr>
-      <tr><td>History depth</td><td>Your usable window is shorter than the 2010 to 2025 one fixed in the notebook. Change <code>START</code> deliberately, not silently.</td></tr>
-      <tr><td>Delisted companies</td><td><strong>Blocking test 1 cannot run at all.</strong> See the warning below.</td></tr>
+      <tr><th>Step</th><th>Watch for</th></tr>
+      <tr><td>2, resolution</td><td>Roughly 270 of 328 companies resolving to listed shares. A well-known listed company in the unresolved list is a matching failure, not evidence that it is unlisted</td></tr>
+      <tr><td>2b, one listing per company</td><td>The line <code>no symbol is claimed by two entities</code>. If two companies share a ticker, the crosswalk has merged them</td></tr>
+      <tr><td>2c, currency</td><td>Currency filled for every company, and the spot-check table showing European companies on European exchanges rather than US over-the-counter lines</td></tr>
+      <tr><td>2d, name retry and corrections</td><td>Each recovered name printed with its similarity score. Read them; a low score on an unfamiliar name is worth checking by hand</td></tr>
     </table>
-    <div class="box stop">
-      <p><strong>The delisted companies row is the one to look at hardest.</strong> Your <code>01_survivorship_test_fmp.py</code> draws its random sample from FMP's own delisted list. If that endpoint is closed to your key, the survivorship test cannot return a number at all.</p>
-      <p>That does not merely delay the test. It means the size of the survivorship problem stays unmeasured, and the README's stated handling remains an intention rather than a correction. Nothing return based should be estimated in that state.</p>
-    </div>
-    <p>The cell prints a plain-language assessment underneath the table telling you which of these apply.</p>
-    <div class="box key"><p><strong>Status codes, since they look alike and mean opposite things.</strong> <code>403</code> means the path is retired, which is a code problem and mine to fix. <code>402</code> means Payment Required: your key is valid, the path is live, and the request is above your plan. <code>401</code> means the key is wrong or the account email is not yet verified. Only <code>402</code> is a real plan limit.</p></div>
-  </div>
-</div>
-
-<div class="step">
-  <div class="row"><input type="checkbox"><div class="title">D1b. If you saw any 402, run the boundary finder <span class="st s-you">YOU</span></div></div>
-  <div class="body">
-    <p>Section 3b of the notebook. Skip it if D1a came back clean.</p>
-    <div class="box key"><p><strong>Why this exists.</strong> In your 20 August run, <code>^GSPC</code> returned 42 bars from the <em>same endpoint</em> that refused <code>DUK</code>. So the wall is not the endpoint, and it is not the key. Eight calls hold two things fixed and vary the third, which is the only way to find out whether the limit is the price variant, the symbol, or how far back you can reach.</p></div>
-    <p>It prints a one-line diagnosis under the table. The four possible answers, and what each costs you:</p>
-    <table>
-      <tr><th>Diagnosis</th><th>What it means for the paper</th></tr>
-      <tr><td>The variant is the wall</td><td><code>light</code> is open, <code>full</code> is not. Enough to prove the pipeline runs. Not enough for factor regressions, because <code>light</code> carries no dividends.</td></tr>
-      <tr><td>Symbol coverage is the wall</td><td>Some tickers are covered and yours are not. Worth finding out whether the covered set is an exchange, an index membership, or a fixed list, because that determines whether the universe is choosable.</td></tr>
-      <tr><td>History depth is the wall</td><td>Recent data is open, 2010 is not. <strong>Do not quietly move <code>START</code>.</strong> A sample chosen by what the vendor will sell you is a sample chosen by the vendor, and it belongs in the limitations section rather than in a config constant.</td></tr>
-      <tr><td>All single-equity history is closed</td><td>Panel B cannot be built on this key at all. That is a decision point, not a bug.</td></tr>
-    </table>
-    <div class="box"><p><strong>The row worth hoping for.</strong> The last probe checks the <code>dividends</code> endpoint. If <code>light</code> prices and <code>dividends</code> are both open, total returns can be rebuilt by hand: take the split-adjusted close, add the cash dividend on its ex-date, compound. More work and more places to slip, but economically the same thing, and every input stays free and redistributable, which is an architecture constraint here rather than a budget preference.</p></div>
-    <p><strong>Send me the table.</strong> With it I can tell you whether a paid tier is worth it, which tier, or whether a US-only version one on free data gets you further faster.</p>
-    <div class="box key"><p><strong>Result, 20 August.</strong> Done. The diagnosis came back <em>symbol coverage is the wall</em>. Four symbols returned the full 2010 to 2025 history: <code>CVX</code>, <code>XOM</code>, <code>SPY</code>, <code>^GSPC</code>. Eighteen returned 402, including <code>DUK</code>, <code>NEE</code>, <code>BRK-B</code> and every European name. Size does not explain it, since <code>BRK-B</code> is refused and is larger than <code>CVX</code>. Step D1c follows up.</p></div>
-  </div>
-</div>
-
-<div class="step">
-  <div class="row"><input type="checkbox"><div class="title">D1c. Find out what the covered set actually is <span class="st s-you">YOU</span></div></div>
-  <div class="body">
-    <p>Section 3c of the notebook. This is new, so you need the latest code before you can run it.</p>
-    <p><strong>First, push and reload.</strong> In Terminal, in the repo folder:</p>
-    <pre><code>git push</code></pre>
-    <p>Then in Colab use <strong>File, Open notebook, GitHub</strong> and open <code>notebooks/01_raw_panels.ipynb</code> again from scratch. Do not just refresh the browser tab: Colab holds the old copy in memory and a refresh will hand it back to you unchanged. Rerun sections 1 and 2 to restore <code>API_KEY</code>, then go to 2c.</p>
     <div class="box key">
-      <p><strong>The hypothesis being tested, and why it is worth a cell.</strong> <code>XOM</code> works and <code>DUK</code> does not. <code>XOM</code> was removed from the Dow Jones Industrial Average on <strong>31 August 2020</strong>. If the free tier is a fixed list frozen from a pre-September-2020 Dow snapshot, that predicts a very specific pattern: names dropped from the Dow since 2020 still work, names added since 2020 do not, and large non-Dow names never work regardless of size. That is a falsifiable prediction rather than a hunch, which is the only kind worth spending a run on.</p>
+      <p><strong>The spot-check table in 2c is the most valuable output in this section.</strong>
+      A wrong listing does not produce an error or a missing value. It produces a
+      plausible price series for the wrong security, and the only way to catch it is to
+      look at the chosen tickers and recognise that something is off.</p>
     </div>
-    <p>The cell probes six groups and prints one of three verdicts:</p>
-    <table>
-      <tr><th>Verdict</th><th>What it tells you</th></tr>
-      <tr><td>CONFIRMED, a frozen index snapshot</td><td>The covered set is a fixed list you cannot influence. No universe you can define will be a research universe. Panel B needs a different source or a paid tier, full stop.</td></tr>
-      <tr><td>PARTIAL, the pattern is close but not exact</td><td>Some other fixed list, possibly a demo set. Same practical consequence, but the exact rule is worth naming in the limitations section.</td></tr>
-      <tr><td>NOT the Dow hypothesis</td><td>Something else selects the covered set. Send me the group table and I will work out what.</td></tr>
-    </table>
-    <div class="box stop">
-      <p><strong>The probe at the bottom is the one that decides blocking test 1.</strong> It pulls real tickers out of the delisted companies list and immediately asks for their price history. The list being open is what made blocking test 1 look ungated. But knowing which firms died, with no ability to price them, measures nothing. If that probe returns 402, blocking test 1 cannot produce a survivorship hit rate on this key, and nothing return-based can be estimated until that changes.</p>
-    </div>
-    <div class="box key">
-      <p><strong>Result, 20 August. The Dow hypothesis is dead, and what replaced it is worse.</strong> It failed in three separate places: NVDA joined the Dow in 2020 and is covered, RTX and DOW were dropped and are refused, and GOOGL, META and TSLA have never been in the Dow and are all covered. So it is not an index snapshot.</p>
-      <p>The full covered set across every probe so far is AAPL, GOOGL, INTC, JNJ, JPM, KO, META, MSFT, NVDA, PFE, TSLA, WBA, CVX, XOM, SPY, and the indices ^DJI, ^IXIC, ^GSPC. Refused: AMGN, BRK-B, CRM, DOW, HON, RTX, SHW, QQQ, IWM, VTI, all thirteen utilities and pipelines, and every European name.</p>
-      <p>Three tests each rule out a rule you could work around. <strong>Not size:</strong> WBA is covered at roughly $8bn while BRK-B is refused near $1tn. <strong>Not sector:</strong> MSFT is covered and CRM is refused. <strong>Not asset class:</strong> SPY is covered and QQQ, IWM and VTI are refused. What is left is a hand-picked list of household names, which is what a demo set looks like. There is no rule, so there is nothing to exploit and no way to define a universe that happens to fall inside it.</p>
-    </div>
-    <div class="box stop">
-      <p><strong>The number that ends the argument.</strong> Cross-referencing the covered list against <code>outputs/cross_section.csv</code>: five of your 328 firms are reachable on the free key. Chevron, Exxon Mobil, JPMorgan, Alphabet and Microsoft. Between them they hold 171 of the 5,115 assets, so <strong>1.5 percent of firms and 3.3 percent of the hazard exposure</strong>. And of those five, three are incidental owners with 21, 3 and 2 assets each. The free tier is not a small version of the sample, it is a different thing entirely.</p>
-      <p>The delisted probe also came back as feared: <code>NB2.F</code>, <code>082640.KS</code>, <code>VICE</code>, <code>EQR</code> and <code>FTRK</code> all refused. Blocking test 1 cannot run on this key.</p>
-    </div>
-    <details><summary>One oddity in that delisted sample, worth remembering later</summary><div class="inner">
-      <p><code>EQR</code> is Equity Residential, an active S&amp;P 500 REIT that has not been delisted. Either FMP's delisted list carries false positives, or it records historical ticker reuse without flagging it. Do not treat this as settled either way on one observation. But blocking test 1 divides by the size of that list, so if the list is inflated the survivorship rate is understated, and an understated survivorship rate is precisely the error that makes a bias look ignorable. Verify the list against a known-good sample once you have a key that can price these names. Added to step G2.</p>
+  </div>
+</div>
+
+<div class="step">
+  <div class="row"><input type="checkbox"><div class="title">9. Sections 3 and 4, prices and checks <span class="st s-paid">PAID</span></div></div>
+  <div class="body">
+    <p>The download takes a few minutes. Then section 4 runs sixteen checks and prints a
+    table.</p>
+    <p><strong>Read the whole table rather than the pass count.</strong> The checks are
+    ordered by what they protect, not by importance, and a single failure can invalidate
+    everything downstream while fifteen passes look reassuring.</p>
+    <details><summary>Common failures and what they mean</summary><div class="inner">
+      <p><strong>More than one return convention.</strong> Some companies came back on
+      total return and others on price return. The difference is a dividend yield, which
+      in a utility-heavy sample is larger than most published effects. Find out which
+      companies fell back and why before proceeding.</p>
+      <p><strong>Duplicate company-date pairs.</strong> A paginated response returned
+      overlapping pages. Any later regression would count those observations twice.</p>
+      <p><strong>Fewer than 2,000 shared trading days.</strong> The factor and price
+      calendars disagree. A later merge would silently discard most of the data.</p>
+      <p><strong>A company returned no data.</strong> Expected on a restricted plan.
+      Record which ones rather than quietly continuing with a smaller sample.</p>
     </div></details>
   </div>
 </div>
 
 <div class="step">
-  <div class="row"><input type="checkbox"><div class="title">D1d. Before you pay, find out how many of the 328 are listed at all <span class="st s-you">YOU</span></div></div>
+  <div class="row"><input type="checkbox"><div class="title">10. Sections 5 and 6, the blocking tests <span class="st s-paid">PAID</span> <span class="st s-free">FREE</span></div></div>
   <div class="body">
-    <div class="box stop">
-      <p><strong>This step exists because I found a gap while pricing the tiers, and it is upstream of the payment decision.</strong> <code>outputs/cross_section.csv</code> has <code>entity_id</code>, <code>name</code>, <code>hq</code>, <code>lei</code>, <code>permid</code> and <code>cik</code>. It has no ticker column. The only tickers that exist anywhere in this project are the 20 hand-written rows in <code>config/tickers_draft_v0.csv</code>. So there is no list of 328 symbols to buy data for, and nothing has yet established that 328 listed equities even exist in that file.</p>
+    <p>These are the tests that decide whether the data can answer the question. Section 5
+    needs the subscription because it prices companies that no longer exist. Section 6
+    needs only the factor data and a price panel.</p>
+    <p>The thresholds for section 5 are written into the notebook <em>above</em> the cell
+    that computes the number, which is the only point at which a threshold means anything.
+    Section 6 checks that a diversified portfolio has a market beta near one, which is
+    close to a definition rather than a hypothesis, and that regulated utilities come back
+    less market-sensitive than integrated oil companies.</p>
+    <div class="box">
+      <p><strong>Expect section 6 to produce a positive alpha, and expect the notebook to
+      argue with it.</strong> Sections 6b and 6c work through the mechanical explanations
+      one at a time, ruling each out by measurement rather than by assertion. Following
+      that argument is more instructive than the final answer.</p>
     </div>
-    <p>They almost certainly do not. GEM tracks asset ownership, and a large share of energy asset owners are not listed companies: state utilities, municipal generators, co-operatives, infrastructure funds, and wholly owned subsidiaries whose parent is the listed entity. The identifier columns hint at the scale of the question without answering it:</p>
-    <table>
-      <tr><th>Identifier</th><th>Present</th><th>What it does and does not tell you</th></tr>
-      <tr><td><code>has_permid</code></td><td>326 of 328</td><td>Refinitiv entity IDs. Assigned to private and public entities alike, so this says nothing about listing status.</td></tr>
-      <tr><td><code>has_lei</code></td><td>315 of 328</td><td>Required for derivatives counterparties and many debt issuers. Also says nothing about listing status.</td></tr>
-      <tr><td><code>has_cik</code></td><td>149 of 328</td><td>SEC filer. Closer, but still not the same thing: debt-only filers and funds have CIKs without listed equity. 149 of your 157 US firms have one.</td></tr>
-    </table>
+  </div>
+</div>
+
+<div class="step">
+  <div class="row"><input type="checkbox"><div class="title">11. Section 7, archiving <span class="st s-free">FREE</span></div></div>
+  <div class="body">
+    <p>Only relevant if you paid for price data. It copies everything to Google Drive,
+    builds a single archive file, and verifies the copies by checksum.</p>
     <div class="box warn">
-      <p><strong>Why this must come before the payment, not after.</strong> The tier choice below is between $49 for US, UK and Canada and $99 for global. That comparison assumes 143 continental European <em>listed</em> firms are waiting on the other side of the global tier. If most of those 143 are state and municipal utilities, which is exactly what you would expect in a European energy ownership file, then the $99 tier buys far less than the firm count suggests and Premium may be the right call after all. You cannot answer that from the pricing page. You can only answer it from your own data.</p>
+      <p><strong>Verify by checksum, not by file count.</strong> A truncated copy has the
+      wrong size and would be caught by almost any check. A corrupted one has the right
+      size and would not. The archive ships with a <code>SHA256SUMS.txt</code> inside it,
+      so a copy can be verified at any point in future with:</p>
+      <div class="cmd"><pre>shasum -a 256 -c SHA256SUMS.txt</pre><button class="copy">copy</button></div>
     </div>
-    <p><strong>This is now built. Run section 2 of the notebook.</strong> It needs no FMP key. I already did the first half: joining your LEIs against the GLEIF ISIN file gives 296 of 328 firms with at least one ISIN, including 137 of the 143 continental European ones. Both files are committed as <code>config/universe.csv</code> and <code>config/universe_isins.csv</code>.</p>
-    <div class="box warn">
-      <p><strong>296 is an upper bound, not the answer.</strong> ISINs are issued for bonds as readily as for shares, and heavily indebted utilities are precisely the entities that carry many ISINs and no listed equity. The file holds 98,104 pairs and the biggest holder is Deutsche Bank with 21,793, almost all structured notes. Section 2 sends them to OpenFIGI, which returns a security type per instrument and so separates common stock from debt.</p>
-    </div>
-    <p><strong>Get a free OpenFIGI API key first</strong>, at <code>openfigi.com/api</code>, and add it to Colab Secrets as <code>OPENFIGI_API_KEY</code>. It is free and takes about a minute. The cell runs either way, but the rate limits differ enormously:</p>
-    <table>
-      <tr><th>Setup</th><th>Limit</th><th>Run time on your data</th></tr>
-      <tr><td>With a key</td><td>25 requests per 6 seconds, 100 ISINs each</td><td>About a minute</td></tr>
-      <tr><td>Without a key</td><td>25 requests per minute, 10 ISINs each</td><td>Just under an hour</td></tr>
-    </table>
-    <p>I dry ran the whole section against a mocked OpenFIGI to check the loop, the rate limiting and the summary table. It resolves in three waves, trying each firm's home-country ISINs first, and caps at 500 per firm rather than running to exhaustion, which saves roughly 60,000 pointless lookups on the bond issuers. Firms still unresolved at the cap are listed by name for you to check by hand rather than being silently recorded as unlisted.</p>
-    <p>Output is <code>config/tickers_v1.csv</code> plus a printed table. The two lines to send me are at the bottom:</p>
-    <div class="cmd"><pre>PREMIUM  $49: ___ listed firms, ___ assets
-ULTIMATE $99: ___ listed firms, ___ assets</pre><button class="copy">copy</button></div>
-    <p>That comparison, not the pricing page, decides the tier. It is also the sample size line in your methods section, so it has to exist regardless of which plan you buy.</p>
-    <div class="box key">
-      <p><strong>One thing section 2 will surface that is not about pricing.</strong> Deutsche Bank, JPMorgan, Goldman Sachs, Santander and Crédit Agricole are all in your 328. That is almost certainly lookthrough of financing stakes rather than operational ownership, and a bank's hazard exposure computed that way is an artefact of the ownership graph rather than a fact about its balance sheet. Decide explicitly whether financial holders belong in the cross-section, and record which way you went. Easier to settle now than after a coefficient depends on it.</p>
-    </div>
+    <p>Google Drive mounting from Colab fails intermittently with a credential error. The
+    browser download is an equally good route, and keeping two copies in different places
+    is the actual goal.</p>
   </div>
 </div>
 
-<div class="step">
-  <div class="row"><input type="checkbox"><div class="title">D1e. Buy the plan, on monthly billing <span class="st s-you">YOU</span></div></div>
-  <div class="body">
-    <div class="box key"><p><strong>What 2c settled about the free tier.</strong> It is a demo allowlist of about fifteen household-name tickers plus three indices, not a rule you can design a universe around. Five of your 328 firms fall inside it, holding 3.3 percent of the assets. So there is no free path to Panel B, and the only remaining question is which paid tier.</p></div>
-    <p>Only two attributes on that pricing page decide anything for this paper: how far back the history reaches, and which countries are covered. Everything else is call rate and extras you do not need. Measured against <code>outputs/cross_section.csv</code>:</p>
-    <table>
-      <tr><th>Tier</th><th>History</th><th>Coverage</th><th>Firms reached, of 328</th><th>Verdict</th></tr>
-      <tr><td>Basic, free</td><td>5 years</td><td>a fixed handful</td><td>about 4</td><td>Cannot build Panel B</td></tr>
-      <tr><td>Starter, $19</td><td>5 years</td><td>US</td><td>157, but only back to 2021</td><td>Dead on history depth</td></tr>
-      <tr><td>Premium, $49</td><td>30+ years</td><td>US, UK, Canada</td><td>185 (56.4%)</td><td>Workable if the paper goes US and UK only</td></tr>
-      <tr><td>Ultimate, $99</td><td>full</td><td>Global</td><td>328 (100%)</td><td>What the paper as designed needs</td></tr>
-    </table>
-    <p>Your universe is 157 US, 28 UK, 0 Canada and 143 continental European. Premium would drop 143 firms and 2,125 of the 5,115 assets. <strong>Read those as entity counts, not listed-firm counts</strong>, which is what step D1d is for. If the European 143 turns out to be mostly unlisted, the gap between the two tiers narrows sharply and Premium becomes the better buy.</p>
-    <div class="box warn">
-      <p><strong>Choose monthly billing, not annual.</strong> The $19, $49 and $99 figures are the annually-billed rates, so the monthly rate is higher, likely near $149 for Ultimate. That still beats the alternative: annual billing on Ultimate is a $1,188 commitment for what should be a one-month pull. Buy one month, take everything, cancel.</p>
-    </div>
-    <div class="box stop">
-      <p><strong>Before you pay, read FMP's terms line under the pricing table.</strong> Redistributing their data requires a separate licensing agreement with them. So the price panel cannot go into the public repo at any tier. That is not a reason to avoid paying, it is a reason to set the repo up correctly on day one: <code>data/raw/prices/</code> goes in <code>.gitignore</code>, the repo ships the fetch code and the symbol list, and the README says which layer a reader has to buy. Panel A is unaffected, Ken French data is freely redistributable.</p>
-    </div>
-    <p>The moment the key is live, go to section F. Step F1 is a ten minute acceptance test that verifies you got what you paid for while a refund is still realistic.</p>
-  </div>
-</div>
+<h2>What cannot be reproduced, and why</h2>
 
 <div class="step">
-  <div class="row"><input type="checkbox"><div class="title">D2. Run the fetch loop and read the misses <span class="st s-pend">UNTESTED</span></div></div>
+  <div class="row"><input type="checkbox"><div class="title">12. The price panel is not in this repository <span class="st s-note">READ</span></div></div>
   <div class="body">
-    <p>22 symbols at roughly 0.3 seconds apart, so under a minute. Each prints its row count and date range as it goes.</p>
-    <div class="box warn">
-      <p><strong>Watch for the line <code>HTTP 200 but empty payload, counted as MISS</code>.</strong> This is the one to read carefully. FMP returns a success code with an empty array for symbols it holds no data for, which in any aggregate count looks identical to a real hit. Same convention as your <code>01_survivorship_test_fmp.py</code>, for the same reason.</p>
-    </div>
-    <p>If the six European tickers ending <code>.PA</code>, <code>.MI</code>, <code>.L</code>, <code>.DE</code> and <code>.SW</code> all come back empty, your key is almost certainly free tier, because European coverage is a paid feature. <strong>That is a plan limit, not a data quality finding</strong>, and should not be recorded as one.</p>
-    <details><summary>Other failure modes</summary><div class="inner">
-      <p><strong>HTTP 401 or 403.</strong> Bad or unauthorised key. Check the notebook access toggle on the secret.</p>
-      <p><strong>HTTP 429.</strong> Rate limited. Raise the <code>time.sleep(0.3)</code> to 1.0 and run it again.</p>
-      <p><strong>Everything empty, including SPY.</strong> The key is not reaching the API at all. Do not debug ticker by ticker; the problem is authentication.</p>
-      <p><strong>Only ^GSPC empty.</strong> Index access is tiered separately on some plans. SPY alone is workable, but note the substitution rather than quietly dropping the benchmark.</p>
-    </div></details>
-  </div>
-</div>
-
-<h2>E. Verify and record</h2>
-
-<div class="step">
-  <div class="row"><input type="checkbox"><div class="title">E1. Read the integrity check table, all 11 rows <span class="st s-you">YOU</span></div></div>
-  <div class="body">
-    <p>These exist so a broken download fails loudly now rather than surfacing as a puzzling coefficient three weeks from now. They test plumbing only. They make no claim that the data suits the research question.</p>
-    <table>
-      <tr><th>Check</th><th>What a failure means</th></tr>
-      <tr><td>no duplicate dates, no duplicate symbol and date pairs</td><td>The vendor returned overlapping pages. Any panel regression would double count those rows.</td></tr>
-      <tr><td>factor magnitudes below 25</td><td>A units error. Either something already converted percent to decimals, or the parse misaligned the columns.</td></tr>
-      <tr><td>no weekend dates</td><td>Date parsing is wrong, or the file is not actually daily.</td></tr>
-      <tr><td>closes strictly positive</td><td>Nulls or sentinel values have leaked into the price series.</td></tr>
-      <tr><td>every requested symbol returned data</td><td>Some are missing. Expected on a free tier. Note which ones; do not quietly carry on.</td></tr>
-      <tr><td>FF3 and ^GSPC share over 2000 trading days</td><td>A calendar mismatch. The later merge would silently drop most rows.</td></tr>
-    </table>
-    <div class="box"><p>A failure here is information, not an obstacle. Record what failed and why before working around it.</p></div>
-  </div>
-</div>
-
-<div class="step">
-  <div class="row"><input type="checkbox"><div class="title">E2. Generate and commit manifest.json <span class="st s-you">YOU</span></div></div>
-  <div class="body">
-    <p>The manifest records SHA-256 hashes, row counts, date ranges and the list of missing symbols. It is what lets a later rerun be <em>proved</em> identical rather than assumed so.</p>
-    <p>Back in Terminal, in the same folder as before:</p>
-    <div class="cmd"><pre>git add -f data/raw/manifest.json
-git commit -m "Record first successful data pull" &amp;&amp; git push</pre><button class="copy">copy</button></div>
-    <p>The <code>-f</code> is needed because <code>data/raw/</code> is ignored by git. The manifest is the one deliberate exception. The CSV files stay out, because they are reproducible from the notebook and one of them would be large.</p>
-    <div class="box warn"><p>If you ran the notebook in Colab, the manifest is on Google's machine, not yours. Download it from the Colab file browser into <code>data/raw/</code> locally first, or this command will report that the file does not exist.</p></div>
-  </div>
-</div>
-
-<div class="step">
-  <div class="row"><input type="checkbox"><div class="title">E3. Note what this run does and does not establish <span class="st s-no">BLOCKED</span></div></div>
-  <div class="body">
-    <p>A clean run means the acquisition path works. It does not mean the data supports return based estimation. Two upstream items still block that, both carried over from the 19 August handover:</p>
+    <p>Financial Modeling Prep's terms require a separate licensing agreement to
+    redistribute their data. So <code>data/raw/</code> is excluded from version control
+    and the price panel is not published here.</p>
+    <p>What is published instead:</p>
     <ul>
-      <li><strong><code>01_survivorship_test_fmp.py</code> has not returned a number.</strong> Until there is a measured delisting hit rate, the survivorship problem is unknown in size, not small.</li>
-      <li><strong>The GEM ownership snapshot is undated</strong>, with sector vintages spanning about sixteen months. That is look ahead contaminating the independent variable, and nothing in this repository addresses it.</li>
+      <li><strong>The code that fetches it</strong>, so the download is inspectable.</li>
+      <li><strong>The resolved ticker list</strong> in <code>config/</code>, which is my
+      own work and is the part that took the effort.</li>
+      <li><strong>The hand corrections</strong> in <code>config/ticker_overrides.csv</code>,
+      each with a written reason.</li>
+      <li><strong>A manifest</strong> recording row counts, date ranges and a SHA-256 for
+      every file, so anyone who buys their own access can prove their panel matches mine
+      rather than assuming it.</li>
     </ul>
-    <div class="box key"><p>The README states the intended handling of survivorship bias and transaction costs up front, before any result exists, so that neither commitment can be quietly relaxed once numbers start appearing. It also says plainly that a stated intention is not a measured correction.</p></div>
+    <p>Panel A, the factor data, is freely redistributable and its exact downloaded bytes
+    are archived, because its publisher revises the file in place and a download next year
+    returns different content for the same nominal series.</p>
   </div>
 </div>
 
-<h2>F. The paid pull: what to download, and where it goes</h2>
-
-<p>Everything in this section assumes a live paid key. The governing idea is that you are renting access for a month and keeping the result forever, so <strong>the cost of pulling something you turn out not to need is one API call, and the cost of not pulling something you later need is another subscription.</strong> Be greedy inside the month.</p>
+<h2>Known limitations</h2>
 
 <div class="step">
-  <div class="row"><input type="checkbox"><div class="title">F1. Run the day-one acceptance test before anything else <span class="st s-you">YOU</span></div></div>
+  <div class="row"><input type="checkbox"><div class="title">13. What I would want a referee to know <span class="st s-note">READ</span></div></div>
   <div class="body">
-    <p>Paste the new key into Colab Secrets, then rerun 3a, 3b and 3c in that order. Roughly ten minutes. Four things have to come back true, and the last is not itemised anywhere on the pricing page:</p>
     <table>
-      <tr><th>Check</th><th>Where</th><th>What failure means</th></tr>
-      <tr><td>DUK and the European names return data</td><td>3a preflight</td><td>Coverage is not what was sold. Ask for a refund the same day.</td></tr>
-      <tr><td>History reaches January 2010</td><td>3b, history depth test</td><td>The tier's range is shorter than advertised. Do not shorten <code>START</code> to hide it.</td></tr>
-      <tr><td><code>dividend-adjusted</code> works for every equity</td><td>3c and D2</td><td>A mixed panel. See the note below on why the check fires.</td></tr>
-      <tr><td>Delisted symbols return price history</td><td>3c, final probe</td><td>Blocking test 1 still cannot run. Better to know on day one than in month three.</td></tr>
+      <tr><th>Limitation</th><th>Status</th></tr>
+      <tr><td><strong>The hazard exposure variable does not exist yet.</strong> The ownership dataset carries no asset coordinates, so building it needs the separate sector datasets plus a hazard dataset</td><td>Not started. Needs no subscription</td></tr>
+      <tr><td><strong>The ownership snapshot is undated.</strong> Using a current ownership map to explain past returns is look-ahead bias in the explanatory variable, which no downstream care repairs</td><td>Investigated. The publisher's earlier releases cannot reconstruct a historical map, because most change between releases is their own research catching up</td></tr>
+      <tr><td><strong>Survivorship bias is unmeasured at the relevant company size.</strong> The price provider's delisting records do not reach back far enough</td><td>Bounded as far as the source allows in section 5. CRSP would settle it</td></tr>
+      <tr><td><strong>No currency conversion.</strong> Nine currencies, and UK prices are in pence rather than pounds</td><td>Deliberately left to a separate, testable step</td></tr>
+      <tr><td><strong>Most return variation sits in the last third of the sample</strong>, and both driving episodes correlate with hazard exposure by construction</td><td>Measured in section 6c. Pre-committed to reporting split samples as standard rather than as robustness</td></tr>
+      <tr><td><strong>Some asset owners are subsidiaries of listed parents.</strong> Whether to roll them up changes what counts as a company</td><td>Open. A research design decision, not a lookup</td></tr>
     </table>
-    <div class="box"><p><strong>Expect one failure that is not a failure.</strong> Section 3 checks that the whole panel uses one return convention, and your free-tier run already trips it: <code>^GSPC</code> fell back to split-adjusted while CVX, XOM and SPY got dividend-adjusted. That is correct behaviour. An index has no dividends to reinvest, so <code>^GSPC</code> has no dividend-adjusted series anywhere, at any price. The fix is to treat the index as a benchmark series rather than a panel member, or to use SPY, which does have a total return series, and say which you did.</p></div>
-  </div>
-</div>
-
-<div class="step">
-  <div class="row"><input type="checkbox"><div class="title">F2. Run section 2b, then Panel B <span class="st s-you">YOU</span></div></div>
-  <div class="body">
-    <div class="box stop">
-      <p><strong>Do not run Panel B before section 2b. Your interrupted run on 21 August is why.</strong> It was downloading <code>ALIZY</code>, <code>ALIZF</code>, <code>AKZOY</code>, <code>AKZOF</code>, <code>ADMUSD</code> and hundreds more. Those are American depositary receipts, US foreign-board lines and currency-denominated order-book lines of companies you already had. <code>ALV</code>, <code>ALIZY</code> and <code>ALIZF</code> are all Allianz.</p>
-      <p>Three problems, and the first is the one that matters. <strong>The panel would double count:</strong> a hazard-sorted portfolio holding all three Allianz lines holds one bet with three weights, and because the duplicates are near perfectly correlated they look like independent observations, so your cross-sectional standard errors come out too small. <strong>A receipt is not the security:</strong> an ADR carries the underlying return plus an exchange rate move, traded on US hours against a European close, which injects a currency factor into a climate-hazard sort. And it costs a multiple of the download time while the subscription is running.</p>
-    </div>
-    <p>Section 2b fixes it by letting liquidity arbitrate rather than by hand-maintaining a table of exchange codes. For every candidate it asks FMP what it can price, pulls one recent quarter, and keeps the line with the highest median daily dollar volume. Median rather than mean, so a single index-rebalance day cannot decide a listing; dollar rather than share volume, because share counts are not comparable between a euro ordinary and a dollar receipt.</p>
-    <p><strong>Simplest path: push, reopen the notebook from GitHub, then Runtime, Run all.</strong> Every section now runs in dependency order and the slow parts are cached, so a rerun costs minutes rather than repeating the whole job. Expect roughly fifteen minutes end to end, most of it the Panel B fetch.</p>
-    <table>
-      <tr><th>Section</th><th>Does</th><th>Stop if</th></tr>
-      <tr><td>0</td><td>Clone, secrets, paths</td><td><code>api key</code> is not <code>set</code></td></tr>
-      <tr><td>2</td><td>OpenFIGI resolution</td><td>Fewer than about 270 of 328</td></tr>
-      <tr><td>2b</td><td>One listing per firm</td><td>A symbol is claimed by two entities</td></tr>
-      <tr><td>2c</td><td>Currency, exchange, losses</td><td>Currency is empty, or a European firm sits on a US over-the-counter line</td></tr>
-      <tr><td>2d</td><td>Name retry for the misses</td><td>A recovered name looks like a different company</td></tr>
-      <tr><td>3</td><td>Panel B prices</td><td>It lists thousands of symbols rather than roughly 300</td></tr>
-      <tr><td>4</td><td>Integrity checks, manifest</td><td>Read every failing row before continuing</td></tr>
-    </table>
-    <div class="box key">
-      <p><strong>Two bugs the dry run caught before you paid for them.</strong> The <code>lei</code> column held the literal string <code>"not found"</code> for 13 firms, Chevron among them with 73 assets. Left as a string it is a valid join key, so all 13 were being merged into each other, and pandas joins missing keys to each other too. Those 13 now resolve through their SEC CIK instead, which recovers all of them. Section 2b also asserts that no ticker is claimed by two entities, because a collapsed crosswalk would silently double the assets attributed to one firm.</p>
-    </div>
-    <p><strong>Send me the section 2b summary and the Panel B row count.</strong> The number that matters is how many of the 271 firms FMP can actually price, since a resolved ticker and a delivered price series are different things and both belong in the methods section.</p>
-  </div>
-</div>
-
-<div class="step">
-  <div class="row"><input type="checkbox"><div class="title">F3. Store it so the month cannot be wasted <span class="st s-you">YOU</span></div></div>
-  <div class="body">
-    <div class="box stop">
-      <p><strong>Do not run the paid pull in Colab alone.</strong> Colab storage is ephemeral. A disconnected runtime after a two hour pull on a subscription you are about to cancel is an expensive and entirely avoidable mistake. Either mount your Google Drive and write straight to it, or run the pull locally in Terminal. Write each symbol to disk as it arrives rather than accumulating in memory and saving at the end, so a crash costs you the last symbol instead of all of them.</p>
-    </div>
-    <p>The layout, under <code>repo_paper1_data/</code>:</p>
-    <div class="cmd"><pre>data/
-  raw/
-    prices_div_adj/    AAPL.csv, DUK.csv, ...   one file per symbol
-    prices_split_adj/  AAPL.csv, DUK.csv, ...
-    dividends/         AAPL.csv, ...
-    reference/         delisted_companies.csv, stock_list.csv, profiles.csv
-    ff3_daily.csv
-    manifest.json
-  interim/                                       nothing hand edited, ever
-config/
-  tickers_v1.csv                                 the resolved list from D1d</pre><button class="copy">copy</button></div>
-    <p>One file per symbol rather than one combined CSV, for a specific reason: a partial pull stays usable and resumable. With a single combined file, an interrupted run leaves you unable to tell which symbols completed.</p>
-    <table>
-      <tr><th>Rule</th><th>Reason</th></tr>
-      <tr><td><code>data/raw/</code> stays in <code>.gitignore</code></td><td>FMP's terms require a separate licensing agreement to redistribute their data. This is not optional and it applies at every tier including free.</td></tr>
-      <tr><td><code>data/raw/manifest.json</code> is force added with <code>git add -f</code></td><td>Hashes and row counts are facts about the data, not the data. They are what makes the pull auditable without publishing it.</td></tr>
-      <tr><td><code>config/tickers_v1.csv</code> is committed</td><td>The symbol list is your own work, not FMP's. A reader with their own key needs it to reproduce you.</td></tr>
-      <tr><td>Raw files are never edited in place</td><td>Every correction belongs in code that reads <code>raw/</code> and writes <code>interim/</code>. A hand-edited raw file cannot be re-pulled and compared.</td></tr>
-      <tr><td>Keep a second copy outside the repo folder</td><td>Once you cancel, this data cannot be regenerated without paying again. Treat it as irreplaceable, because for your budget it is.</td></tr>
-    </table>
-    <div class="box key"><p><strong>What the README has to say once this exists.</strong> That Panel A is fully reproducible from public Ken French files, that Panel B requires an FMP subscription at a named tier, that <code>manifest.json</code> lets a reader verify their own pull matches yours byte for byte, and the date the data was pulled. A reader who cannot reproduce half your pipeline can still verify that you did what you said, provided you tell them how.</p></div>
-  </div>
-</div>
-
-<div class="step">
-  <div class="row"><input type="checkbox"><div class="title">F4. Export the data, then cancel <span class="st s-you">YOU</span></div></div>
-  <div class="body">
-    <div class="box stop">
-      <p><strong>Everything built so far lives on a Google virtual machine that is deleted when the session ends.</strong> That includes the price panel, which cost $166 and about two hours of API calls. Section 7 of the notebook exports it. Run that before you cancel and before the runtime recycles.</p>
-    </div>
-    <p>Section 7 mounts your Drive, copies the raw folder and the config folder across, then <strong>re-hashes every file after copying and compares against the source</strong>. Size checks are not enough: a corrupted copy matches on size. It also builds a single zip for the browser download, and writes the price panel as Parquet alongside the CSV, roughly a tenth the size and much faster to reload.</p>
-    <table>
-      <tr><th>File</th><th>Replaceable after cancelling?</th></tr>
-      <tr><td><code>panel_b_prices_daily.csv</code></td><td><strong>No.</strong> Needs a live paid key</td></tr>
-      <tr><td><code>fmp_delisted.json</code>, <code>fmp_profile_cache.json</code></td><td><strong>No.</strong> Same</td></tr>
-      <tr><td><code>openfigi_cache.json</code>, <code>fmp_isin_cache.json</code>, <code>fmp_liquidity_cache.json</code></td><td>Yes, slowly. OpenFIGI is free</td></tr>
-      <tr><td><code>ff3_daily.csv</code></td><td>Yes, free public download</td></tr>
-    </table>
-    <p><strong>Then, in this order:</strong> confirm the hash line says every file matches, not just the count; open the zip on your own machine and check it is not empty, because Colab drops large browser downloads silently; keep two copies in different places, since Drive alone is one copy rather than a backup; note today's date and the tier in your methods file, because vendor coverage changes; then cancel, and set a calendar reminder two days before the renewal date in case the cancellation does not take.</p>
-    <div class="box key"><p>Everything left in the project runs on free data: the GEM sector trackers, a hazard dataset, the join, and the estimation. The subscription bought exactly one thing that cannot be bought later, and that is the price panel.</p></div>
-  </div>
-</div>
-
-<div class="step">
-  <div class="row"><input type="checkbox"><div class="title">F5. Final pre-cancellation sweep <span class="st s-you">YOU</span></div></div>
-  <div class="body">
-    <p>Run the section 3 integrity checks and regenerate <code>manifest.json</code> against the full pull. Then, before you cancel, go down this list once. Everything on it is free while the subscription is live and impossible afterwards:</p>
-    <table>
-      <tr><th>Confirm</th><th>Because</th></tr>
-      <tr><td>Every resolved ticker has a file, and the misses are written down</td><td>A missing symbol discovered after cancellation is a permanent hole in the sample.</td></tr>
-      <tr><td>Every file starts in 2005 or at the firm's first trading day, whichever is later</td><td>Truncation is easy to miss and changes the sample without announcing itself.</td></tr>
-      <tr><td>Delisted names have price files</td><td>Blocking test 1 depends entirely on this.</td></tr>
-      <tr><td>The currency of every non-US series is recorded</td><td>Not recoverable later without the profile endpoint.</td></tr>
-      <tr><td>You have a backup copy outside the repo</td><td>Self evident, routinely skipped.</td></tr>
-    </table>
-    <div class="box warn"><p><strong>Set a calendar reminder for two days before the renewal date, on the day you subscribe.</strong> An unnoticed second month is the same money as the first, and this is the most common way a one-month data purchase becomes a four-month one.</p></div>
-  </div>
-</div>
-
-<h2>G. The remaining tests</h2>
-
-<p>These are the things that stand between a working download and a defensible result. None is blocked by anything except the data pull, and the first two decide whether the paper's central estimate can be trusted at all.</p>
-
-<div class="step">
-  <div class="row"><input type="checkbox"><div class="title">G1. Blocking test 1, the survivorship hit rate <span class="st s-you">YOU</span></div></div>
-  <div class="body">
-    <p><strong>Unblocked and built. It is section 5 of the notebook.</strong> Your F1 run showed delisted price history returns data on the Ultimate tier, which is what the free key refused, so this can finally produce a number. It supersedes <code>code/01_survivorship_test_fmp.py</code>, which never ran and still points at the retired <code>/api/v3/</code> paths.</p>
-    <div class="box stop"><p><strong>Run it before you cancel.</strong> It needs price history for companies that no longer exist, which is the one thing that becomes unavailable the moment the subscription lapses.</p></div>
-    <p>It reports three things, and only the third turns a rate into a bias: the base delisting count for 2010 to 2025, the share falling in your sectors with a confidence interval, and the final-year return of delisted firms against the market over identical windows. A 10 percent attrition rate with no return gap barely matters; the same rate with a large negative gap changes the headline number.</p>
-    <div class="box warn"><p><strong>The rate it prints is a lower bound and says so.</strong> A delisting count is not a rate without knowing how many firms were listed in 2010, and FMP publishes no historical constituent list. The denominator used is today's survivors plus the delistings, which undercounts the 2010 population. Quote it as a floor, not an estimate.</p></div>
-    <p>The thresholds are written into the notebook above the cell, before you see the result: under 5 percent, report and proceed; 5 to 15 percent, bound the effect by recomputing the headline assuming delisted firms earned the observed gap; over 15 percent, the survivor-only cross-section cannot carry the main claim.</p>
-    <p>The question it answers: of the firms that owned assets in the GEM file at the start of the sample, what fraction had left the listed universe by the end, and how do their returns compare with the survivors. <strong>Until that fraction is a number, survivorship bias in this paper is of unknown size, which is not the same as small.</strong> Commit to how you will handle it before you see the figure, so the threshold cannot move to accommodate the result.</p>
-  </div>
-</div>
-
-<div class="step">
-  <div class="row"><input type="checkbox"><div class="title">G2. Audit the delisted list before trusting the rate <span class="st s-no">BLOCKED</span></div></div>
-  <div class="body">
-    <p>New, and it comes out of the 2c run. The free-tier sample of delisted names included <code>EQR</code>, which is an active S&amp;P 500 REIT. One observation is not a verdict, but it is enough to require a check, because blocking test 1 divides by the size of this list.</p>
-    <div class="box key"><p><strong>The direction of the error matters more than its size.</strong> A list inflated with still-listed firms makes the delisting rate look higher, which sounds conservative. But used the other way, as a denominator, an inflated list makes the fraction of your own universe that delisted look smaller, and an understated survivorship rate is exactly the error that makes a bias look safe to ignore. Take a sample of fifty names off the list, check their current listing status against the profile endpoint, and report the false positive rate in the methods section.</p></div>
-  </div>
-</div>
-
-<div class="step">
-  <div class="row"><input type="checkbox"><div class="title">G3. Blocking test 2, factor replication <span class="st s-you">YOU</span></div></div>
-  <div class="body">
-    <p><strong>Built, and it is section 6 of the notebook.</strong> It supersedes <code>code/02_factor_replication.py</code>, which never ran and still points at the retired v3 paths. <strong>This needs no subscription and no CRSP</strong>, since Panel A is a free public download and Panel B is already on disk, so it is the thing to do while WRDS access is pending.</p>
-    <div class="box key"><p><strong>Why it blocks.</strong> Everything so far shows that data arrived, not that returns computed from it are correct. A panel can pass all sixteen integrity checks and still produce nonsense: a split adjustment applied twice, a currency mixed into a dollar factor, a preferred share standing in for common equity. None of that appears as a missing value. The market beta of a broad equity portfolio is one by definition, not by hypothesis, so if it comes back at 0.4 the return construction is broken and every later coefficient is worthless.</p></div>
-    <table>
-      <tr><th>Quantity</th><th>Expected</th><th>If it fails</th></tr>
-      <tr><td>Market beta, equal-weighted US portfolio</td><td>0.7 to 1.3</td><td>Returns misscaled, or the panel is not what you think</td></tr>
-      <tr><td>R-squared on FF3</td><td>above 0.5</td><td>Portfolio not diversified, or returns are noise</td></tr>
-      <tr><td>Annualised alpha</td><td>within a few percent of zero</td><td>Systematic construction error, or a real sector effect worth naming</td></tr>
-      <tr><td>Utility beta below energy beta</td><td>yes</td><td>Symbols attached to the wrong firms. The aggregate can look fine while every individual beta is meaningless</td></tr>
-    </table>
-    <div class="box warn"><p><strong>The headline test runs on the US subset only, deliberately.</strong> Ken French's factors are dollar returns and your panel holds USD, EUR, GBp, NOK, CHF, SEK, DKK and ILA. A euro return regressed on a dollar factor measures the asset plus the exchange rate, and an exchange rate is not a climate hazard. The non-US firms run separately and the gap between the two lines is itself a measurement of how much conversion matters.</p></div>
-    <p>Standard errors are Newey-West at five lags, because daily portfolio returns are heteroskedastic and mildly autocorrelated and plain OLS would overstate precision. Verified against synthetic data with a planted beta of 0.85: the cell recovered 0.855.</p>
-  </div>
-</div>
-
-<div class="step">
-  <div class="row"><input type="checkbox"><div class="title">G4. The GEM vintage problem, still the critical path <span class="st s-no">BLOCKED</span></div></div>
-  <div class="body">
-    <p>Unchanged since the 19 August handover and still the most serious problem in the project. The GEM ownership snapshot is undated, with sector trackers published across a span of roughly sixteen months. Using a 2026 ownership snapshot to explain 2010 returns attributes to a firm assets it did not own yet.</p>
-    <div class="box stop"><p><strong>This one contaminates the regressor, which is why it outranks everything else here.</strong> Survivorship bias distorts the dependent variable and can be bounded and reported. Look-ahead in the independent variable means the exposure measure is partly constructed from information that did not exist at the time, and no amount of care downstream repairs that.</p></div>
-    <p>The unblocking path is already in motion: Gabe at GEM is sending prior dataset releases plus a version carrying a last-verified-date column. When that arrives, the exposure measure gets rebuilt as a time-varying panel using only vintages available at each date. Two things to hold on to when you reply to him: a last-verified date bounds knowledge rather than dating events, so an asset verified in 2024 may have changed hands in 2019 and simply not been rechecked; and ask explicitly whether the prior releases are archived as originally published or restated, because a restated archive reintroduces the same look-ahead in a form that is much harder to notice.</p>
+    <p>If a null result emerges, I intend to report it as one alongside the minimum effect
+    size the sample could have detected. A study that can only publish one of its two
+    possible answers is not a test of anything.</p>
   </div>
 </div>
 
 <div class="footer">
-  <p>Companion to <code>README.md</code> in the same repository. The notebook's scope is acquisition only: no returns, no regressions, no portfolio construction, and no merge of the two panels.</p>
-  <p><button class="reset" id="reset">Reset all checkboxes</button> Progress is not saved between visits, by design. A half ticked state left over from an abandoned attempt is more misleading than starting clean.</p>
+  <p>Companion to <code>notebooks/01_raw_panels.ipynb</code> and
+  <code>FINDINGS_2026-08-21.md</code> in the same repository. Questions and corrections
+  are welcome through the repository's issue tracker.</p>
+  <p><button class="reset" id="reset">Reset all checkboxes</button> Progress is not saved
+  between visits, by design. A half-ticked state left over from an abandoned attempt is
+  more misleading than starting clean.</p>
 </div>
 
 <script>
