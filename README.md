@@ -1,142 +1,227 @@
-# Paper 1: data layer
+# Does physical climate risk show up in share prices?
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ochofer/paper1-hazard-exposure-data/blob/main/notebooks/01_raw_panels.ipynb)
 
-Raw data acquisition for the physical-hazard-exposure asset pricing study. This repo
-holds the acquisition layer only: two raw panels, a manifest, and the checks that
-confirm the download was not silently corrupted. No returns, no regressions, no
-portfolio construction.
+Companies own physical things. Power stations, pipelines, mines, cement works. Those
+things sit in places, and places have weather.
 
-Two commitments are stated here before any result exists, so that they cannot be
-quietly relaxed once results start appearing.
+I am testing whether investors price the risk that weather damages those assets or
+interrupts what they produce. If they do, companies with more exposed assets should earn
+different returns from companies with less exposed ones, once I have controlled for
+everything else known to move share prices.
 
-**Results so far are in [`FINDINGS_2026-08-21.md`](FINDINGS_2026-08-21.md).** That file
-records the data accessed, all three blocking tests with their numbers, the crosswalk
-faults found and fixed, and five pre-commitments made before any hazard variable exists.
-Step-by-step instructions for running any of it are in
+**This repository is the data layer for that study.** It builds and audits the data. It
+does not test the hypothesis, and I explain below why I keep those two things apart.
+
+---
+
+## What is here
+
+I need three ingredients, and they do not naturally connect to one another.
+
+| Ingredient | What it gives me | Source | Cost |
+|---|---|---|---|
+| Asset ownership | Which company owns which power station, mine or pipeline | Global Energy Monitor | Free, registration |
+| Share prices | What each company's shares actually did, daily | Financial Modeling Prep | Paid |
+| Risk factors | The known drivers of returns, used as controls | Kenneth French Data Library | Free |
+
+The awkward part is the join. The ownership data identifies companies by name and by
+legal identifiers. The price data is organised entirely by stock ticker. Neither contains
+the other, so most of the work in this repository is building that bridge and then trying
+to prove it wrong.
+
+**Current state of the sample:** 302 of 328 ownership entities resolve to a tradeable
+listing, covering 4,900 of 5,115 tracked assets, or 95.8%. The price panel holds
+1,122,798 daily rows across 305 symbols, on a single total-return convention, and passes
+16 of 16 integrity checks.
+
+The hazard measurement itself is separate work and is not in this repository.
+
+## Why the data layer is a separate thing
+
+A data layer I can only check by looking at the final result is one I cannot really
+check. If the answer looks interesting I will not go back and question the download; if
+it looks boring I will. That asymmetry is how bad data survives.
+
+So I audit the raw layer on its own, before anything depends on the answer. The two
+**blocking tests** in the notebook take the same idea further: in each I try to prove my
+own pipeline is broken, before I use it. I borrowed the term from software, where a
+blocking bug is one that stops release.
+
+There is a second benefit I did not plan. The data layer turned out to be
+design-agnostic. When the research design changed in August 2026, from a cross-sectional
+test to an event study, nothing in this repository needed to change.
+
+## Where to start reading
+
+| If you want | Read |
+|---|---|
+| The reasoning, with the code | [`notebooks/01_raw_panels.ipynb`](notebooks/01_raw_panels.ipynb) |
+| What I found, with numbers | [`FINDINGS_2026-08-21.md`](FINDINGS_2026-08-21.md) |
+| To run it yourself | [`EXECUTION_CHECKLIST.html`](EXECUTION_CHECKLIST.html) |
+
+The notebook is written for someone who has not seen the project and may be new to either
+quantitative finance or Python. If you are a quantitative researcher it will occasionally
+be slower than you need, and I would rather that than the alternative.
+
+Sections 5 and 6 are the ones I would point a sceptical reader at first. Section 6 in
+particular takes the finished price panel and tries to prove it is broken, and that
+argument stands whether or not you trust anything else here.
+
+---
+
+## Two commitments made before any result exists
+
+I wrote both of these down before I had a hazard variable to test, so that I cannot
+quietly relax them once results start appearing. That is the entire point of writing them
+in a public repository.
+
+### 1. Survivorship bias
+
+My list of companies comes from an ownership dataset published in 2026, so every company
+in it still existed in 2026. A company that owned power stations in 2010 and was then
+taken over or wound up is absent, and it is absent because of what happened to it.
+
+If companies with exposed assets failed more often, my sample would systematically drop
+the worst outcomes among exactly the group I am studying. That mechanism manufactures the
+result I am looking for, so it needs measuring rather than mentioning.
+
+**What I committed to:**
+
+- **Point-in-time universe construction.** Whether a company belongs in the universe at
+  date *t* must be decided using only information available at *t*.
+- **Delisting returns must be included.** A company that goes to zero contributes its
+  final return rather than disappearing. Dropping the last observation turns bankruptcies
+  into non-events and biases mean returns upward, which is the direction that would
+  flatter my hypothesis.
+- **Measure the size of the problem before assuming it is small**, with thresholds fixed
+  before the number appears.
+
+**What I found.** Section 5 of the notebook runs that measurement. Two results, and the
+second surprised me.
+
+The price provider **cannot** measure delisting over my sample window. Its records show
+seven delistings in 2010 and 2,353 in 2025, a thirty-fold rise. Delisting rates do not
+behave like that, so I read this as coverage rather than history, and I discarded the
+resulting rate rather than quoting it with a caveat.
+
+Splitting delisted companies by how heavily they traded, the smallest underperform badly
+before delisting while the largest **outperform**. That fits: small companies delist
+because they fail, and companies the size of mine mostly delist because they are
+acquired, which is announced at a premium. If that holds, excluding delisted companies
+biases my returns downward rather than upward.
+
+**The honest statement is that survivorship bias is unmeasured at the company sizes that
+matter here.** I have ten observations in the relevant band, which is a direction and not
+a magnitude. CRSP's delisting file would settle it and I have applied for access.
+
+### 2. Transaction costs
+
+Nothing in this repository nets transaction costs, deliberately. The panels are gross.
+Costs belong at the portfolio layer, applied once, visibly, and to turnover rather than
+to holdings.
+
+- **I report gross and net together**, in the same table. A net figure alone hides the
+  cost assumption. A gross figure alone is not a claim about anything achievable.
+- **Costs apply to turnover**, computed from realised portfolio weights, so drift-driven
+  rebalancing is charged for and not only deliberate signal changes.
+- **The cost assumption is fixed in advance** and varied only as a stated sensitivity
+  across a range, rather than tuned to a preferred number. A flat one-way cost is
+  defensible for a universe of large utilities, energy and materials companies. It would
+  not be for small caps.
+- **The break-even cost is the honest headline.** Rather than defending one cost figure,
+  I report the one-way cost at which the excess return reaches zero. That number is
+  assumption-free and lets a reader apply their own beliefs. If break-even sits below
+  plausible real costs, that is the finding.
+
+Complications specific to this universe, recorded now so I do not discover them late: the
+European leg incurs currency conversion costs the US leg does not; `^GSPC` is an index and
+cannot be traded, which is why I also download `SPY`; and partnership structures have tax
+treatment that makes net-of-cost comparison with ordinary companies non-trivial.
+
+---
+
+## Data notes that cause silent errors
+
+Each of these produces a plausible-looking number rather than an error, which is what
+makes them worth writing down.
+
+- **The French factors are in percent, not decimals.** `Mkt-RF = 0.55` means 0.55%. I
+  store them as published, so the division by 100 belongs downstream.
+- **`-99.99` and `-999` are missing-value codes**, converted to `NaN` when parsed.
+- **UK prices are quoted in pence, not pounds**, labelled `GBp` with a lower-case p. A
+  factor-of-100 error waiting to happen in anything weighted by price or market value.
+- **No currency conversion is applied.** The panel holds nine currencies.
+- **Panel A is the US factor set.** The European companies need French's Developed Europe
+  factors. Mixing them is the wrong model rather than a currency nuisance.
+- **A price index has no total-return version.** `^GSPC` will always fall back to price
+  return, which is why the integrity checks scope the convention test to companies and
+  test benchmarks separately.
+
+## What this repository does not contain, and why
+
+**The price panel.** Financial Modeling Prep's terms require a separate licensing
+agreement to redistribute their data, so `data/raw/` is excluded from version control.
+
+What I publish instead is everything needed to rebuild it: the fetch code, the resolved
+company list, the hand corrections with a written reason for each, and a manifest of
+SHA-256 checksums so anyone with their own access can prove their panel matches mine
+rather than assuming it.
+
+**The hazard exposure variable.** Not built yet. The ownership dataset carries no asset
+coordinates, so it needs the separate sector datasets plus a hazard dataset. None of that
+requires a subscription.
+
+## Layout
+
+```
+notebooks/01_raw_panels.ipynb   the analysis, with the reasoning
+build_notebook.py               generates the notebook, keeps it diffable in git
+EXECUTION_CHECKLIST.html        how to reproduce it, and what each step should print
+FINDINGS_2026-08-21.md          results of the three blocking tests, with numbers
+config/universe.csv             the 328 ownership entities
+config/universe_isins.csv       their security identifiers, from GLEIF
+config/ticker_overrides.csv     hand corrections to the crosswalk, each with a reason
+config/tickers_draft_v0.csv     a 20-name sample kept only for testing the data path
+data/raw/                       downloads and manifest.json, gitignored
+```
+
+`config/tickers_primary.csv`, the resolved one-listing-per-company file, is generated by
+the notebook rather than committed, because it is an output rather than an input.
+
+## Reproducing it
+
+Open the notebook with the Colab badge above and choose Runtime, Run all. Add
+`FMP_API_KEY` and `OPENFIGI_API_KEY` to Colab's Secrets panel first, and do not paste
+either into a cell, because notebook outputs are committed to git.
+
+Roughly two thirds of this runs on free data. Full details, including what each step
+should print and what to do when it does not, are in
 [`EXECUTION_CHECKLIST.html`](EXECUTION_CHECKLIST.html).
 
----
+## References
 
-## 1. Survivorship bias: how it will be handled
+The methods here are standard and I have used the published implementations rather than
+writing my own.
 
-**The ticker list currently in this repo is survivorship-biased, and knowingly so.**
-`config/tickers_draft_v0.csv` contains twenty firms that all still trade in August 2026.
-It exists to prove the data path works. It is not a research universe and no return-based
-result may be reported from it. This is stated first because a draft list that quietly
-becomes the final list is the single most common way survivorship bias enters a study.
+> Blume, M. E. and Stambaugh, R. F. (1983). "Biases in computed returns: An application to the size effect." *Journal of Financial Economics* 12(3), 387-404.
+>
+> Carhart, M. M. (1997). "On persistence in mutual fund performance." *Journal of Finance* 52(1), 57-82.
+>
+> Fama, E. F. and French, K. R. (1993). "Common risk factors in the returns on stocks and bonds." *Journal of Financial Economics* 33(1), 3-56.
+>
+> Fama, E. F. and French, K. R. (2015). "A five-factor asset pricing model." *Journal of Financial Economics* 116(1), 1-22.
+>
+> Newey, W. K. and West, K. D. (1987). "A simple, positive semi-definite, heteroskedasticity and autocorrelation consistent covariance matrix." *Econometrica* 55(3), 703-708.
+>
+> Shumway, T. (1997). "The delisting bias in CRSP data." *Journal of Finance* 52(1), 327-340.
 
-The intended handling, in order:
-
-**Point-in-time universe construction.** Inclusion in the universe at date *t* must be
-decided using only information available at *t*. The current construction fails this in
-two distinct places, and they need different fixes:
-
-- *Price layer.* Firms delisted before today are absent from a list built from today's
-  survivors. Fix: build the universe from the union of listed and delisted firms, taking
-  the delisted set from FMP's `delisted-companies` endpoint, and admit a firm to the
-  panel from its listing date rather than from the start of the sample.
-- *Exposure layer.* The GEM Ownership Tracker is a single undated snapshot whose sector
-  vintages span roughly sixteen months. Attributing 2026 asset ownership to a firm in,
-  say, 2014 is look-ahead, not survivorship, and it is the larger of the two problems
-  because it contaminates the independent variable. This is **unresolved**. It is the
-  largest unmitigated threat to the design and it is not fixed by anything in this repo.
-
-**Delisting returns must be included.** A firm that goes to zero must contribute its
-final return, not simply disappear. Dropping the last observation converts bankruptcies
-into non-events and biases mean returns upward, precisely the direction that would
-flatter a hazard-exposure hypothesis. Where a delisting return is unavailable, the
-convention will be stated explicitly and applied uniformly rather than case by case.
-
-**The size of the problem will be measured before it is assumed small.**
-`code/01_survivorship_test_fmp.py` measures FMP's delisting hit rate against hand-listed
-delistings and a fixed-seed random sample, with pass thresholds written into the
-docstring *before* any run so the bar cannot move after the answer is seen. An HTTP 200
-carrying an empty array counts as a miss, not a hit.
-
-> **Status: this test has not yet returned a number.** Until it does, the magnitude of
-> the survivorship problem is *unknown*, not small. Everything in this section is a
-> stated intention, which is not the same thing as a measured correction.
+Data sources: [Kenneth R. French Data Library](https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/data_library.html),
+[Global Energy Monitor](https://globalenergymonitor.org/),
+[GLEIF](https://www.gleif.org/en/lei-data/gleif-golden-copy),
+[OpenFIGI](https://www.openfigi.com/api),
+[Financial Modeling Prep](https://site.financialmodelingprep.com/).
 
 ---
 
-## 2. Transaction costs: how they will be handled
-
-**Transaction costs are not netted anywhere in this repo, by design.** The raw panels are
-gross. Costs belong at the portfolio layer, applied once, visibly, and to turnover rather
-than to holdings.
-
-**Gross and net will both be reported.** Any strategy result carries both figures in the
-same table. A net figure presented alone hides the cost assumption; a gross figure
-presented alone is not a claim about anything achievable.
-
-**Costs apply to turnover.** Per-period cost is one-way cost in basis points multiplied by
-period turnover, charged at each rebalance. Turnover is computed from realised portfolio
-weights, so it correctly charges for drift-driven rebalancing rather than only for
-deliberate signal changes.
-
-**The cost assumption is fixed in advance and varied only as a stated sensitivity.**
-Baseline is a flat one-way cost applied uniformly, chosen before results are seen.
-Because the universe here is large-cap utilities, energy and materials, a flat assumption
-is defensible; it would not be for small caps. Sensitivities are reported across a range,
-not tuned to a preferred number.
-
-**The break-even cost is the honest headline.** Rather than defending one cost figure, the
-result to report is the one-way cost at which the strategy's excess return reaches zero.
-That number is assumption-free and lets a reader apply their own cost beliefs. If
-break-even sits below plausible real-world costs, that is the finding and it will be
-reported as such.
-
-**Known cost complications specific to this universe**, recorded now so they are not
-discovered late: the European leg incurs FX conversion costs not present in the US leg;
-`^GSPC` is an index and cannot be traded, so any benchmark-relative cost comparison uses
-`SPY`, which is why both are pulled; and MLPs and partnerships were excluded from the
-draft list partly because their tax treatment makes net-of-cost comparison with
-corporations non-trivial.
-
----
-
-## 3. Layout
-
-```
-config/tickers_draft_v0.csv   draft universe, revisable in one edit
-notebooks/01_raw_panels.ipynb acquisition notebook (Colab-ready)
-build_notebook.py             generates the notebook; keeps it diffable in git
-data/raw/                     outputs + manifest.json (gitignored except manifest)
-```
-
-## 4. Running it
-
-Colab is the intended environment. Add `FMP_API_KEY` to the Colab **Secrets** panel (key
-icon, left sidebar) and enable it for the notebook. Do not paste it into a cell, or it
-will be committed. Locally, `export FMP_API_KEY='...'`.
-
-The notebook writes `panel_a_ff3_daily.csv`, `panel_b_prices_daily.csv`, the untouched
-original French download, and `manifest.json` with SHA-256 hashes so a rerun can be
-*proved* identical rather than assumed so.
-
-## 5. Data notes that cause silent errors
-
-- **French factors are in percent, not decimals.** `Mkt-RF = 0.55` means 0.55%. Stored as
-  published; the `/100` belongs downstream.
-- `-99.99` and `-999` are French's missing-value codes, converted to `NaN` at parse.
-- **`SHEL.L` is quoted in pence (GBp), not pounds**. A factor-of-100 error waiting to
-  happen.
-- No FX conversion is applied. US names are USD, European names EUR/CHF/GBp.
-- **Panel A is the US factor set.** The European leg must be regressed on French's
-  Developed Europe factors. Mixing them is not a currency nuisance, it is the wrong model.
-
-## 6. Draft universe
-
-Twenty firms drawn from the top of `outputs/cross_section.csv` by operating-asset count:
-fourteen US, six European. Deliberately excluded from the draft, each for a reason that
-is a live design question rather than a data question:
-
-- **KKR, Blackstone**: whether a private-equity sponsor should carry physical hazard
-  exposure in a listed-equity study is unsettled.
-- **Energy Transfer, Enterprise Products**: MLPs; partnership structure and K-1 tax
-  treatment make them non-comparable to corporations without a stated convention.
-- **Berkshire Hathaway is included** but flagged: it owns its utilities outright, which is
-  defensible, but it is a conglomerate whose returns are mostly not about physical assets.
-
-Revising the list means editing one CSV. Nothing downstream hardcodes a ticker.
+Carlo Hofer. Questions and corrections are welcome through the issue tracker.
