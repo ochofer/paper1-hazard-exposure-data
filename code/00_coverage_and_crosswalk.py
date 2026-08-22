@@ -11,9 +11,10 @@ FOUR DECISIONS ARE MADE HERE THAT CHANGE THE ANSWER MATERIALLY.
 Each is stated as a switch at the top so it can be flipped and re-reported
 rather than buried:
 
-  1. ASSET KEY. An "asset unit" is a distinct (Asset ID, Asset Unit ID) pair.
-     16,585 of 49,942 ownership rows have a blank unit ID, so collapsing on unit
-     ID alone destroys about a third of the file.
+  1. ASSET KEY. I treat an "asset unit" as a distinct (Asset ID, Asset Unit ID)
+     pair.
+     16,585 of 49,942 ownership rows have a blank unit ID, so if I collapsed on
+     unit ID alone I would destroy about a third of the file.
 
   2. STATUS FILTER. I count only assets GEM marks as operating. A cancelled,
      announced or pre-construction plant has no physical climate exposure, and
