@@ -75,19 +75,19 @@ Companion to <code>notebooks/01_raw_panels.ipynb</code> · Carlo Hofer · last r
 Cost key: <span class="st s-free">FREE</span> no account needed · <span class="st s-opt">FREE KEY</span> free registration · <span class="st s-paid">PAID</span> requires a subscription · <span class="st s-note">READ</span> nothing to run
 </p>
 
-<p>This page explains how to run the data-building notebook from scratch, what each step
-should produce, and what to do when it produces something else. It also states plainly
-which parts of the analysis you can reproduce for nothing and which part you cannot.</p>
+<p>Here I explain how to run my data-building notebook from scratch, what each step should
+produce, and what to do when it produces something else. I also state plainly which parts
+of my analysis you can reproduce for nothing and which part you cannot.</p>
 
-<p>If you are here to read rather than to run, the notebook itself is the better
-document. This page is the operational companion: the practical detail that would clutter
-the notebook but that you need if you are actually going to execute it.</p>
+<p>If you are here to read rather than to run, my notebook is the better document. I wrote
+this page as the operational companion: the practical detail that would clutter the
+notebook but that you need if you are going to execute it.</p>
 
 <div class="box key">
-  <p><strong>The short version.</strong> Roughly two thirds of this project runs on free
+  <p><strong>The short version.</strong> Roughly two thirds of my project runs on free
   public data and needs about twenty minutes. The share price panel requires a paid
-  subscription of about $150 for one month, and cannot legally be redistributed, so it is
-  not in this repository. Everything else, including both blocking tests and the entire
+  subscription of about $150 for one month, and I cannot legally redistribute it, so it
+  is not in this repository. Everything else, including both blocking tests and the whole
   company-matching pipeline, is free.</p>
 </div>
 
@@ -102,8 +102,8 @@ the notebook but that you need if you are actually going to execute it.</p>
 climate hazards, measured from the locations of the physical assets it owns, helps
 explain its stock returns after controlling for the usual risk factors.</p>
 
-<p>The notebook builds and audits the data for that study. It does not test the
-hypothesis. Three datasets are involved:</p>
+<p>My notebook builds and audits the data for that study. It does not test the
+hypothesis. I use three datasets:</p>
 
 <table>
   <tr><th>Dataset</th><th>What it provides</th><th>Cost</th></tr>
@@ -118,8 +118,8 @@ hypothesis. Three datasets are involved:</p>
 <div class="step">
   <div class="row"><input type="checkbox"><div class="title">1. Decide how much of it you want to run <span class="st s-note">READ</span></div></div>
   <div class="body">
-    <p>You do not have to run all of it, and the free parts are the more interesting ones
-    to read.</p>
+    <p>You do not have to run all of it, and I think the free parts are the more interesting
+    ones to read.</p>
     <table>
       <tr><th>Sections</th><th>What they do</th><th>Needs</th><th>Time</th></tr>
       <tr><td>0, 1</td><td>Setup and the risk factor data</td><td><span class="st s-free">FREE</span></td><td>2 minutes</td></tr>
@@ -130,9 +130,9 @@ hypothesis. Three datasets are involved:</p>
       <tr><td>7</td><td>Archive the downloaded data</td><td><span class="st s-free">FREE</span></td><td>5 minutes</td></tr>
       <tr><td>Appendix A</td><td>How the provider's coverage limits were diagnosed</td><td><span class="st s-paid">PAID</span></td><td>1 minute</td></tr>
     </table>
-    <p>Section 6 is the one I would point a sceptical reader at first. It takes the
-    finished price panel and tries to prove it is broken, and the argument it makes is
-    independent of whether you trust anything else here.</p>
+    <p>Section 6 is the one I would point a sceptical reader at first. I take my finished
+    price panel and try to prove it is broken, and that argument stands whether or not you
+    trust anything else here.</p>
   </div>
 </div>
 
@@ -141,8 +141,8 @@ hypothesis. Three datasets are involved:</p>
   <div class="body">
     <p>Register at <a href="https://www.openfigi.com/api">openfigi.com/api</a>. It is free
     and takes about a minute.</p>
-    <p>The key is optional, and the difference it makes is large enough to be worth the
-    minute. Without one the service allows 25 requests per minute at 10 identifiers each.
+    <p>The key is optional. I recommend it because the difference is large enough to be worth
+    the minute. Without one the service allows 25 requests per minute at 10 identifiers each.
     With one it allows 25 requests every 6 seconds at 100 each. On this dataset that is
     the difference between roughly a minute and most of a day.</p>
   </div>
@@ -151,8 +151,8 @@ hypothesis. Three datasets are involved:</p>
 <div class="step">
   <div class="row"><input type="checkbox"><div class="title">3. Decide about the price data <span class="st s-paid">PAID</span></div></div>
   <div class="body">
-    <p>Sections 3 onwards need a Financial Modeling Prep subscription. Two attributes of
-    the plan matter and nothing else does:</p>
+    <p>Sections 3 onwards need a Financial Modeling Prep subscription. Two attributes of the
+    plan mattered to me and nothing else did:</p>
     <table>
       <tr><th>Attribute</th><th>Requirement</th><th>Why</th></tr>
       <tr><td>History depth</td><td>at least 16 years</td><td>The sample starts in 2010. Plans offering five years reach back only to 2021</td></tr>
@@ -164,8 +164,8 @@ hypothesis. Three datasets are involved:</p>
       the right trade for a one-off data pull. I paid about $150 for a single month,
       downloaded everything, archived it, and cancelled.</p>
     </div>
-    <p>If you would rather not pay, sections 0, 1, 2 and 6 still run, and section 6 will
-    run against any price panel you can supply in the same shape.</p>
+    <p>If you would rather not pay, sections 0, 1, 2 and 6 still run, and I wrote section 6
+    so it will run against any price panel you can supply in the same shape.</p>
   </div>
 </div>
 
@@ -228,17 +228,17 @@ hypothesis. Three datasets are involved:</p>
 <div class="step">
   <div class="row"><input type="checkbox"><div class="title">7. Section 1, the risk factors <span class="st s-free">FREE</span></div></div>
   <div class="body">
-    <p>Expect roughly 4,000 daily rows for 2010 to 2025, which is about 252 trading days a
+    <p>I get roughly 4,000 daily rows for 2010 to 2025, which is about 252 trading days a
     year.</p>
-    <p>The quickest sanity check is the summary table. The minimum and maximum of the
+    <p>My quickest sanity check is the summary table. The minimum and maximum of the
     market factor should fall in March 2020, and they should be around -12 and +9 percent.
     Those are the two extreme days of the COVID crash and recovery. If they fall somewhere
     else, the dates were parsed wrongly.</p>
     <details><summary>If the parser raises "No YYYYMMDD rows found"</summary><div class="inner">
       <p>The URL is pointing at a monthly file rather than a daily one. Monthly files use
       six-digit dates and additionally append a block of annual data below the monthly
-      data, which needs different handling. The notebook raises rather than returning an
-      empty table precisely so this cannot pass unnoticed.</p>
+      data, which needs different handling. I made it raise rather than return an empty
+      table, so this cannot pass unnoticed.</p>
     </div></details>
   </div>
 </div>
@@ -246,10 +246,10 @@ hypothesis. Three datasets are involved:</p>
 <div class="step">
   <div class="row"><input type="checkbox"><div class="title">8. Section 2, building the company list <span class="st s-opt">FREE KEY</span></div></div>
   <div class="body">
-    <p>This is the longest section and the one where most of the judgement lives. It turns
-    328 ownership records into a list of tickers.</p>
-    <p>Expect the resolution to run in waves, most companies resolving in the first, and a
-    final uncapped pass over a handful of large bond issuers. Results are cached to disk,
+    <p>This is my longest section and the one where most of the judgement lives. It turns 328
+    ownership records into a list of tickers.</p>
+    <p>I run the resolution in waves, with most companies resolving in the first and a final
+    uncapped pass over a handful of large bond issuers. Results are cached to disk,
     so a second run costs almost nothing.</p>
     <table>
       <tr><th>Step</th><th>Watch for</th></tr>
@@ -270,10 +270,10 @@ hypothesis. Three datasets are involved:</p>
 <div class="step">
   <div class="row"><input type="checkbox"><div class="title">9. Sections 3 and 4, prices and checks <span class="st s-paid">PAID</span></div></div>
   <div class="body">
-    <p>The download takes a few minutes. Then section 4 runs sixteen checks and prints a
+    <p>The download takes a few minutes. Then section 4 runs my sixteen checks and prints a
     table.</p>
-    <p><strong>Read the whole table rather than the pass count.</strong> The checks are
-    ordered by what they protect, not by importance, and a single failure can invalidate
+    <p><strong>Read the whole table rather than the pass count.</strong> I ordered the checks
+    by what they protect, not by importance, and a single failure can invalidate
     everything downstream while fifteen passes look reassuring.</p>
     <details><summary>Common failures and what they mean</summary><div class="inner">
       <p><strong>More than one return convention.</strong> Some companies came back on
@@ -293,19 +293,19 @@ hypothesis. Three datasets are involved:</p>
 <div class="step">
   <div class="row"><input type="checkbox"><div class="title">10. Sections 5 and 6, the blocking tests <span class="st s-paid">PAID</span> <span class="st s-free">FREE</span></div></div>
   <div class="body">
-    <p>These are the tests that decide whether the data can answer the question. Section 5
-    needs the subscription because it prices companies that no longer exist. Section 6
-    needs only the factor data and a price panel.</p>
-    <p>The thresholds for section 5 are written into the notebook <em>above</em> the cell
-    that computes the number, which is the only point at which a threshold means anything.
+    <p>These are the tests that decide whether my data can answer my question. Section 5 needs
+    the subscription because it prices companies that no longer exist. Section 6 needs only
+    the factor data and a price panel.</p>
+    <p>I wrote the thresholds for section 5 into the notebook <em>above</em> the cell that
+    computes the number, which is the only point at which a threshold means anything.
     Section 6 checks that a diversified portfolio has a market beta near one, which is
     close to a definition rather than a hypothesis, and that regulated utilities come back
     less market-sensitive than integrated oil companies.</p>
     <div class="box">
-      <p><strong>Expect section 6 to produce a positive alpha, and expect the notebook to
-      argue with it.</strong> Sections 6b and 6c work through the mechanical explanations
-      one at a time, ruling each out by measurement rather than by assertion. Following
-      that argument is more instructive than the final answer.</p>
+      <p><strong>Section 6 produces a positive alpha, and I spend the next two sections arguing
+      with it.</strong> In 6b and 6c I work through the mechanical explanations one at a
+      time, ruling each out by measurement rather than by assertion. I think that argument
+      is more instructive than the final answer.</p>
     </div>
   </div>
 </div>
@@ -313,8 +313,8 @@ hypothesis. Three datasets are involved:</p>
 <div class="step">
   <div class="row"><input type="checkbox"><div class="title">11. Section 7, archiving <span class="st s-free">FREE</span></div></div>
   <div class="body">
-    <p>Only relevant if you paid for price data. It copies everything to Google Drive,
-    builds a single archive file, and verifies the copies by checksum.</p>
+    <p>Only relevant if you paid for price data. I copy everything to Google Drive, build a
+    single archive file, and verify the copies by checksum.</p>
     <div class="box warn">
       <p><strong>Verify by checksum, not by file count.</strong> A truncated copy has the
       wrong size and would be caught by almost any check. A corrupted one has the right
@@ -322,9 +322,9 @@ hypothesis. Three datasets are involved:</p>
       so a copy can be verified at any point in future with:</p>
       <div class="cmd"><pre>shasum -a 256 -c SHA256SUMS.txt</pre><button class="copy">copy</button></div>
     </div>
-    <p>Google Drive mounting from Colab fails intermittently with a credential error. The
-    browser download is an equally good route, and keeping two copies in different places
-    is the actual goal.</p>
+    <p>Google Drive mounting from Colab failed intermittently for me with a credential error.
+    The browser download is an equally good route, and keeping two copies in different
+    places is the actual goal.</p>
   </div>
 </div>
 
@@ -333,10 +333,10 @@ hypothesis. Three datasets are involved:</p>
 <div class="step">
   <div class="row"><input type="checkbox"><div class="title">12. The price panel is not in this repository <span class="st s-note">READ</span></div></div>
   <div class="body">
-    <p>Financial Modeling Prep's terms require a separate licensing agreement to
-    redistribute their data. So <code>data/raw/</code> is excluded from version control
-    and the price panel is not published here.</p>
-    <p>What is published instead:</p>
+    <p>Financial Modeling Prep's terms require a separate licensing agreement to redistribute
+    their data. So I exclude <code>data/raw/</code> from version control and do not publish
+    the price panel here.</p>
+    <p>What I publish instead:</p>
     <ul>
       <li><strong>The code that fetches it</strong>, so the download is inspectable.</li>
       <li><strong>The resolved ticker list</strong> in <code>config/</code>, which is my
@@ -347,8 +347,8 @@ hypothesis. Three datasets are involved:</p>
       every file, so anyone who buys their own access can prove their panel matches mine
       rather than assuming it.</li>
     </ul>
-    <p>Panel A, the factor data, is freely redistributable and its exact downloaded bytes
-    are archived, because its publisher revises the file in place and a download next year
+    <p>Panel A, the factor data, is freely redistributable and I archive the exact bytes I
+    downloaded, because its publisher revises the file in place and a download next year
     returns different content for the same nominal series.</p>
   </div>
 </div>

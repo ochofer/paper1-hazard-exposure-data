@@ -100,15 +100,15 @@ the first. The hazard measurement itself is a separate piece of work and is not 
 
 ## What this notebook deliberately does not do
 
-It downloads data, checks it, and stops. There are no returns computed for the study,
-no regressions on the hypothesis, no portfolios formed, and no merging of the datasets.
+I download data, check it, and stop. I compute no returns for the study, run no
+regressions on the hypothesis, form no portfolios and merge no datasets.
 
-The reason is that a data layer which can only be checked by looking at the final
-result is a data layer you cannot check at all. If the answer looks interesting you
+My reason is that a data layer I can only check by looking at the final result is one I
+cannot really check at all. If the answer looks interesting you
 will not go back and question the download, and if it looks boring you will. Auditing
-the raw layer on its own, before anything depends on the answer, is the only way to
-avoid that trap. The two "blocking tests" in sections 5 and 6 are the same idea taken
-further: they are attempts to prove the pipeline is broken, run before it is used.
+the raw layer on its own, before anything depends on the answer, is how I avoid that
+trap. The two blocking tests in sections 5 and 6 take the same idea further. In each I try to
+prove my own pipeline is broken, before I use it.
 
 ## How to run it
 
@@ -395,9 +395,8 @@ covering profitability and investment, and the momentum factor from Carhart (199
 
 Kenneth French publishes these series free, updated regularly, at Dartmouth. They are
 the reference implementation: when a paper says "we control for the Fama-French
-factors", this is almost always the file it means. Using the published series rather
-than constructing my own removes an entire category of possible error and makes the
-work comparable to the literature.
+factors", this is almost always the file it means. I use the published series rather than constructing my own. That removes a category of
+possible error and makes my results comparable to the literature.
 
 ### Why parsing this file needs care
 
@@ -418,7 +417,7 @@ all fail that test, so they are dropped without needing to know they exist.
 ### Two things about the numbers
 
 **They are in percent, not decimals.** `Mkt-RF = 0.55` means 0.55%, not 55%. I store
-them exactly as published and leave the division by 100 to the analysis code. Getting
+them exactly as published and leave the division by 100 to my analysis code. Getting
 this wrong by a factor of 100 is one of the most common errors in factor work, so it is
 recorded in the data manifest as well as here.
 
@@ -534,12 +533,12 @@ ff3_full.tail(3)
 cells.append(md(r"""
 ### Trimming to the sample window, and keeping the original
 
-The next cell cuts the series down to 2010 to 2025 and saves two files.
+I cut the series down to 2010 to 2025 and save two files.
 
 `panel_a_ff3_daily.csv` is the trimmed table that the rest of the analysis reads.
 `ff3_daily_original.csv` is the untouched bytes exactly as the server sent them. The
-second one exists so that a reader can verify my parsing rather than take it on trust,
-and so that a future rerun can be compared against the same input.
+second so a reader can verify my parsing rather than take it on trust, and so I can
+compare a future rerun against the same input.
 
 **How to read the summary table.** Look at the `mean` row and multiply by roughly 252,
 the number of trading days in a year, to get an annual figure. Over this particular
@@ -604,8 +603,8 @@ in the alpha. My universe is heavy in utilities and pipelines, which yield somew
 around 3 to 4% a year. That is larger than most of the effects published in this
 literature. The mistake would not look like a mistake; it would look like a finding.
 
-So this section requests the dividend-adjusted series and refuses to accept a panel
-that mixes the two conventions. Section 4 contains an explicit check for it.
+So I request the dividend-adjusted series, and I refuse to accept a panel that mixes the
+two conventions. Section 4 contains an explicit check for it.
 
 ### The two benchmarks, and why there are two
 
@@ -616,19 +615,18 @@ excludes dividends.
 dividends, and it is the one to use whenever the comparison needs to be against
 something a portfolio could actually have held.
 
-Both are downloaded. Which is appropriate depends on the question, and having only one
-of them invites using the wrong one.
+I download both. Which one is appropriate depends on the question, and keeping only one
+of them would invite using the wrong one.
 
 ### What is deliberately not done here
 
 No currency conversion. The panel ends up holding US dollars, euros, pounds, Norwegian
-and Swedish and Danish kroner, Swiss francs, Australian dollars and Israeli agorot. The
-prices are stored exactly as the provider returned them.
+and Swedish and Danish kroner, Swiss francs, Australian dollars and Israeli agorot. I
+store the prices exactly as the provider returned them.
 
-That is not laziness. A conversion applied invisibly inside a download step is a
-conversion nobody ever checks. Doing it downstream, as an explicit and separately
-testable step, means the choice of exchange rate series and of conversion date is
-visible in a diff.
+A conversion applied invisibly inside a download step is one nobody ever checks. I do it
+downstream instead, as an explicit and separately testable step, so my choice of exchange
+rate series and conversion date is visible in a diff.
 
 One currency deserves a specific warning. **UK prices are usually quoted in pence, not
 pounds**, and the provider labels them `GBp` with a lower-case p. Treating them as
@@ -838,18 +836,18 @@ cells.append(md(r"""
 
 ## 4. Checking the data before trusting it
 
-Both panels are now on disk. This section tries to find something wrong with them.
+Both panels are now on disk. Here I try to find something wrong with them.
 
 ### Why bother, when nothing has obviously failed
 
-Because the failures that matter in this kind of work are usually silent. A download
+Because the failures that matter in this work are usually silent. A download
 that half-succeeds, a date column parsed with the day and month the wrong way round, a
 duplicated row from a paginated response, a units error of a factor of 100. None of
 these raise an exception. They produce a table that looks completely normal and a
 result that is wrong.
 
-The checks below are deliberately dull. Each one asserts something that must be true if
-the download worked, and each one has a specific failure in mind:
+My checks are deliberately dull. Each asserts something that must be true if the
+download worked, and each has a specific failure in mind:
 
 | Check | The failure it is looking for |
 |---|---|
@@ -861,7 +859,7 @@ the download worked, and each one has a specific failure in mind:
 | One price convention across the panel | Some companies on total return and others on price return, which is not comparable |
 | Factors and prices share more than 2,000 trading days | A calendar mismatch. A later merge would silently discard most rows |
 
-**These test the plumbing, not the research design.** Passing them means the data is
+**These test the plumbing, not the research design.** Passing them means my data is
 what it claims to be. It says nothing about whether the data can answer the question.
 That is what sections 5 and 6 are for.
 
@@ -1046,8 +1044,8 @@ cells.append(md(r"""
 
 ## 2. Building the list of companies
 
-This is the section I expected to be trivial and which turned out to contain most of
-the traps in the project. It is also the part that decides the sample, so it deserves
+I expected this section to be trivial. It turned out to contain most of the traps in
+the project. It is also the part that decides the sample, so it deserves
 the space.
 
 ### The problem
@@ -1057,14 +1055,14 @@ Refinitiv PermID, and for US filers by their SEC number. It does not contain a s
 stock market ticker. The price data is organised entirely by ticker. So there is no way
 to connect the two without building the bridge.
 
-That bridge is called a **crosswalk**, and building one is a standard, unglamorous and
+That bridge is called a **crosswalk**. Building one is a standard, unglamorous and
 error-prone part of empirical finance. It is also where a sample quietly becomes the
 wrong sample.
 
 ### Three questions that sound like one
 
-It is tempting to think of this as "find the ticker for each company". It is actually
-three separate questions, and conflating them is how mistakes get in.
+I first thought of this as "find the ticker for each company". It is three separate
+questions, and I made mistakes by conflating them.
 
 1. **Is this entity a listed company at all?** Many owners of power stations are not:
    municipal utilities, state bodies, co-operatives, infrastructure funds, and
@@ -1176,14 +1174,14 @@ print(f"batch size {BATCH}, {PAUSE:.2f}s between requests")
 cells.append(md(r"""
 ### Looking the identifiers up, in waves
 
-Sending all 98,104 identifiers would be wasteful, because most companies are resolved by
-their first few. So the lookup runs in **waves**: the first tries at most 20 identifiers
+Sending all 98,104 identifiers would be wasteful, because most companies resolve on
+their first few. So I run the lookup in **waves**: the first tries at most 20 identifiers
 per company, the second raises the limit to 100 for whatever is still unresolved, the
 third to 500. Only unresolved companies carry forward.
 
 Two implementation points are worth pulling out.
 
-**Results are cached to disk.** Every identifier looked up is written to a JSON file, so
+**I cache results to disk.** Every identifier looked up is written to a JSON file, so
 rerunning the notebook costs nothing for work already done. Negative results are cached
 too. "This identifier is not in OpenFIGI" is a real answer, and re-asking it on every
 run wastes the rate limit for no information.
@@ -1830,8 +1828,8 @@ After the name pass, the code checks every company listed away from its home exc
 and looks for a home-exchange listing instead, switching only if the home line trades at
 least three times as much.
 
-This matters because a European company represented by a US over-the-counter receipt is
-not a noisy version of the right answer, it is the wrong answer. Three Finnish companies
+This matters because a US over-the-counter receipt is the wrong security for a European
+company, not a noisy version of the right one. Three Finnish companies
 in this dataset were on receipts trading a few hundred to a few hundred thousand dollars
 a day, against home listings trading tens of millions. A receipt also carries an
 exchange rate movement and trades during US hours against a European closing price, so
@@ -2155,12 +2153,12 @@ cells.append(md(r"""
 
 ### What a blocking test is
 
-I use the term for a test run *before* the analysis, designed to establish whether the
-analysis is worth doing at all. The name is borrowed from software, where a blocking bug
+I use the term for a test I run *before* the analysis, to establish whether the analysis
+is worth doing at all. The name is borrowed from software, where a blocking bug
 is one that stops release. If a blocking test fails, no amount of careful work
 downstream rescues the result.
 
-There are three in this project. This is the first.
+I have three in this project. This is the first.
 
 ### The problem, stated plainly
 
@@ -2172,17 +2170,17 @@ and it is absent precisely because of what happened to it.
 This is **survivorship bias**, and it is not a minor caveat. Suppose companies with
 flood-exposed assets failed more often. The sample would then systematically exclude the
 worst outcomes among exactly the group I am studying, and the surviving exposed
-companies would look like they earned a premium. That is not a distortion of the result;
-it is a mechanism that manufactures the result I am looking for.
+companies would look like they earned a premium. That mechanism manufactures the
+result I am looking for.
 
 The classic reference is Shumway (1997), which showed that ignoring the returns of
 delisted firms materially changes estimated premia in US data.
 
 ### What this test can and cannot do
 
-It cannot fix the problem. The exposure data for companies that no longer exist does not
-exist either. What it can do is **measure the size of the hole**, so the bias can be
-bounded and reported rather than acknowledged and waved through.
+I cannot fix the problem, because the exposure data for companies that no longer exist
+does not exist either. What I can do is **measure the size of the hole**, so I can bound
+and report the bias rather than acknowledge it and move on.
 
 Three quantities, in increasing order of usefulness:
 
@@ -2204,8 +2202,8 @@ Three quantities, in increasing order of usefulness:
 | 5% to 15% | Proceed, but bound the effect by recomputing the headline result assuming delisted firms earned the observed gap |
 | over 15% | The survivor-only sample cannot carry the main claim. Either rebuild the universe from historical data, or reframe the paper around what this sample can support |
 
-Writing this down before running the test is the point. A threshold chosen after seeing
-the number is not a threshold.
+I write this down before running the test. A threshold chosen after seeing the number
+is worthless.
 
 > Shumway, T. (1997). "The delisting bias in CRSP data." *Journal of Finance* 52(1),
 > 327-340.
@@ -2385,12 +2383,12 @@ Delisting rates do not behave like that. **Coverage does.** If the provider's li
 effectively a recent snapshot rather than a historical record, then no rate computed
 from it across the full window means anything.
 
-So this section does three things: it tests the list for that recency pattern first,
-because if the list is a snapshot then everything else is polishing an unusable number;
-it computes a rate with the numerator and denominator restricted to the same exchanges;
-and it splits the return gap by company size.
+So I do three things here. I test the list for that recency pattern first, because if it
+is a snapshot then everything else is polishing an unusable number. I compute a rate with
+the numerator and denominator restricted to the same exchanges. And I split the return
+gap by company size.
 
-That last split is where the interesting result is.
+The last of those is where I found the interesting result.
 """))
 
 cells.append(code(r'''
@@ -2482,8 +2480,8 @@ cells.append(md(r"""
 
 Two conclusions and one correction.
 
-**The provider cannot measure delisting over this window.** The by-year counts confirm
-the recency pattern. The list is close to empty in the early years and dense in the
+**The provider cannot measure delisting over my window.** The by-year counts confirm the
+recency pattern. The list is close to empty in the early years and dense in the
 recent ones, so it is a current snapshot wearing the costume of a historical record. Any
 rate computed across the full window from it is an artefact and should be discarded
 rather than quoted carefully.
@@ -2511,7 +2509,8 @@ venue, and size is what the split above shows to be the variable that matters.
 The standard tool for this question is CRSP's delisting file, which is complete from
 1926, distinguishes mergers from liquidations from involuntary delistings, and attaches
 a delisting return to each event. It is available through WRDS at most universities.
-Everything in this section is a substitute for it, and I would replace it given access.
+Everything I do in this section is a substitute for it, and I would replace it given
+access.
 
 Free alternatives worth noting: SEC Form 25 filings, which are the formal delisting
 notice and are searchable on EDGAR back well before 2010 for US companies; and the GLEIF
@@ -2622,9 +2621,8 @@ So before estimating anything unknown, reproduce something known.
 
 ### The specific test
 
-Take the price panel, compute returns through exactly the code path the real analysis
-will use, form a diversified portfolio, and regress its returns on the Fama-French
-factors.
+I take my price panel, compute returns through the same code path the real analysis will
+use, form a diversified portfolio, and regress its returns on the Fama-French factors.
 
 **The market beta of a broad equity portfolio is one.** That is close to a definition
 rather than a hypothesis: the market factor is the value-weighted return of the whole
@@ -2652,9 +2650,9 @@ The Fama-French factors are **dollar** returns. My panel holds nine currencies. 
 return regressed on a dollar factor measures the asset plus the exchange rate, and an
 exchange rate is not a climate hazard.
 
-So the main test runs on the US subset, where the question does not arise. The non-US
-companies are then run separately, and the gap between the two is itself a measurement
-of how much the currency question matters.
+So I run the main test on the US subset, where the question does not arise. I run the
+non-US companies separately, and I read the gap between the two as a measurement of how
+much the currency question matters.
 
 ### A note on the standard errors
 
@@ -2663,9 +2661,9 @@ time, and mildly autocorrelated, meaning today's return carries information abou
 tomorrow's. Ordinary least squares standard errors assume neither, and would overstate
 how precisely the coefficients are estimated.
 
-The regression below uses Newey and West (1987) standard errors, which are robust to
-both. Five lags is the conventional choice for daily data and was fixed before seeing
-any result rather than tuned afterwards.
+I use Newey and West (1987) standard errors, which are robust to both. Five lags is the
+conventional choice for daily data, and I fixed it before seeing any result rather than
+tuning it afterwards.
 
 > Newey, W. K. and West, K. D. (1987). "A simple, positive semi-definite,
 > heteroskedasticity and autocorrelation consistent covariance matrix."
@@ -2837,13 +2835,13 @@ if rows:
 cells.append(md(r"""
 ### 6b. Where does the alpha come from?
 
-The test passes on every formal criterion, and then produces something that needs
-explaining: a statistically significant positive alpha on a portfolio that has no
-obvious reason to have one.
+The test passes on every formal criterion, and then hands me something I have to explain:
+a statistically significant positive alpha on a portfolio with no obvious reason to have
+one.
 
-That number is roughly the size of the effect this study might plausibly report. If it
-is an artefact, the headline result inherits it and there would be no way to tell the
-two apart. So it cannot be left alone.
+That number is roughly the size of the effect I might plausibly report. If it is an
+artefact, my headline result inherits it and I would have no way to tell the two apart.
+So I cannot leave it alone.
 
 There are four candidate explanations and three of them are mechanical.
 
@@ -2863,17 +2861,15 @@ and call it alpha.
 **A genuine sector effect.** Possible, and it would be a finding rather than a bug, but
 it is the last explanation to reach for rather than the first.
 
-The cell below separates the first one from the rest by running the same regression four
-ways: equal against value weighted, and daily against monthly buy-and-hold. Monthly
+I separate the first from the rest by running the same regression four ways: equal against value weighted, and daily against monthly buy-and-hold. Monthly
 returns are compounded within each month for each company before the portfolio is
 formed, which is what removes the implicit daily rebalancing. **If the alpha collapses
 under value weighting or monthly compounding, it was microstructure.**
 
-It also excludes companies showing repeated single-day moves above 50%. Those are
+I also exclude companies showing repeated single-day moves above 50%. Those are
 usually broken price series rather than volatile companies: one in this dataset shows a
 move of more than 1,000% in a day, which is a corporate reorganisation the price series
-did not handle. Excluding them is a judgement call, so it is made explicitly and the
-excluded names are printed.
+did not handle. Excluding them is a judgement call, so I make it explicitly and print the names I drop.
 
 > Blume, M. E. and Stambaugh, R. F. (1983). "Biases in computed returns: An application
 > to the size effect." *Journal of Financial Economics* 12(3), 387-404.
@@ -2990,9 +2986,9 @@ if len(r6):
 cells.append(md(r"""
 ### 6c. Not microstructure, and not missing factors. So what?
 
-The alpha barely moves across weighting schemes and return frequencies, which rules out
-the rebalancing bias. The next step is to rule out the missing-factors explanation, and
-there is a specific reason to expect it to matter.
+The alpha barely moves across weighting schemes and return frequencies, so I can rule out
+the rebalancing bias. Next I rule out missing factors, and I have a specific reason to
+expect that one to matter.
 
 The portfolio loads positively on the value factor, and the value premium was negative
 through most of the 2010s. So a three-factor model *predicts* low returns for this
@@ -3001,8 +2997,8 @@ These are also profitable, capital-intensive companies, which is precisely what 
 profitability and investment factors exist to price. Both are free downloads from the
 same library as Panel A.
 
-The second cell splits the sample into three periods, chosen on economic events rather
-than to split the result: the decade before COVID, the pandemic and the 2022 European
+I split the sample into three periods, chosen on economic events rather than to split the
+result: the decade before COVID, the pandemic and the 2022 European
 gas crisis, and the recent period of data-centre electricity demand.
 
 That split matters beyond this diagnostic. If most of the return variation in the sample
@@ -3013,7 +3009,7 @@ data-centre trade is concentrated in US independent power producers, which are a
 largest asset owners in this universe. A hazard sort could load on either and report it
 as a climate risk premium with a convincing t-statistic.
 
-Knowing that before running the sort is the entire point of running these tests first.
+I would rather know that before running the sort than after.
 
 Subperiods carry few observations relative to the number of factors, so the alphas
 should be read as indicative magnitudes and the t-statistics as weak evidence.
@@ -3183,8 +3179,8 @@ There is a second, less obvious reason to archive carefully. Colab runs on a tem
 virtual machine that is deleted when the session ends, so "it worked and the files are
 there" is true for a few hours.
 
-This section copies everything to Google Drive, builds a single archive file, and then
-**verifies the copies by checksum rather than by file count**. That distinction is the
+So I copy everything to Google Drive, build a single archive file, and then **verify the
+copies by checksum rather than by file count**. That distinction is the
 point of the section. A truncated copy has the wrong size and would be caught by almost
 any check; a corrupted one has the right size and would not. Comparing SHA-256 hashes
 catches both, and the archive ships with a checksum list inside it so the copy can be
@@ -3359,10 +3355,10 @@ cells.append(md(r"""
 
 ## 8. Scope, and what is deliberately absent
 
-This notebook downloads two datasets, builds the list of companies that connects them to
-a third, and tries to break all three. It contains no returns computed for the study, no
-regressions on the hypothesis, no portfolios, and no merge of the datasets. That is the
-scope, and this section states what falls outside it.
+I download two datasets, build the list of companies that connects them to a third, and
+try to break all three. I compute no returns for the study, run no regressions on the
+hypothesis, form no portfolios and merge no datasets. Here I state what falls outside
+that scope.
 
 ### Known limitations, stated rather than buried
 
@@ -3404,9 +3400,9 @@ cells.append(md(r"""
 
 ## Appendix A: diagnosing the data provider's coverage limits
 
-The cells in this appendix are not part of the pipeline. They are the diagnostic work
-that established what a given API key can and cannot retrieve, and I have kept them
-because the method generalises and because the reasoning is more useful than the answer.
+These cells are not part of the pipeline. They are the diagnostic work I did to establish
+what a given API key can and cannot retrieve. I kept them because the method generalises,
+and because the reasoning is more useful than the answer.
 
 ### The situation
 
@@ -3418,14 +3414,14 @@ kind* of limit it is.
 
 ### Distinguishing the possibilities by measurement
 
-The approach is to hold two things constant and vary the third. If the limit is the type
+My approach was to hold two things constant and vary the third. If the limit is the type
 of price series requested, then one symbol should succeed on one variant and fail on
 another. If it is the length of history, recent data should work where older data does
 not. If it is the set of covered symbols, some symbols should work fully and others not
 at all.
 
-The answer here was the third, and the free key covered a hand-picked set of
-household-name symbols: no rule to work around, and nothing that could be turned into a
+The answer was the third. The free key covered a hand-picked set of household-name
+symbols: no rule to work around, and nothing that could be turned into a
 research universe.
 
 ### Three status codes that look alike and mean opposite things
