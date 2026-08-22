@@ -1,104 +1,233 @@
 """
 Generates notebooks/01_raw_panels.ipynb.
 
-Kept as a generator rather than a hand-edited .ipynb so the notebook source
-stays diffable in git. Run:  python build_notebook.py
+Why a generator and not a hand-edited notebook
+----------------------------------------------
+A .ipynb file is JSON. Every cell is a list of strings, and outputs and execution
+counts are stored in the same file as the code. That makes hand-edited notebooks
+almost impossible to review in a pull request: a one-word change to a comment can
+show up as a thousand-line diff because the stored outputs moved.
+
+Keeping the notebook in a plain Python script solves that. This file is the source
+of truth, it diffs cleanly, and the notebook is a build artefact. If you want to
+change the notebook, change this file and run:
+
+    python3 build_notebook.py
+
+Editing the .ipynb directly appears to work and is then silently overwritten the
+next time anyone runs this script.
+
+Carlo Hofer, 2026.
 """
-import json, pathlib
+import json
+import pathlib
+
 
 def _lines(src: str) -> list[str]:
-    """Split into .ipynb source lines, KEEPING the trailing newline on each.
+    """Split a block of text into the list-of-strings format a .ipynb expects.
 
-    The notebook format joins source with "", not "\n". A plain .split("\n")
-    therefore collapses every cell onto a single line: markdown renders as one
-    run-on paragraph and code cells raise SyntaxError on the first run. Caught
-    only after the notebook was already pushed. Do not "simplify" this back.
+    The notebook format stores each cell's source as a list of strings which are
+    later joined with the empty string, NOT with a newline. So every line has to
+    keep its own trailing "\n". A plain src.split("\n") drops those separators and
+    the whole cell collapses onto one line: markdown renders as a single run-on
+    paragraph, and code cells raise SyntaxError the moment they are run.
+
+    This is an easy mistake to make and a confusing one to diagnose, so the fix
+    lives in one place and is documented here rather than repeated at each call
+    site. Please do not "simplify" it back to a bare split.
     """
     parts = src.split("\n")
     return [p + "\n" for p in parts[:-1]] + ([parts[-1]] if parts[-1] else [])
 
-def md(src):   return {"cell_type": "markdown", "metadata": {}, "source": _lines(src.strip())}
-def code(src): return {"cell_type": "code", "execution_count": None, "metadata": {},
-                       "outputs": [], "source": _lines(src.strip("\n"))}
+
+def md(src):
+    """Build a markdown cell."""
+    return {"cell_type": "markdown", "metadata": {}, "source": _lines(src.strip())}
+
+
+def code(src):
+    """Build a code cell with no stored outputs, so the committed notebook stays clean."""
+    return {"cell_type": "code", "execution_count": None, "metadata": {},
+            "outputs": [], "source": _lines(src.strip("\n"))}
+
 
 cells = []
 
+# ============================================================ title and orientation
 cells.append(md(r"""
-# Paper 1: raw data panels
+# Physical climate hazard and stock returns: building the data
 
-**Scope of this notebook: acquisition only.** It downloads two panels, writes them to
-`data/raw/`, and stops. There is no return calculation, no factor regression, no
-portfolio formation and no merging of the two panels. That is deliberate. The raw
-layer should be reproducible and auditable on its own before anything is estimated
-on top of it.
+**Carlo Hofer.** Companion notebook to a study asking whether a company's exposure to
+physical climate hazards, measured from the locations of the physical assets it owns,
+helps explain its stock returns once the usual risk factors are accounted for.
 
-| Panel | Source | Contents |
+This notebook builds and audits the data. It does not test the hypothesis. That
+separation is deliberate and I explain why below.
+
+---
+
+## What you are looking at
+
+If you have arrived here from my CV, this is the part of the project that is usually
+invisible: the work of turning three public data sources into something you can
+actually run a regression on, and then trying hard to break it before trusting it.
+
+I have written it for someone who has not seen the project before. Where I use a term
+from empirical asset pricing I define it. Where the Python does something non-obvious
+I say what and why. If you are a quantitative researcher this will occasionally be
+slower than you need, and I would rather that than the alternative.
+
+## The research question in one paragraph
+
+Companies own physical things: power stations, pipelines, mines, cement works. Those
+things sit in places, and places have weather. If investors price the risk that a
+flood, a heatwave or a cyclone damages those assets or interrupts their output, then
+companies with more exposed assets should earn different returns from companies with
+less exposed ones, after controlling for everything else that is known to move stock
+prices. That "after controlling for" is the hard part, and it is what the factor data
+in this notebook is for.
+
+## The three ingredients
+
+| Ingredient | What it is | Source |
 |---|---|---|
-| A | Ken French Data Library | Fama-French 3 factors, daily (`Mkt-RF`, `SMB`, `HML`, `RF`) |
-| B | Financial Modeling Prep | Daily EOD prices, draft ticker list + S&P 500 |
+| **Asset ownership** | Which company owns which power station, mine or pipeline | Global Energy Monitor |
+| **Stock returns** | What each company's shares actually did, day by day | Financial Modeling Prep |
+| **Risk factors** | The known drivers of returns, used as controls | Kenneth French's data library |
 
-**Two things this notebook is not, and must not be read as:**
+This notebook builds the second and third, and the company list that connects them to
+the first. The hazard measurement itself is a separate piece of work and is not here.
 
-1. The draft ticker list is a **survivorship-biased convenience sample**. Every name in
-   it is a firm that still trades in August 2026. It is a plumbing test for the data
-   path, not a research universe. See the README before any return-based estimate.
-2. Prices are stored **as returned by the vendor**. Units are not converted, currencies
-   are not converted, and nothing is adjusted. Transformations belong downstream, where
-   they can be diffed.
+## What this notebook deliberately does not do
+
+It downloads data, checks it, and stops. There are no returns computed for the study,
+no regressions on the hypothesis, no portfolios formed, and no merging of the datasets.
+
+The reason is that a data layer which can only be checked by looking at the final
+result is a data layer you cannot check at all. If the answer looks interesting you
+will not go back and question the download, and if it looks boring you will. Auditing
+the raw layer on its own, before anything depends on the answer, is the only way to
+avoid that trap. The two "blocking tests" in sections 5 and 6 are the same idea taken
+further: they are attempts to prove the pipeline is broken, run before it is used.
+
+## How to run it
+
+Open it in Google Colab using the badge in the repository README, then Runtime, Run
+all. Section 0 clones the repository into the Colab machine for you.
+
+Sections 1, 2 and 6 need no paid access. Sections 3, 4, 5 and 7 need an API key from
+Financial Modeling Prep, stored in Colab's Secrets panel under the name `FMP_API_KEY`.
+Section 2 works better with a free key from OpenFIGI, stored as `OPENFIGI_API_KEY`.
+The notebook tells you when a key is missing rather than failing obscurely.
+
+Full step-by-step instructions, including what each step should print and what to do
+when it does not, are in `EXECUTION_CHECKLIST.html` in the repository root.
 """))
 
-cells.append(md("## 0. Setup"))
+cells.append(md(r"""
+---
+
+## 0. Setup
+
+This section does four housekeeping jobs: it makes sure the notebook can find the
+repository's files, reads the API keys, defines the addresses of the data service we
+call later, and fixes the sample period.
+
+None of it is interesting in itself. It is here in one place so that the sections that
+follow contain only the work.
+
+### The one design decision worth explaining
+
+The notebook needs to know where the project's files are. On your own machine that is
+wherever you cloned the repository. On Colab it is a temporary folder on a virtual
+machine that is deleted when you close the tab.
+
+An obvious way to handle this is to guess: use the current folder if it looks right,
+otherwise its parent. I wrote it that way at first and it caused a genuinely nasty
+failure. On Colab the current folder is `/content`, its parent is the filesystem root
+`/`, and Colab runs with administrator rights. So the notebook cheerfully created
+`/data/raw` at the root of the machine, downloaded the factor data into it, printed a
+success message, and only fell over four sections later with an error mentioning a
+path that appears nowhere in this project.
+
+**A wrong path that works is more dangerous than one that crashes.** So the code below
+looks for a specific file that exists only inside this repository and refuses to
+continue if it cannot find it.
+"""))
 
 cells.append(code(r'''
-# Standard library only, plus pandas/requests which Colab already has.
-import os, io, re, sys, zipfile, json, time, hashlib, subprocess, datetime as dt
+# Standard library first, then the third-party packages. Colab already has all of these
+# installed, so there is nothing to pip install.
+import os          # environment variables, changing directory
+import io          # treating bytes in memory as if they were a file
+import re          # regular expressions, for pulling patterns out of text
+import sys         # to detect whether we are running inside Colab
+import zipfile     # the factor data arrives as a .zip
+import json        # reading and writing the cache files
+import time        # pausing between API calls so we stay inside rate limits
+import hashlib     # SHA-256 checksums, used to prove a file has not changed
+import subprocess  # running git commands
+import datetime as dt
 from pathlib import Path
 
-import numpy as np
-import pandas as pd
-import requests
+import numpy as np      # numerical arrays and linear algebra
+import pandas as pd     # tables, the workhorse of this notebook
+import requests         # making HTTP requests to the data providers
 
+# ----------------------------------------------------------------- where the code lives
 REPO_URL  = "https://github.com/ochofer/paper1-hazard-exposure-data.git"
 REPO_NAME = "paper1-hazard-exposure-data"
-MARKER    = Path("config") / "tickers_draft_v0.csv"   # a file that exists only inside the repo
 
+# A file that exists only inside this repository. Finding it proves we are in the right
+# place. Using a specific file rather than a folder name matters: "data" or "config" are
+# common enough that a wrong match is plausible.
+MARKER = Path("config") / "tickers_draft_v0.csv"
+
+# Colab makes its own module importable, so this is a reliable way to detect it.
 IN_COLAB = "google.colab" in sys.modules
 
 
 def _find_repo(start: Path):
-    """Walk up from `start` looking for the repo root. Returns None if not found."""
-    for cand in [start, *start.parents]:
-        if (cand / MARKER).exists():
-            return cand
+    """Walk upwards from `start` looking for the repository root.
+
+    Returns the folder containing MARKER, or None if we reach the top without
+    finding it. Path.parents gives the chain of parent folders, so this checks
+    the starting folder first and then each ancestor in turn.
+    """
+    for candidate in [start, *start.parents]:
+        if (candidate / MARKER).exists():
+            return candidate
     return None
 
 
-# ---------------------------------------------------------------- paths
-# Do NOT restore the old one-liner:
-#     REPO = Path.cwd() if (Path.cwd() / "data").exists() else Path.cwd().parent
-# It failed silently and expensively. On Colab cwd is /content, so the fallback
-# resolved REPO to "/". Every path then became /data/... or /config/..., and because
-# Colab runs as root the mkdir SUCCEEDED rather than raising. Panel A downloaded itself
-# to the filesystem root, section 0 printed a repo line nobody looks at twice, and the
-# failure surfaced four cells later as FileNotFoundError on '/config/tickers_draft_v0.csv'.
-# A wrong path that works is worse than one that crashes. Resolve against a file that
-# only exists inside the repo, and raise if it is missing.
-REPO = _find_repo(Path.cwd())
-
 def _git(*args, cwd=None):
-    r = subprocess.run(["git", *args], cwd=cwd, capture_output=True, text=True)
-    return r.returncode, (r.stdout + r.stderr).strip()
+    """Run a git command and return (exit code, combined output).
+
+    capture_output keeps git's messages out of the notebook unless we choose to
+    print them, and text=True gives us strings rather than raw bytes.
+    """
+    result = subprocess.run(["git", *args], cwd=cwd, capture_output=True, text=True)
+    return result.returncode, (result.stdout + result.stderr).strip()
 
 
 def _describe(path):
+    """One-line summary of the commit a repository is currently on."""
     rc, out = _git("-C", str(path), "log", "-1", "--format=%h %ad %s", "--date=short")
     return out if rc == 0 else "unknown"
 
 
-# On Colab, sync unconditionally. The previous version only synced when REPO was None,
-# which meant that once the working directory was inside the clone from an earlier run,
-# the sync was skipped and the clone silently stayed behind. That is how the notebook
-# ended up running current code against a six-commit-old config directory.
+# ----------------------------------------------------------------- getting the files
+# On Colab we always synchronise, whether or not the repository is already there.
+#
+# An earlier version only synchronised when it could not already find the repository.
+# That sounds sensible and is wrong: once an earlier run had moved into the cloned
+# folder, the repository was findable, the synchronise step was skipped, and the clone
+# quietly stayed on an old commit while the notebook itself was current. The symptom
+# was a notebook running new code against old configuration files, which is a difficult
+# thing to spot and an easy thing to waste an afternoon on.
+#
+# The clone is a disposable read-only copy, so a hard reset is safe and is more reliable
+# than a pull, which fails whenever the local copy has diverged for any reason.
 if IN_COLAB:
     target = Path("/content") / REPO_NAME
     if not target.exists():
@@ -111,6 +240,9 @@ if IN_COLAB:
         rc, out = _git("-C", str(target), "fetch", "--depth", "1", "origin")
         if rc:
             print(f"  git fetch FAILED: {out}")
+
+        # Repositories use either "main" or "master" as the default branch name, so try
+        # both rather than assuming.
         done = False
         for ref in ("origin/main", "origin/master"):
             rc, out = _git("-C", str(target), "reset", "--hard", ref)
@@ -123,6 +255,9 @@ if IN_COLAB:
                 f"Simplest fix: run  !rm -rf {target}  in a cell, then rerun this one."
             )
         _git("-C", str(target), "clean", "-fd", "config", "notebooks")
+
+        # Print the commit before and after so that "nothing happened" is visible rather
+        # than assumed. This line is how you tell a successful no-op from a failed sync.
         after = _describe(target)
         print(f"  before: {before}")
         print(f"  after : {after}")
@@ -131,7 +266,6 @@ if IN_COLAB:
     os.chdir(target)
 
 REPO = _find_repo(Path.cwd())
-
 if REPO is None:
     raise FileNotFoundError(
         "Could not locate the repository root.\n"
@@ -141,48 +275,52 @@ if REPO is None:
         "  Locally, start the notebook from inside the checkout."
     )
 
+# Everything downloaded goes here. This folder is excluded from version control: the
+# files are large, and one of the providers does not permit redistribution.
 RAW = REPO / "data" / "raw"
 RAW.mkdir(parents=True, exist_ok=True)
 
-# ---------------------------------------------------------------- API key
-# Read from Colab Secrets automatically. Nothing to uncomment: the previous version
-# shipped this commented out, which is how the run above ended up with REPO = "/".
+# ----------------------------------------------------------------- API keys
+# Colab has a Secrets panel (the key icon in the left sidebar) which keeps credentials
+# out of the notebook file. This matters: anything printed or pasted into a cell is
+# saved into the .ipynb and would be published to GitHub along with everything else.
 if IN_COLAB and not os.environ.get("FMP_API_KEY"):
     try:
         from google.colab import userdata
         os.environ["FMP_API_KEY"] = userdata.get("FMP_API_KEY")
     except Exception as exc:
         print(f"could not read the Colab secret FMP_API_KEY: {exc}")
-        print("Section 2 needs it. Key icon in the left sidebar, name it exactly")
-        print("FMP_API_KEY, switch on notebook access, then rerun this cell.")
+        print("Sections 3 onwards need it. Key icon in the left sidebar, name it exactly")
+        print("FMP_API_KEY, switch on notebook access for this notebook, then rerun.")
 
-# ---------------------------------------------------------------- FMP endpoints
-# Defined here rather than in the Panel B section, because section 2b resolves ISINs to
-# FMP symbols and now runs BEFORE Panel B. Anything used by two sections belongs in setup.
+# ----------------------------------------------------------------- data service addresses
+# Financial Modeling Prep serves everything from paths beginning /stable/.
 #
-# Everything lives under /stable/. The /api/v3/ paths that older tutorials and FMP's own
-# legacy examples still show are retired for keys issued now, and they answer HTTP 403.
-# That status is the trap: it reads as "not on your plan" when the real cause is a dead
-# path, so a working key on a paid plan produces an identical failure table to no key at
-# all. Checked against the August 2026 documentation, in which every listed endpoint is
-# /stable/ and none is /api/v3/. Do not "restore" v3 as a fallback.
+# This is worth a note because it cost me an afternoon. Many tutorials, and some of the
+# provider's own older examples, use paths beginning /api/v3/. Those are retired for
+# keys issued now, and a request to one returns HTTP 403. That status normally means
+# "your account is not allowed to do this", so a perfectly good key on a paid plan
+# produces exactly the same error table as no key at all, and you go looking at your
+# subscription instead of your URL. Every endpoint in the current documentation is
+# under /stable/.
 API_KEY     = os.environ.get("FMP_API_KEY")
 BASE        = "https://financialmodelingprep.com/stable"
-EOD         = f"{BASE}/historical-price-eod/full"               # split-adjusted, no dividends
-EOD_TR      = f"{BASE}/historical-price-eod/dividend-adjusted"  # total return, use for returns
+EOD         = f"{BASE}/historical-price-eod/full"               # split-adjusted only
+EOD_TR      = f"{BASE}/historical-price-eod/dividend-adjusted"  # total return
 SEARCH_ISIN = f"{BASE}/search-isin"
 PROFILE     = f"{BASE}/profile"
 
-# ---------------------------------------------------------------- window
-# Fixed in advance so a rerun on a different day produces the same file.
-# Do not change these to "whatever improves the result" later.
+# ----------------------------------------------------------------- sample period
+# Fixed here, once, and deliberately not changed later.
+#
+# It is easy to shorten a sample because the early years are awkward, and doing so after
+# seeing results is a way of choosing the answer. Setting the window before any data
+# arrives removes the temptation. If the window ever has to change, that is a decision
+# to write down and justify, not a constant to quietly edit.
 START = "2010-01-01"
 END   = "2025-12-31"
 
-# Print which commit is actually running. Without this, "the code is new but the data
-# files are old" is invisible, and that exact state cost a full Panel B refetch.
-_rc, _head = _git("-C", str(REPO), "log", "-1", "--format=%h %ad %s", "--date=short")
-print(f"commit : {_head if _rc == 0 else 'unknown'}")
+print(f"commit : {_describe(REPO)}")
 print(f"config : {sorted(p.name for p in (REPO / 'config').glob('*.csv'))}")
 print(f"colab  : {IN_COLAB}")
 print(f"repo   : {REPO}")
@@ -192,18 +330,20 @@ print(f"window : {START} .. {END}")
 '''))
 
 cells.append(md(r"""
-### Confirm where you are before going further
+### Check the setup before continuing
 
-The cell above clones the repository and reads the API key by itself, on Colab and
-locally. There is nothing to uncomment. The one thing you still have to do by hand is
-add the secret: **key icon in the left sidebar**, name it exactly `FMP_API_KEY`, and
-switch on notebook access for this notebook. Never paste the key into a cell, because
-it would be saved into the notebook output and pushed to a public repository.
+The cell below prints where the notebook thinks it is and then asserts it. An `assert`
+is a statement that stops the program if a condition is false; using one here means a
+misconfigured run fails immediately and loudly rather than producing confusing errors
+several sections later.
 
-Run the check below and read the three lines it prints. **If `repo` is `/` or anything
-outside a folder named `paper1-hazard-exposure-data`, stop and rerun the setup cell.**
-An earlier version of this notebook silently accepted `/` as the repo root and wrote
-Panel A to the filesystem root; the assertion below exists so that cannot recur.
+The two things to look at:
+
+- **`repo`** should end in `paper1-hazard-exposure-data`. If it shows `/` or `/content`
+  then the clone did not work.
+- **`commit`** should match the latest commit in the repository. If it is older, the
+  copy on the Colab machine is stale and the configuration files will not match the
+  code.
 """))
 
 cells.append(code(r'''
@@ -217,77 +357,158 @@ assert str(REPO) != "/", "REPO is the filesystem root. Rerun the setup cell."
 print("\nrepo root confirmed")
 '''))
 
-# ------------------------------------------------------------------ Panel A
+
+# ============================================================ Panel A: the factors
 cells.append(md(r"""
-## 1. Panel A: Fama-French 3 factors, daily
+---
 
-Source: Ken French's data library, file `F-F_Research_Data_Factors_daily_CSV.zip`.
+## 1. Panel A: the risk factors
 
-The file needs real parsing rather than a plain `read_csv`. It carries a multi-line
-copyright preamble, then the header row, then dated rows, then a trailing copyright
-line. The monthly version of this file additionally appends an *annual* block after the
-monthly block, separated by blank lines. If you ever swap this URL for the monthly one,
-a naive parser will silently concatenate annual rows onto monthly rows and every
-subsequent number will be wrong.
+### Why a study about climate needs a file about value and size
 
-The parser below sidesteps all of that by keeping only lines whose first field is
-exactly eight digits (`YYYYMMDD`). It is therefore immune to the preamble, the trailer,
-and the annual block.
+Suppose we find that companies with flood-exposed assets earned lower returns than
+companies without. Before claiming that investors price flood risk, we have to rule out
+duller explanations. Perhaps the exposed companies were simply larger, and large
+companies happened to do badly over the period. Perhaps they were cheap relative to
+their book value, and cheap stocks did badly.
 
-**Units: the values are in percent, not decimals.** `Mkt-RF = 0.55` means 0.55%. They are
-stored here exactly as published. The `/100` belongs in the analysis layer, and this is
-one of the most common silent errors in factor work, so it is flagged in the manifest too.
+The standard way to handle this in empirical finance is a **factor model**. We
+subtract off the part of a stock's return that is explained by a handful of known,
+well-documented drivers, and ask whether anything is left. What is left is called
+**alpha**, and it is what we would attribute to our variable of interest.
 
-`-99.99` and `-999` are French's missing-value codes.
+The three factors used here come from Fama and French (1993):
+
+| Factor | Plain English | What it controls for |
+|---|---|---|
+| `Mkt-RF` | The whole stock market's return, minus the return on cash | General market movements. A stock that just goes up when the market goes up has told us nothing |
+| `SMB` | "Small Minus Big". The return on small companies minus the return on large ones | Company size |
+| `HML` | "High Minus Low". The return on cheap stocks minus expensive ones, where cheap means a high book value relative to market value | The long-documented tendency of value stocks to behave differently from growth stocks |
+
+`RF` is the risk-free rate, the return on short-term US Treasury bills, which is what
+"minus the return on cash" means above.
+
+Later, in section 6, I also use the two extra factors from Fama and French (2015),
+covering profitability and investment, and the momentum factor from Carhart (1997).
+
+### Where the data comes from
+
+Kenneth French publishes these series free, updated regularly, at Dartmouth. They are
+the reference implementation: when a paper says "we control for the Fama-French
+factors", this is almost always the file it means. Using the published series rather
+than constructing my own removes an entire category of possible error and makes the
+work comparable to the literature.
+
+### Why parsing this file needs care
+
+The file is not a clean CSV. It arrives as a `.zip` containing a text file that has a
+multi-line copyright notice at the top, then a header row, then the data, then another
+copyright line at the bottom. Handing that to `pandas.read_csv` directly does not work.
+
+There is a worse trap. The **monthly** version of the same file appends a second block
+of *annual* data underneath the monthly data, separated by blank lines. A parser that
+just skips the preamble will happily glue annual returns onto the bottom of monthly
+returns, and every number computed afterwards will be wrong in a way that is very hard
+to see.
+
+The parser below avoids all of this by keeping only lines whose first field is exactly
+eight digits, the `YYYYMMDD` date format. The preamble, the trailer and the annual block
+all fail that test, so they are dropped without needing to know they exist.
+
+### Two things about the numbers
+
+**They are in percent, not decimals.** `Mkt-RF = 0.55` means 0.55%, not 55%. I store
+them exactly as published and leave the division by 100 to the analysis code. Getting
+this wrong by a factor of 100 is one of the most common errors in factor work, so it is
+recorded in the data manifest as well as here.
+
+**`-99.99` and `-999` mean "missing".** They are not real observations. Left in place
+they would be catastrophic, since a -99.99% daily return is not something a regression
+recovers from gracefully.
+
+> Fama, E. F. and French, K. R. (1993). "Common risk factors in the returns on stocks
+> and bonds." *Journal of Financial Economics* 33(1), 3-56.
+>
+> Fama, E. F. and French, K. R. (2015). "A five-factor asset pricing model."
+> *Journal of Financial Economics* 116(1), 1-22.
+>
+> Carhart, M. M. (1997). "On persistence in mutual fund performance."
+> *Journal of Finance* 52(1), 57-82.
+>
+> Data: Kenneth R. French Data Library,
+> https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/data_library.html
 """))
 
 cells.append(code(r'''
 FRENCH_BASE = "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp"
 FF3_DAILY   = f"{FRENCH_BASE}/F-F_Research_Data_Factors_daily_CSV.zip"
 
-def fetch_french_zip(url: str) -> tuple[str, bytes]:
-    """Download a French .zip and return (inner_filename, raw_csv_bytes).
 
-    The raw bytes are returned as well as the text so we can hash exactly what the
-    server sent, which is what makes the download reproducible/auditable later.
+def fetch_french_zip(url: str) -> tuple[str, bytes]:
+    """Download one of French's zip files and return (filename inside it, raw bytes).
+
+    Returning the raw bytes as well as the parsed data matters for reproducibility.
+    French updates these files in place as new months are added and old data is
+    revised, so downloading the same URL next year gives different content. Keeping
+    the exact bytes received on the day, and a checksum of them, is what lets someone
+    verify later that they are looking at the same input I used.
+
+    io.BytesIO wraps the downloaded bytes so that zipfile can treat them as a file
+    without ever writing anything to disk.
     """
     r = requests.get(url, timeout=60, headers={"User-Agent": "paper1-data/0.1"})
-    r.raise_for_status()
+    r.raise_for_status()          # turn an HTTP error into a Python exception
     with zipfile.ZipFile(io.BytesIO(r.content)) as z:
-        inner = z.namelist()[0]
+        inner = z.namelist()[0]   # these archives contain exactly one file
         return inner, z.read(inner)
 
+
+# A regular expression matching lines that begin with exactly eight digits followed by a
+# comma, optionally with surrounding spaces. In other words, a YYYYMMDD date field.
+#   ^     start of the line
+#   \s*   any amount of whitespace
+#   (\d{8}) exactly eight digits, captured
+#   \s*,  optional whitespace then a comma
 DATE8 = re.compile(r"^\s*(\d{8})\s*,")
 
-def parse_french_daily(csv_bytes: bytes) -> pd.DataFrame:
-    """Parse a French daily factor CSV into a tidy frame.
 
-    Keeps only rows whose first field is an 8-digit date, which drops the preamble,
-    the trailing copyright line, and (for monthly files) the appended annual block.
+def parse_french_daily(csv_bytes: bytes) -> pd.DataFrame:
+    """Turn the raw bytes of a French daily factor file into a tidy table.
+
+    The approach is to identify the first line that looks like a data row, take the
+    line immediately above it as the header, and then keep only data rows. Everything
+    else in the file is ignored by construction rather than by counting lines, which
+    would break the moment French adds a sentence to the copyright notice.
     """
     text  = csv_bytes.decode("utf-8", errors="replace")
     lines = text.splitlines()
 
-    # Locate the header: the last non-dated line before the first dated line.
+    # next() with a generator returns the first match, or None if there is none.
     first_data = next((i for i, ln in enumerate(lines) if DATE8.match(ln)), None)
     if first_data is None:
-        # Fails loudly rather than returning an empty frame. The most likely cause is
-        # pointing this at a MONTHLY file (dates are YYYYMM, six digits, not eight).
+        # Raise rather than return an empty table. An empty table would flow silently
+        # into everything downstream; an exception stops here and says why. The most
+        # likely cause is pointing this at a monthly file, whose dates are six digits.
         raise ValueError(
             "No YYYYMMDD rows found. Is this a daily file? Monthly files use YYYYMM "
             "and need a different parser plus handling for their annual block."
         )
+
     header = [c.strip() for c in lines[first_data - 1].split(",")]
-    header[0] = "date"
+    header[0] = "date"            # French leaves the first column unnamed
 
     rows = [ln for ln in lines[first_data:] if DATE8.match(ln)]
     df = pd.read_csv(io.StringIO("\n".join(rows)), header=None, names=header)
 
     df["date"] = pd.to_datetime(df["date"].astype(str), format="%Y%m%d")
 
-    # Coerce to float BEFORE substituting missing values. Using pd.NA here instead of
-    # np.nan silently flips these columns to object dtype, which then breaks .describe()
-    # and the magnitude check further down. Caught in testing; do not "simplify" this.
+    # Convert to floating point BEFORE replacing the missing-value codes.
+    #
+    # The order matters more than it looks. If you replace first, using pandas' own NA
+    # marker, the columns quietly become "object" dtype, meaning pandas stops treating
+    # them as numbers. Everything still runs, .describe() returns something plausible,
+    # and the magnitude check further down silently stops testing anything. Converting
+    # to float64 first and using numpy's NaN keeps the columns numeric throughout.
     for c in df.columns[1:]:
         df[c] = pd.to_numeric(df[c], errors="coerce").astype("float64")
 
@@ -295,8 +516,11 @@ def parse_french_daily(csv_bytes: bytes) -> pd.DataFrame:
     df[df.columns[1:]] = df[df.columns[1:]].replace([-99.99, -999], np.nan)
     print(f"  missing-value codes converted to NaN: {n_missing_codes}")
 
+    # Assert the dtypes really are numeric, so the trap described above cannot reappear
+    # unnoticed if someone edits this function later.
     assert all(str(t) == "float64" for t in df.dtypes[1:]), f"dtype drift: {df.dtypes.to_dict()}"
     return df.sort_values("date").reset_index(drop=True)
+
 
 inner_name, ff_bytes = fetch_french_zip(FF3_DAILY)
 ff3_full = parse_french_daily(ff_bytes)
@@ -307,64 +531,129 @@ print(f"columns    : {ff3_full.columns.tolist()}")
 ff3_full.tail(3)
 '''))
 
+cells.append(md(r"""
+### Trimming to the sample window, and keeping the original
+
+The next cell cuts the series down to 2010 to 2025 and saves two files.
+
+`panel_a_ff3_daily.csv` is the trimmed table that the rest of the analysis reads.
+`ff3_daily_original.csv` is the untouched bytes exactly as the server sent them. The
+second one exists so that a reader can verify my parsing rather than take it on trust,
+and so that a future rerun can be compared against the same input.
+
+**How to read the summary table.** Look at the `mean` row and multiply by roughly 252,
+the number of trading days in a year, to get an annual figure. Over this particular
+window the market earned a substantial excess return while `SMB` and `HML` earned close
+to nothing. That is worth noting rather than glossing over: an alpha measured against
+factors that themselves earned nothing over the sample faces weaker competition than it
+would in a period when those factors performed well. I report the sample-period factor
+premia alongside any alpha for exactly this reason.
+
+The `min` and `max` rows are a useful sanity check. The extreme values should land in
+March 2020, and they do.
+"""))
+
 cells.append(code(r'''
-# Clip to the study window and persist. Both the clipped panel and the untouched
-# original are written: the original is the audit artefact, the clipped one is what
-# downstream code reads.
+# Boolean indexing: the expression inside the square brackets produces a column of
+# True/False, and pandas keeps the rows where it is True. reset_index(drop=True)
+# renumbers the surviving rows from zero and throws the old numbering away.
 ff3 = ff3_full[(ff3_full.date >= START) & (ff3_full.date <= END)].reset_index(drop=True)
 
-(RAW / "ff3_daily_original.csv").write_bytes(ff_bytes)
-ff3.to_csv(RAW / "panel_a_ff3_daily.csv", index=False)
+(RAW / "ff3_daily_original.csv").write_bytes(ff_bytes)   # the audit copy
+ff3.to_csv(RAW / "panel_a_ff3_daily.csv", index=False)   # the working copy
 
 print(f"window range: {ff3.date.min():%Y-%m-%d} .. {ff3.date.max():%Y-%m-%d}  ({len(ff3):,} rows)")
 print("\nsummary (values are PERCENT, not decimals):")
 display(ff3.describe().T[["count", "mean", "std", "min", "max"]])
 '''))
 
-# Cells are appended in the order they were written, then reordered at the bottom of
-# this file into the order they should be RUN. Ticker resolution was added last but has
-# to come before Panel B, because it produces the symbol list Panel B buys prices for.
-# These two markers are what make that reordering possible without moving large blocks
-# of text around in this file.
+# ---------------------------------------------------------------------------------
+# Cells are written in this file in the order that made sense while building it, and
+# reordered at the bottom into the order they should be RUN. The universe construction
+# came last chronologically but has to run before the price download, because it
+# produces the list of companies the price download uses. These markers record the
+# boundaries so the reordering does not require moving hundreds of lines of text.
+# ---------------------------------------------------------------------------------
 PANELB_START = len(cells)
 
-# ------------------------------------------------------------------ Panel B
+
+# ============================================================ Panel B: the prices
 cells.append(md(r"""
-## 3. Panel B: daily prices from FMP
+---
 
-The draft ticker list is read from `config/tickers_draft_v0.csv` rather than being
-hardcoded here, so revising it is a one-line CSV edit and shows up cleanly in a diff.
-It was drawn from the top of `outputs/cross_section.csv` by operating-asset count.
+## 3. Panel B: the price history
 
-Two benchmarks are pulled, and the distinction matters later:
+With a list of companies in hand, this section downloads their daily share prices and
+assembles them into one table.
 
-- `^GSPC` is the S&P 500 **index**. Price return only, no dividends, not investable.
-- `SPY` is the **investable** proxy. This is the one a transaction-cost model can be
-  applied to, because it is a thing you can actually buy.
+### One decision that matters more than it looks: total return, not price return
 
-Known issues that are recorded rather than fixed here, because fixing them silently in
-the raw layer is how errors get buried:
+There are two ways to record what a share did yesterday.
 
-- **`SHEL.L` is quoted in pence (GBp), not pounds.** A 100x error waiting to happen.
-- European names are in **EUR/CHF**, US names in **USD**. No FX conversion is applied.
-- The European leg must be regressed on French's **Developed Europe** factors, not the
-  US factors in Panel A. Mixing them is not a currency nuisance, it is the wrong model.
+A **price return** is simply the change in the quoted price. If a share closed at 100
+and closes at 101 today, that is +1%.
+
+A **total return** also counts the dividends the company paid. If that same share had
+also gone ex-dividend for 2, the investor is 3 better off, not 1, and the total return
+is +3%.
+
+The Fama-French factors in Panel A are built from **total returns**. So if I compute
+price returns for my companies and compare them against total-return factors, every
+company's return is understated by roughly its dividend yield, and that shortfall lands
+in the alpha. My universe is heavy in utilities and pipelines, which yield somewhere
+around 3 to 4% a year. That is larger than most of the effects published in this
+literature. The mistake would not look like a mistake; it would look like a finding.
+
+So this section requests the dividend-adjusted series and refuses to accept a panel
+that mixes the two conventions. Section 4 contains an explicit check for it.
+
+### The two benchmarks, and why there are two
+
+`^GSPC` is the S&P 500 **index**. It is a number, not something you can buy, and it
+excludes dividends.
+
+`SPY` is an exchange-traded fund tracking the same index. It is investable, it includes
+dividends, and it is the one to use whenever the comparison needs to be against
+something a portfolio could actually have held.
+
+Both are downloaded. Which is appropriate depends on the question, and having only one
+of them invites using the wrong one.
+
+### What is deliberately not done here
+
+No currency conversion. The panel ends up holding US dollars, euros, pounds, Norwegian
+and Swedish and Danish kroner, Swiss francs, Australian dollars and Israeli agorot. The
+prices are stored exactly as the provider returned them.
+
+That is not laziness. A conversion applied invisibly inside a download step is a
+conversion nobody ever checks. Doing it downstream, as an explicit and separately
+testable step, means the choice of exchange rate series and of conversion date is
+visible in a diff.
+
+One currency deserves a specific warning. **UK prices are usually quoted in pence, not
+pounds**, and the provider labels them `GBp` with a lower-case p. Treating them as
+pounds makes those companies look a hundred times larger than they are. It does not
+affect simple returns, since the factor of 100 cancels, but it wrecks anything weighted
+by price or market value.
 """))
 
 cells.append(code(r'''
-# Prefer the resolved list from section 2. Fall back to the 20-name hand-written draft
-# only if section 2 has not been run yet, and say clearly which one is in use, because
-# the two mean very different things: one is a research universe, the other is a
-# plumbing test made of firms that happen to still trade in 2026.
-PRIMARY = REPO / "config" / "tickers_primary.csv"
-V1      = REPO / "config" / "tickers_v1.csv"
-DRAFT   = REPO / "config" / "tickers_draft_v0.csv"
+# Three possible sources for the company list, in order of preference.
+PRIMARY = REPO / "config" / "tickers_primary.csv"   # one listing per firm, from section 2
+V1      = REPO / "config" / "tickers_v1.csv"        # every listing per firm, intermediate
+DRAFT   = REPO / "config" / "tickers_draft_v0.csv"  # 20 hand-written names, for testing
 
-# Order matters. tickers_v1.csv holds EVERY listing line per firm, so using it directly
-# downloads a company three or four times over: ALV, ALIZY and ALIZF are all Allianz.
-# Section 2b collapses those to one primary listing each. Never fall back from primary
-# to v1 silently; raise instead, because a duplicated panel inflates cross-sectional
-# precision and nothing downstream would reveal it.
+# The order here is a safety feature rather than a convenience.
+#
+# tickers_v1.csv holds every stock market listing OpenFIGI could find for each company,
+# which is often three or four per firm: a company listed in Frankfurt may also have a
+# US depositary receipt and a second line on a US over-the-counter board. Feeding that
+# list straight into the download would put the same company into the panel several
+# times over, and a portfolio built from it would hold one bet with three weights.
+#
+# So if the intermediate file exists but the resolved one does not, this stops rather
+# than falling back. A silent fallback would rebuild exactly the panel we are avoiding,
+# and nothing downstream would reveal it.
 if PRIMARY.exists():
     tick    = pd.read_csv(PRIMARY)
     tick    = tick[tick.priceable & tick.primary_symbol.notna()]
@@ -393,375 +682,54 @@ BENCHMARKS = ["^GSPC", "SPY"]
 print(f"\nsource : {SOURCE}")
 print(f"benchmarks: {BENCHMARKS}")
 
-# The two files have different schemas: the draft carries a hand-assigned `leg` column,
-# the resolved one carries `exchange`. Pick whichever columns are actually present
-# rather than assuming, which is how this cell crashed the first time it saw v1.
+# The draft file and the resolved file have different columns. Select whichever are
+# actually present rather than assuming a fixed set, which is how this cell crashed the
+# first time it was handed the resolved file.
 SHOW = [c for c in ["name", "hq", "n_assets", "ticker", "exchange", "leg"]
         if c in tick.columns]
 display(tick[SHOW].head(40))
 '''))
 
-# --------------------------------------------------------------- preflight
 cells.append(md(r"""
-### 3a. Preflight: what can this API key actually see?
+### Downloading the prices
 
-Run this before the main loop. It makes six cheap calls and reports what your key is
-allowed to do, which is faster and more reliable than reading a pricing page, and it
-tells you *now* rather than twenty tickers into a loop.
+The function below fetches one company's history. Three details in it are worth
+explaining, because each one exists because of a specific way this can go wrong.
 
-> **All endpoints are under `/stable/`.** The older `/api/v3/` paths are refused for keys
-> issued today, and the refusal is an HTTP 403, which reads as *"not on your plan"* and is
-> nothing of the sort. A 403 on every probe at once, including the most basic US price
-> call, is the signature of a retired endpoint rather than a tier limit or a bad key.
+**It asks for the total-return series first and records what it got.** If the
+dividend-adjusted series is unavailable for a symbol, it falls back to the
+split-adjusted one, but writes the choice into a `series` column so the fallback is
+visible in the data rather than hidden. A quiet fallback would produce a panel that
+looks uniform and is not.
 
-Each probe maps to a decision you would otherwise make blind:
+**An empty response with a success code counts as a failure.** The provider answers
+`HTTP 200 OK` with an empty list for symbols it holds nothing for. Counted naively that
+is indistinguishable from a successful call, so a loop over 300 symbols could report
+300 successes and produce an empty table.
 
-| Probe | If it fails |
-|---|---|
-| US daily prices | Nothing works. The key is wrong, unverified, or the path is retired. |
-| Dividend-adjusted prices | **You are stuck with price returns.** See the warning below; this one changes results, not just coverage. |
-| European ticker | Free tier. The six EU names will come back empty; drop the EU leg for now. |
-| Index `^GSPC` | Use `SPY` alone as the benchmark and record the substitution. |
-| History depth | Free keys are typically capped at a few recent years, which silently shortens the sample. |
-| Delisted companies | **Blocking test 1 cannot run.** No delisting list means no measured survivorship rate. |
-
-**Why the dividend-adjusted probe was added.** `historical-price-eod/full` is adjusted for
-splits but *not* for dividends, so it yields price returns. The Fama-French factors in
-Panel A are built from *total* returns. Regressing one on the other subtracts the dividend
-yield from your alpha, and this draft universe is mostly regulated utilities, which are the
-highest-yielding sector in the market at roughly 3 to 4 percent a year. That is not a
-rounding error, it is larger than most published anomaly premia. Use
-`historical-price-eod/dividend-adjusted` for anything return-based.
-
-That last row is the one that matters most, and it is easy to miss. The survivorship test
-in `01_survivorship_test_fmp.py` draws its random sample from FMP's own delisted list. If
-that endpoint is closed to your key, the test cannot return a number at all, and the
-survivorship problem stays unquantified rather than merely unquantified-so-far.
+**The two price variants do not share a column name.** The split-adjusted endpoint
+returns a column called `close`; the dividend-adjusted one returns `adjClose` and no
+`close` at all. Rather than making every later piece of code guess, the function
+creates a single `price` column and records in `price_field` which vendor column it
+came from.
 """))
-
-cells.append(code(r'''
-if not API_KEY:
-    raise SystemExit(
-        "FMP_API_KEY is not set. Section 0 prints 'api key: MISSING' when this happens.\n"
-        "  Colab : add it in the Secrets panel, switch on notebook access, rerun section 0.\n"
-        "  Local : export FMP_API_KEY='...'"
-    )
-
-
-def probe(label, url, params, want, ok_if=None):
-    """One capability probe. Returns a row describing what happened.
-
-    An HTTP 200 carrying an empty payload counts as a FAIL, not a pass. FMP answers
-    'no access' and 'no data' the same way, so treating 200 as success would report a
-    free-tier key as fully capable.
-
-    ok_if lets a probe demand more than "some rows came back". The history probe needs
-    it: if the endpoint ignores from/to rather than rejecting them, it returns the full
-    series, which looks like a pass while telling you nothing about depth.
-    """
-    try:
-        r = requests.get(url, params={**params, "apikey": API_KEY}, timeout=45)
-    except requests.RequestException as e:
-        return {"probe": label, "status": "ERROR", "ok": False, "detail": str(e)[:60]}
-
-    if r.status_code != 200:
-        hint = {401: "key rejected or not yet verified",
-                403: "endpoint retired, or not on your plan",
-                429: "rate limited"}.get(r.status_code, "")
-        return {"probe": label, "status": f"HTTP {r.status_code}", "ok": False, "detail": hint}
-
-    payload = r.json()
-    rows = payload.get("historical") if isinstance(payload, dict) else payload
-    if not rows:
-        return {"probe": label, "status": "200 empty", "ok": False,
-                "detail": "no data returned - usually a plan limit"}
-    ok = True if ok_if is None else bool(ok_if(rows))
-    return {"probe": label, "status": "200" if ok else "200 wrong range",
-            "ok": ok, "detail": want(rows)}
-
-WIN = {"from": "2024-01-02", "to": "2024-03-01"}
-
-results = [
-    probe("US daily prices (DUK)",
-          EOD, {"symbol": "DUK", **WIN}, lambda r: f"{len(r)} bars"),
-    probe("Dividend-adjusted prices (DUK)",
-          EOD_TR, {"symbol": "DUK", **WIN}, lambda r: f"{len(r)} bars"),
-    probe("European ticker (ENGI.PA)",
-          EOD, {"symbol": "ENGI.PA", **WIN}, lambda r: f"{len(r)} bars"),
-    probe("S&P 500 index (^GSPC)",
-          EOD, {"symbol": "^GSPC", **WIN}, lambda r: f"{len(r)} bars"),
-    probe("History depth (2010 data)",
-          EOD, {"symbol": "DUK", "from": "2010-01-04", "to": "2010-03-01"},
-          lambda r: f"earliest {min(x['date'] for x in r)}",
-          ok_if=lambda r: min(x["date"] for x in r) < "2011-01-01"),
-    probe("Delisted companies list",
-          f"{BASE}/delisted-companies", {"page": 0, "limit": 5},
-          lambda r: f"{len(r)} sample rows"),
-]
-
-pre = pd.DataFrame(results)
-display(pre[["probe", "status", "detail"]])
-
-us_ok, tr_ok, eu_ok, idx_ok, hist_ok, delist_ok = [x["ok"] for x in results]
-
-print()
-if not us_ok:
-    print("STOP: even US prices failed, so nothing below is diagnostic.")
-    print("      403 on every row at once means the path is retired, not that you need to pay.")
-    print("      401 on every row means the key is wrong, or the account email is unverified.")
-    print("      Also confirm the Colab secret is named exactly FMP_API_KEY, with notebook")
-    print("      access switched on. Section 0 prints 'api key: set' when it read correctly.")
-else:
-    tier = "paid (international coverage present)" if eu_ok else "free or entry tier (no international)"
-    print(f"Assessment: {tier}")
-    if not tr_ok:
-        print("  -> Dividend-adjusted prices are closed to this key, so you have PRICE returns only.")
-        print("     Do not regress these on Fama-French factors, which are TOTAL returns. On a")
-        print("     utility-heavy universe that understates alpha by roughly 3 to 4 percent a year.")
-    if not eu_ok:
-        print("  -> The 6 European tickers will return empty. Either drop the EU leg for now")
-        print("     and rerun with US-only, or upgrade before building the European panel.")
-    if not idx_ok:
-        print("  -> ^GSPC unavailable. Use SPY as the benchmark and RECORD the substitution;")
-        print("     SPY includes dividends and a fee drag, ^GSPC is price-only. Not interchangeable.")
-    if not hist_ok:
-        print(f"  -> History does not reach {START}. Your usable window is shorter than the")
-        print("     one fixed at the top of this notebook. Change START deliberately, not silently.")
-    if not delist_ok:
-        print("  -> Delisted list is closed to this key, so 01_survivorship_test_fmp.py CANNOT run.")
-        print("     Nothing return-based should be estimated until that test returns a number.")
-'''))
-
-# ------------------------------------------------------- boundary finder (2b)
-cells.append(md(r"""
-### 3b. Where exactly is the paywall?
-
-Only run this if section 2a returned any `HTTP 402`. A 402 is *Payment Required*, which means
-the key is valid and the path is live, and something about the specific request is above your
-plan. That is a much better position than a 403 and it is worth locating precisely, because the
-answer decides whether this project can proceed on a free key or needs a paid one.
-
-The interesting fact from 2a is that `^GSPC` returned data from the **same endpoint** that
-refused `DUK`. So the wall is not the endpoint. Eight calls below separate the four candidate
-explanations:
-
-| Hypothesis | Distinguished by |
-|---|---|
-| The `full` variant is paid, `light` is free | `light` on DUK succeeds |
-| Individual equities are paid, indices and lists are free | every equity call fails regardless of variant |
-| Only some symbols are covered | AAPL succeeds where DUK fails |
-| History depth is capped | a recent window succeeds where 2024 and 2010 fail |
-
-The last two rows of the probe test the fallback that matters. If `light` prices and the
-`dividends` endpoint are both open, total returns can be reconstructed by hand: take the
-split-adjusted close, add the cash dividend on its ex-date, and compound. That is more work and
-more places to make an error, but it is not a compromise on the economics, and it would keep the
-paper on free and redistributable data, which is an architecture constraint rather than a budget
-preference.
-"""))
-
-cells.append(code(r'''
-def wall(label, path, params):
-    """Minimal probe. Reports status and row count only, no interpretation."""
-    try:
-        r = requests.get(f"{BASE}/{path}", params={**params, "apikey": API_KEY}, timeout=45)
-    except requests.RequestException as e:
-        return {"test": label, "status": "ERROR", "rows": 0, "note": str(e)[:40]}
-    if r.status_code != 200:
-        return {"test": label, "status": f"HTTP {r.status_code}", "rows": 0,
-                "note": {402: "above your plan", 403: "path retired",
-                         401: "key rejected", 429: "rate limited"}.get(r.status_code, "")}
-    try:
-        payload = r.json()
-    except ValueError:
-        return {"test": label, "status": "200 non-JSON", "rows": 0, "note": r.text[:40]}
-    rows = payload.get("historical") if isinstance(payload, dict) else payload
-    n = len(rows) if rows else 0
-    return {"test": label, "status": "200", "rows": n,
-            "note": "EMPTY, treat as a miss" if n == 0 else ""}
-
-W24    = {"from": "2024-01-02", "to": "2024-03-01"}
-RECENT = {"from": "2026-06-01", "to": "2026-08-01"}
-
-wall_tests = [
-    # variant, holding the symbol and window fixed
-    wall("DUK  light        2024",  "historical-price-eod/light",              {"symbol": "DUK",  **W24}),
-    wall("DUK  full         2024",  "historical-price-eod/full",               {"symbol": "DUK",  **W24}),
-    wall("DUK  non-split    2024",  "historical-price-eod/non-split-adjusted", {"symbol": "DUK",  **W24}),
-    # symbol, holding variant and window fixed
-    wall("AAPL full         2024",  "historical-price-eod/full",               {"symbol": "AAPL", **W24}),
-    wall("SPY  full         2024",  "historical-price-eod/full",               {"symbol": "SPY",  **W24}),
-    # window, holding symbol and variant fixed
-    wall("DUK  full       recent",  "historical-price-eod/full",               {"symbol": "DUK",  **RECENT}),
-    wall("DUK  full     no dates",  "historical-price-eod/full",               {"symbol": "DUK"}),
-    # the manual-total-return fallback
-    wall("DUK  dividends",          "dividends",                               {"symbol": "DUK"}),
-]
-
-w = pd.DataFrame(wall_tests)
-display(w)
-
-open_ = set(w.loc[w.status == "200", "test"])
-def got(prefix): return any(t.startswith(prefix) for t in open_)
-
-print()
-if len(open_) == len(w) and (w["rows"] > 0).all():
-    print("DIAGNOSIS: no wall. Every variant, symbol and history depth returned data.")
-    print("  This is the expected result on a paid tier. Nothing below applies; the")
-    print("  branches after this one exist to name a paywall, and there is not one.")
-elif got("DUK  light") and not got("DUK  full"):
-    print("DIAGNOSIS: the variant is the wall. 'light' is open, 'full' is not.")
-    print("  light returns date, price and volume only, split-adjusted, no dividends.")
-    print("  Workable for a plumbing test. NOT sufficient for factor regressions on its own.")
-elif got("AAPL full") and not got("DUK  full"):
-    print("DIAGNOSIS: symbol coverage is the wall, not the endpoint or the plan level.")
-    print("  Check whether the covered set is an exchange, an index membership, or a fixed list.")
-elif got("DUK  full       recent") and not got("DUK  full         2024"):
-    print("DIAGNOSIS: history depth is the wall. Recent data is open, older data is not.")
-    print(f"  The window fixed at the top of this notebook starts {START} and is unreachable.")
-    print("  Do not silently shorten START. A sample chosen by what the vendor will sell you")
-    print("  is a sample chosen by the vendor, and that belongs in the limitations section.")
-elif not any(t.startswith("DUK") or t.startswith("AAPL") for t in open_):
-    print("DIAGNOSIS: all single-equity price history is closed to this key.")
-    print("  Indices and reference lists are open, individual equity EOD is not.")
-    print("  Panel B cannot be built on this key at all. See the note below.")
-else:
-    print("DIAGNOSIS: mixed. Read the table row by row before concluding anything.")
-
-if got("DUK  dividends") and got("DUK  light"):
-    print()
-    print("FALLBACK AVAILABLE: light prices + dividends are both open, so total returns can")
-    print("  be reconstructed by hand. Slower and more error-prone than dividend-adjusted,")
-    print("  but economically equivalent and it keeps every input free and redistributable.")
-'''))
-
-# ------------------------------------------------------ symbol coverage (2c)
-cells.append(md(r"""
-### 3c. What is the covered symbol list, exactly?
-
-2b said the wall is symbol coverage: `AAPL`, `CVX`, `XOM` and `SPY` return full history while
-`DUK`, `SO`, `NEE`, `BRK-B` and every European name return 402. Size does not explain it, since
-`BRK-B` is one of the largest listed companies in the world and is refused while `CVX` is served.
-
-The hypothesis worth testing is that the free list is **a Dow Jones Industrial Average membership
-snapshot taken before September 2020**. `XOM` was removed from the Dow on 31 August 2020, so a
-current-membership list would not include it, and a stale one would. `AAPL` and `CVX` are on both
-the old and the current list, so they do not discriminate.
-
-The probe below splits the Dow into three groups and adds controls:
-
-| Group | Prediction if the list is a pre-2020 Dow snapshot |
-|---|---|
-| Removed since 2020: `PFE`, `RTX`, `WBA`, `DOW`, `INTC` | **covered** |
-| Added since 2020: `CRM`, `AMGN`, `HON`, `NVDA`, `SHW` | **refused** |
-| On both lists: `MSFT`, `JNJ`, `KO`, `JPM` | covered |
-| Large non-Dow: `GOOGL`, `META`, `TSLA`, `BRK-B` | refused |
-
-The last probe matters more than the rest put together. The delisted *companies list* is open to
-your key, but that only gives you names. **Blocking test 1 needs the price history of a delisted
-firm**, and if that is refused then the survivorship rate cannot be measured on this key no matter
-how many names the list returns. This probe pulls a real symbol out of the delisted list and
-immediately asks for its prices.
-"""))
-
-cells.append(code(r'''
-def covered(sym):
-    """True if this key can retrieve any daily history for the symbol."""
-    try:
-        r = requests.get(f"{BASE}/historical-price-eod/full",
-                         params={"symbol": sym, "from": "2024-01-02",
-                                 "to": "2024-03-01", "apikey": API_KEY}, timeout=45)
-    except requests.RequestException:
-        return None
-    if r.status_code != 200:
-        return False
-    try:
-        rows = r.json()
-    except ValueError:
-        return False
-    return bool(rows.get("historical") if isinstance(rows, dict) else rows)
-
-GROUPS = {
-    "Dow, removed since 2020": ["PFE", "RTX", "WBA", "DOW", "INTC"],
-    "Dow, added since 2020":   ["CRM", "AMGN", "HON", "NVDA", "SHW"],
-    "Dow, on both lists":      ["MSFT", "JNJ", "KO", "JPM"],
-    "Large non-Dow":           ["GOOGL", "META", "TSLA", "BRK-B"],
-    "ETFs":                    ["QQQ", "IWM", "VTI"],
-    "Indices":                 ["^DJI", "^IXIC"],
-}
-
-rows = []
-for group, syms in GROUPS.items():
-    for s in syms:
-        rows.append({"group": group, "symbol": s, "covered": covered(s)})
-        time.sleep(0.25)
-
-cov = pd.DataFrame(rows)
-display(cov.groupby("group").agg(n=("symbol", "size"), covered=("covered", "sum")))
-print()
-print("covered  :", sorted(cov.loc[cov.covered == True,  "symbol"].tolist()))
-print("refused  :", sorted(cov.loc[cov.covered == False, "symbol"].tolist()))
-
-old = cov.loc[cov.group == "Dow, removed since 2020", "covered"]
-new = cov.loc[cov.group == "Dow, added since 2020",   "covered"]
-print()
-if old.all() and not new.any():
-    print("CONFIRMED: the free list is a pre-September-2020 Dow 30 snapshot.")
-    print("  That caps the investable universe at 30 US mega-caps, frozen six years ago,")
-    print("  and the freeze is itself a survivorship filter: membership was decided by")
-    print("  a committee using information you would not have had at the start of the sample.")
-elif cov.loc[cov.group.str.startswith("Dow"), "covered"].all() and not new.any():
-    print("PARTIAL: Dow-linked, but not cleanly a pre-2020 snapshot. Read the lists above.")
-else:
-    print("NOT the Dow hypothesis. Read the covered and refused lists and look for the pattern.")
-
-# --- the probe that decides whether blocking test 1 can run at all
-print()
-try:
-    dl = requests.get(f"{BASE}/delisted-companies",
-                      params={"page": 0, "limit": 20, "apikey": API_KEY}, timeout=45).json()
-except Exception as e:
-    dl = []
-    print("delisted list call failed:", e)
-
-if dl:
-    sample = [d.get("symbol") for d in dl if d.get("symbol")][:5]
-    print(f"delisted list returned names, testing prices for: {sample}")
-    hits = {s: covered(s) for s in sample}
-    for s, ok in hits.items():
-        print(f"  {s:8} prices {'AVAILABLE' if ok else 'REFUSED'}")
-    if not any(hits.values()):
-        print()
-        print("  CONCLUSION: the delisted LIST is open but delisted PRICE HISTORY is not.")
-        print("  Blocking test 1 cannot return a survivorship hit rate on this key. Knowing")
-        print("  which firms died without being able to price them measures nothing.")
-    else:
-        print()
-        print("  Blocking test 1 is runnable for at least some delisted names. Report the")
-        print("  hit rate as a measured fraction and say which names could not be priced.")
-'''))
 
 cells.append(code(r'''
 def fetch_prices(symbol: str, start: str, end: str, quiet: bool = False) -> pd.DataFrame:
-    """Daily EOD bars for one symbol, as a tidy frame. Empty frame if unavailable.
+    """Download one symbol's daily history. Returns an empty DataFrame on failure.
 
-    Tries the dividend-adjusted series first and falls back to the split-adjusted one.
-    That order is deliberate: dividend-adjusted gives total returns, which is what the
-    Fama-French factors in Panel A are built from. The fallback is a degradation, not an
-    equivalent, so the column 'series' records which one each symbol actually got and
-    the integrity checks below refuse to let a mixed panel pass unremarked.
-
-    An HTTP 200 carrying an empty payload is treated as a MISS, not a hit, the same
-    convention used in 01_survivorship_test_fmp.py, and the reason that matters is that
-    a silent empty array otherwise looks identical to a successful call in aggregate
-    counts.
+    The `quiet` flag suppresses the per-symbol messages. It is used when this function
+    is called hundreds of times inside a diagnostic, where the messages would bury the
+    result rather than illuminate it.
     """
+    # Try the total-return series first, then fall back. The order encodes the
+    # preference; the recorded label encodes what actually happened.
     attempts = [(EOD_TR, "dividend-adjusted"), (EOD, "split-adjusted")]
+
     for base, series in attempts:
         params = {"apikey": API_KEY, "symbol": symbol, "from": start, "to": end}
-        url = base
         try:
-            r = requests.get(url, params=params, timeout=45)
+            r = requests.get(base, params=params, timeout=45)
         except requests.RequestException as e:
             if not quiet:
                 print(f"    {symbol}: request error on {base.split('/')[-1]} ({e})")
@@ -773,6 +741,7 @@ def fetch_prices(symbol: str, start: str, end: str, quiet: bool = False) -> pd.D
             continue
 
         payload = r.json()
+        # Some endpoints wrap the rows in a dictionary, others return a bare list.
         rows = payload.get("historical") if isinstance(payload, dict) else payload
         if not rows:
             if not quiet:
@@ -782,14 +751,11 @@ def fetch_prices(symbol: str, start: str, end: str, quiet: bool = False) -> pd.D
         df = pd.DataFrame(rows)
         df["symbol"] = symbol
         df["series"] = series
-        df["date"] = pd.to_datetime(df["date"])
+        df["date"]   = pd.to_datetime(df["date"])
 
-        # The two variants do not share a column name for the closing price. /full
-        # returns open/high/low/close, while /dividend-adjusted returns adjOpen/adjHigh/
-        # adjLow/adjClose and no plain `close`. Everything downstream wants one column,
-        # so normalise here and record which field it came from rather than leaving each
-        # consumer to guess. Section 4 crashed with KeyError('close') on the first
-        # dividend-adjusted panel because of exactly this.
+        # Normalise the closing price into one column whatever the vendor called it,
+        # and record the origin. Without this, section 4 fails with a confusing
+        # KeyError the first time it meets a purely dividend-adjusted panel.
         src_col = next((c for c in ("adjClose", "close", "price") if c in df.columns), None)
         if src_col is None:
             if not quiet:
@@ -797,11 +763,13 @@ def fetch_prices(symbol: str, start: str, end: str, quiet: bool = False) -> pd.D
             return pd.DataFrame()
         df["price"] = pd.to_numeric(df[src_col], errors="coerce")
         df["price_field"] = src_col
+
         if series != "dividend-adjusted":
             print(f"    {symbol}: fell back to {series}, PRICE returns only for this symbol")
         return df.sort_values("date").reset_index(drop=True)
 
     return pd.DataFrame()
+
 
 frames, missing = [], []
 for i, sym in enumerate(TICKERS + BENCHMARKS, 1):
@@ -812,18 +780,38 @@ for i, sym in enumerate(TICKERS + BENCHMARKS, 1):
     else:
         frames.append(d)
         print(f"    {len(d):,} rows  {d.date.min():%Y-%m-%d} .. {d.date.max():%Y-%m-%d}")
-    time.sleep(0.3)   # gentle on the rate limit
+    time.sleep(0.3)   # stay comfortably inside the provider's rate limit
 
 print(f"\nretrieved {len(frames)}, missing {len(missing)}: {missing}")
 '''))
+
+cells.append(md(r"""
+### Assembling the panel
+
+The individual downloads are stacked into a single long table with one row per company
+per day. This shape, sometimes called tidy or long format, is what almost every
+statistical tool expects.
+
+The printed output is worth reading rather than skipping. `price taken from` and
+`series` should each show a single value. If either shows two, the panel mixes
+conventions and the integrity checks in section 4 will fail, which is the intended
+behaviour.
+
+The table at the bottom is sorted by row count, so the shortest histories appear first.
+Several companies genuinely have short histories because they are recent spin-offs or
+listings. That makes this an **unbalanced panel**, meaning the set of companies changes
+over time, and it is a fact to state in the methods rather than a problem to hide.
+"""))
 
 cells.append(code(r'''
 if not frames:
     raise SystemExit("No price data retrieved at all. Check the API key and its plan tier.")
 
+# pd.concat stacks the list of per-symbol tables into one.
 prices = pd.concat(frames, ignore_index=True)
 
-# Keep a stable column order; retain whatever extra columns FMP returns.
+# Put the columns we care about first, then keep whatever else the vendor sent. Building
+# the list by filtering means a missing column is skipped rather than raising.
 lead = [c for c in ["symbol", "date", "price", "price_field", "series",
                     "open", "high", "low", "close", "adjOpen", "adjHigh", "adjLow",
                     "adjClose", "volume"]
@@ -843,23 +831,70 @@ display(
 )
 '''))
 
-# ------------------------------------------------------------------ integrity
-cells.append(md(r"""
-## 4. Integrity checks and manifest
 
-These assertions are here so that a broken download fails loudly at acquisition time
-rather than showing up as a puzzling coefficient three weeks later. They check the
-plumbing only. They make no claim about whether the data is fit for the research
-question. The manifest records SHA-256 hashes so a later rerun can be proved identical
-(or proved different) rather than assumed so.
+# ============================================================ integrity checks
+cells.append(md(r"""
+---
+
+## 4. Checking the data before trusting it
+
+Both panels are now on disk. This section tries to find something wrong with them.
+
+### Why bother, when nothing has obviously failed
+
+Because the failures that matter in this kind of work are usually silent. A download
+that half-succeeds, a date column parsed with the day and month the wrong way round, a
+duplicated row from a paginated response, a units error of a factor of 100. None of
+these raise an exception. They produce a table that looks completely normal and a
+result that is wrong.
+
+The checks below are deliberately dull. Each one asserts something that must be true if
+the download worked, and each one has a specific failure in mind:
+
+| Check | The failure it is looking for |
+|---|---|
+| No duplicate dates, no duplicate company-date pairs | A paginated response returned overlapping pages. Any later regression would count those observations twice |
+| Factor values below 25 in absolute terms | A units error. Either something has already divided by 100, or the columns are misaligned |
+| No weekend dates | The dates were parsed wrongly, or the file is not daily after all |
+| Prices strictly positive | Nulls or placeholder values have leaked into the price series |
+| Every requested company returned data | Silent partial failure |
+| One price convention across the panel | Some companies on total return and others on price return, which is not comparable |
+| Factors and prices share more than 2,000 trading days | A calendar mismatch. A later merge would silently discard most rows |
+
+**These test the plumbing, not the research design.** Passing them means the data is
+what it claims to be. It says nothing about whether the data can answer the question.
+That is what sections 5 and 6 are for.
+
+### One check that had to be narrowed, and why that is not a fudge
+
+The rule "every series must be a total return" fails for `^GSPC` and always will. A
+price index has no dividends to reinvest, so a total-return version of it does not
+exist at any price from any provider.
+
+Leaving the check as it was would mean one row went red on every single run forever.
+That is worse than not having the check, because a warning you always ignore trains you
+to ignore warnings. So the convention checks now cover the company panel, and the
+benchmarks get their own check requiring that at least one total-return benchmark is
+present, which `SPY` satisfies.
+
+The distinction I am drawing is between narrowing a test to what it can meaningfully
+assert, and weakening it until it passes. The first is fine. The second is not, and the
+difference is whether you can state the reason before you see the result.
 """))
 
 cells.append(code(r'''
+# Collect the results in a list of dictionaries and turn it into a table at the end.
+# This is easier to read than a series of assert statements, because it reports every
+# failure at once rather than stopping at the first.
 checks = []
+
+
 def check(name, ok, detail=""):
+    """Record one check. `ok` is anything truthy; `detail` explains a failure."""
     checks.append({"check": name, "pass": bool(ok), "detail": detail})
 
-# --- Panel A
+
+# ---------------------------------------------------------------- Panel A
 check("ff3: has all four factor columns",
       set(["Mkt-RF", "SMB", "HML", "RF"]).issubset(ff3.columns),
       str(ff3.columns.tolist()))
@@ -868,12 +903,14 @@ check("ff3: no duplicate dates", ff3.date.duplicated().sum() == 0,
 check("ff3: dates strictly increasing", ff3.date.is_monotonic_increasing)
 check("ff3: no weekend dates", (ff3.date.dt.dayofweek < 5).all(),
       f"{(ff3.date.dt.dayofweek >= 5).sum()} weekend rows")
-# Daily factor moves outside +/-25% would indicate a units or parsing error.
+
+# A daily factor move beyond 25 percentage points has never happened. If we see one,
+# the file is in decimals rather than percent, or the columns are misaligned.
 mx = ff3[["Mkt-RF", "SMB", "HML"]].abs().max().max()
 check("ff3: factor magnitudes plausible for PERCENT units", mx < 25, f"max |value| = {mx}")
 check("ff3: RF non-negative", (ff3.RF.dropna() >= 0).all())
 
-# --- Panel B
+# ---------------------------------------------------------------- Panel B
 check("prices: no duplicate (symbol, date)",
       prices.duplicated(["symbol", "date"]).sum() == 0,
       f"{prices.duplicated(['symbol','date']).sum()} dupes")
@@ -881,6 +918,9 @@ check("prices: a canonical price column exists", "price" in prices.columns,
       f"columns: {list(prices.columns)[:12]}")
 check("prices: all prices strictly positive",
       (prices["price"].dropna() > 0).all() if "price" in prices else False)
+
+# The backslash continues the expression onto the next line. This picks out the
+# price_field column for companies only, excluding the benchmarks.
 _eqf = prices.loc[~prices.symbol.isin(BENCHMARKS), "price_field"] \
        if "price_field" in prices.columns else pd.Series(dtype=object)
 check("prices: one price field across the EQUITY panel", _eqf.nunique() == 1,
@@ -888,15 +928,11 @@ check("prices: one price field across the EQUITY panel", _eqf.nunique() == 1,
 check("prices: S&P 500 index present", "^GSPC" in set(prices.symbol))
 check("prices: every requested symbol returned data",
       len(missing) == 0, f"missing: {missing}")
-# A panel that mixes total-return and price-return series is not comparable across
-# symbols, and the difference is a dividend yield, so it loads on exactly the kind of
-# firm characteristic a hazard sort is likely to pick up. Fail loudly rather than let
-# the mixture pass as a footnote.
-# Scope the convention checks to the equity panel. A price index has no dividends to
-# reinvest, so ^GSPC has no dividend-adjusted series at any price and will always fall
-# back. Letting that fail the check permanently would teach us to ignore a red row,
-# which is worse than not having the check. SPY is the total-return benchmark; ^GSPC is
-# carried as a price index and labelled as one.
+
+# The return-convention checks. A panel mixing total and price returns is not comparable
+# across companies, and the size of the difference is a dividend yield, which is exactly
+# the kind of company characteristic a hazard sort might accidentally pick up. Scoped to
+# companies for the reason given in the text above.
 _eq = prices[~prices.symbol.isin(BENCHMARKS)]
 _series = sorted(_eq["series"].unique()) if "series" in _eq.columns else ["unknown"]
 check("prices: one return convention across the EQUITY panel", len(_series) == 1,
@@ -912,7 +948,9 @@ check("benchmarks: at least one total-return benchmark present",
       f"{_bench}. ^GSPC is a price index and legitimately has no total-return series; "
       f"use SPY where a total-return benchmark is needed.")
 
-# Trading-day overlap is the join key sanity check for the (later) merge step.
+# The two panels will eventually be joined on date. If their trading calendars barely
+# overlap, that join would silently produce almost nothing, so check the overlap now
+# rather than discovering it later.
 common = set(ff3.date) & set(prices.loc[prices.symbol == "^GSPC", "date"])
 check("overlap: FF3 and ^GSPC share >2000 trading days", len(common) > 2000,
       f"{len(common)} shared days")
@@ -925,13 +963,44 @@ print(f"\n{len(report) - n_fail}/{len(report)} checks passed"
       + (f" {n_fail} FAILED, read the detail column before using these files." if n_fail else ""))
 '''))
 
+cells.append(md(r"""
+### The manifest
+
+The last step writes `manifest.json`, a small file recording what was downloaded, when,
+how many rows, and a **SHA-256 checksum** of every file.
+
+A checksum is a short fingerprint computed from a file's contents. Change one byte
+anywhere in a 90 megabyte file and the fingerprint changes completely. That makes it
+possible to prove two copies are identical rather than assume it, which matters here
+for three reasons:
+
+- The price data comes from a paid subscription that will be cancelled. Once it is
+  gone, this archive cannot be rebuilt, so being able to detect corruption in a backup
+  is not a theoretical nicety.
+- The factor file is updated in place by its publisher. A checksum of what was received
+  on the day is the only way to demonstrate later which version was used.
+- If someone wants to replicate this work, comparing manifests is a faster and more
+  conclusive test than comparing results.
+
+The manifest also records the things that are easy to forget and expensive to get
+wrong: that the factors are in percent, and that no currency conversion has been
+applied.
+"""))
+
 cells.append(code(r'''
 def sha256(p: Path) -> str:
+    """SHA-256 checksum of a file, read in 1 MB blocks so large files fit in memory.
+
+    `1 << 20` is 2 to the power 20, which is 1,048,576, that is one megabyte. The
+    iter(callable, sentinel) form keeps calling f.read until it returns the sentinel,
+    here an empty bytes object, which marks the end of the file.
+    """
     h = hashlib.sha256()
     with open(p, "rb") as f:
         for blk in iter(lambda: f.read(1 << 20), b""):
             h.update(blk)
     return h.hexdigest()
+
 
 manifest = {
     "generated_utc": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
@@ -967,83 +1036,96 @@ print(json.dumps(manifest, indent=2)[:1500])
 
 PANELB_END = len(cells)
 
-# Held back and appended last: this is the closing scope statement, so it has to come
-# after every section, including ones added later.
-absent_cell = md(r"""
-## 8. What is deliberately absent
 
-No returns, no regressions, no portfolio construction, no merge of the two panels, and
-no survivorship correction. Those belong downstream of this file. This section is the
-only place inside the notebook itself that says so, which is why it is worth keeping
-even though the same limits are tracked in more detail elsewhere: a stranger who opens
-this file on GitHub sees the scope statement without having to find anything else.
+# ============================================================ Section 2 continues
 
-Before anything return-based is estimated on this data, three things have to close.
 
-1. **The delisting hit rate is unmeasured, and now known to be blocked.**
-   `01_survivorship_test_fmp.py` has never returned a number. Section 3c established
-   why: the delisted companies *list* is open on a free key but delisted *price
-   history* is refused, and knowing which firms died without being able to price them
-   measures nothing. Until that rate is a number, the size of the survivorship problem
-   is unknown rather than small.
-2. **The ownership snapshot is undated.** The GEM Ownership Tracker is a single
-   snapshot with sector vintages spanning roughly sixteen months, so the exposure
-   variable carries look-ahead of unknown size. This is the worst of the three,
-   because it contaminates the independent variable rather than the dependent one.
-3. **The universe is not yet a universe.** Section 2 resolves entities to tickers, but
-   a resolved ticker is not a price series, and some of the 328 entities are owners
-   only in a financing sense. Both counts belong in the methods section, and they are
-   different numbers.
-
-For where each of these stands and what unblocks it, see `EXECUTION_CHECKLIST.html`
-in the repository root rather than duplicating the detail here.
-""")
-
-# ------------------------------------------------------- Section 4: ticker resolution
+# ============================================================ Section 2: the universe
 cells.append(md(r"""
 ---
 
-## 2. Resolving the universe to tickers
+## 2. Building the list of companies
 
-**Run this once, before buying an FMP plan. It needs no FMP key and costs nothing.**
+This is the section I expected to be trivial and which turned out to contain most of
+the traps in the project. It is also the part that decides the sample, so it deserves
+the space.
 
-**It does not depend on sections 1 to 3**, so it works whether or not the price panel
-came back empty. Section 0 is the only prerequisite, because it sets `REPO` and reads
-the Colab secrets.
+### The problem
 
-The problem it solves: `outputs/cross_section.csv` identifies 328 asset owners by name,
-LEI, PermID and CIK, and by no ticker at all. So there is no symbol list to buy prices
-for, and nothing has yet established that 328 *listed* entities are even in the file.
-For an asset ownership tracker they probably are not. State utilities, municipal
-generators, co-operatives, infrastructure funds and wholly owned subsidiaries all own
-power assets without having listed equity.
+The ownership data identifies companies by name, by their Legal Entity Identifier, by a
+Refinitiv PermID, and for US filers by their SEC number. It does not contain a single
+stock market ticker. The price data is organised entirely by ticker. So there is no way
+to connect the two without building the bridge.
 
-That gap sits directly under the plan decision. Premium at $49 covers the US, UK and
-Canada, which is 185 of the 328 entities. Ultimate at $99 adds the 143 continental
-European ones. Whether that $50 is worth paying depends entirely on how many of the 143
-are listed, and no pricing page can answer that.
+That bridge is called a **crosswalk**, and building one is a standard, unglamorous and
+error-prone part of empirical finance. It is also where a sample quietly becomes the
+wrong sample.
 
-### Why ISINs, and why they are not enough on their own
+### Three questions that sound like one
 
-`config/universe_isins.csv` maps each firm's LEI to its ISINs, taken from the GLEIF
-golden copy you already hold. 296 of the 328 firms have at least one, including 137 of
-the 143 continental European ones. That number is an upper bound rather than an answer,
-because **ISINs are issued for bonds as readily as for shares**, and heavily indebted
-utilities are exactly the entities that hold many ISINs and no listed equity. The file
-carries 98,104 pairs, and the largest holders are banks: Deutsche Bank alone accounts
-for 21,793, almost all structured notes.
+It is tempting to think of this as "find the ticker for each company". It is actually
+three separate questions, and conflating them is how mistakes get in.
 
-OpenFIGI resolves this. It maps an ISIN to an instrument record carrying `marketSector`
-and `securityType2`, so common stock can be separated from debt. It is free, and an API
-key is optional but strongly recommended: without one you get 25 requests a minute at 10
-ISINs each, with one you get 25 requests every 6 seconds at 100 each, which is the
-difference between minutes and most of a day. Get one at
-[openfigi.com/api](https://www.openfigi.com/api), then add it to Colab Secrets as
-`OPENFIGI_API_KEY`. If you skip it the cell still runs, just slowly.
+1. **Is this entity a listed company at all?** Many owners of power stations are not:
+   municipal utilities, state bodies, co-operatives, infrastructure funds, and
+   wholly owned subsidiaries whose parent is the listed entity.
+2. **If it is listed, where does its stock trade?** Large companies often have several
+   listings. A German company may trade in Frankfurt, and also have a US depositary
+   receipt, and also a second line on a US over-the-counter board.
+3. **Which of those listings should represent the company in the study?** Exactly one,
+   and choosing wrongly is not a rounding error.
+
+### Why question 3 matters more than it sounds
+
+Suppose Allianz appears in the panel three times: `ALV` in Frankfurt, `ALIZY` as a US
+depositary receipt, and `ALIZF` on the US foreign board. A portfolio built from that
+panel holds one bet with three weights. The three lines are almost perfectly
+correlated, so they look to any statistical test like three independent observations
+when they are one. Standard errors come out too small, in the direction that makes a
+result look more significant than it is.
+
+There is a second problem. A **depositary receipt** is a certificate representing
+shares held abroad. Its price moves with the underlying shares *and* with the exchange
+rate, and it trades during US hours against a European closing price. Using one in
+place of the home listing injects a currency factor and a timing mismatch into a study
+about weather.
+
+### The route taken
+
+```
+Legal Entity Identifier  ->  ISIN  ->  instrument record  ->  ticker  ->  one chosen listing
+        (GLEIF)                          (OpenFIGI)                        (by liquidity)
+```
+
+**GLEIF** is the Global Legal Entity Identifier Foundation, the body that runs the LEI
+system. It publishes a free mapping from LEI to ISIN.
+
+**An ISIN** is an International Securities Identification Number, a twelve-character
+code identifying a specific security. Crucially it identifies a *security*, not a
+company, and companies issue many securities.
+
+**OpenFIGI** is a free service from Bloomberg that maps identifiers to instrument
+records, including what kind of security each one is.
+
+### Why the ISIN alone is not enough
+
+Because bonds have ISINs too. A heavily indebted utility can have hundreds of ISINs and
+no listed shares at all. In this dataset the LEI-to-ISIN mapping produced 98,104
+company-security pairs for 328 companies. The largest single holder was a bank with
+21,793 of them, nearly all structured notes.
+
+So an ISIN existing tells you almost nothing. What OpenFIGI adds is the security *type*,
+which is what separates common stock from debt.
+
+> GLEIF, https://www.gleif.org/en/lei-data/gleif-golden-copy
+>
+> OpenFIGI, https://www.openfigi.com/api
 """))
 
 cells.append(code(r'''
-# Optional. Everything below works without it, only slower.
+# An OpenFIGI key is free and optional. Without one you get 25 requests a minute at 10
+# identifiers each; with one you get 25 requests every 6 seconds at 100 each. On this
+# dataset that is the difference between about a minute and most of a day.
 OPENFIGI_KEY = os.environ.get("OPENFIGI_API_KEY")
 if IN_COLAB and not OPENFIGI_KEY:
     try:
@@ -1051,17 +1133,20 @@ if IN_COLAB and not OPENFIGI_KEY:
         OPENFIGI_KEY = userdata.get("OPENFIGI_API_KEY")
         os.environ["OPENFIGI_API_KEY"] = OPENFIGI_KEY or ""
     except Exception:
-        pass   # secret absent is a supported state, not an error
+        pass   # no secret configured is a supported state, not an error
 
-BATCH = 100 if OPENFIGI_KEY else 10          # jobs per request, set by OpenFIGI
-PAUSE = 6.0 / 25 if OPENFIGI_KEY else 60.0 / 25   # seconds between requests
+BATCH = 100 if OPENFIGI_KEY else 10               # identifiers per request
+PAUSE = 6.0 / 25 if OPENFIGI_KEY else 60.0 / 25   # seconds to wait between requests
 
-universe = pd.read_csv(REPO / "config" / "universe.csv")
-pairs    = pd.read_csv(REPO / "config" / "universe_isins.csv")
+universe = pd.read_csv(REPO / "config" / "universe.csv")       # one row per company
+pairs    = pd.read_csv(REPO / "config" / "universe_isins.csv") # one row per company-ISIN
 
-# Try each firm's home-country ISINs first. A primary listing is usually domestic, so
-# this resolves most firms in the first wave and keeps the 21,793-ISIN banks from
-# dominating the job.
+# Order each company's ISINs so that home-country ones come first.
+#
+# The first two characters of an ISIN are the country of issue. A company's primary
+# stock listing is almost always in its home country, so trying domestic identifiers
+# first resolves most companies immediately and avoids sending a bank's 21,793 mostly
+# foreign structured-note identifiers before its actual shares.
 HQ_ISO = {
     "United States": "US", "United Kingdom": "GB", "Germany": "DE", "France": "FR",
     "Italy": "IT", "Spain": "ES", "Norway": "NO", "Switzerland": "CH", "Finland": "FI",
@@ -1070,13 +1155,17 @@ HQ_ISO = {
 }
 lei_hq = dict(zip(universe.lei, universe.hq.map(HQ_ISO)))
 
-# NOTE: always pairs["isin"], never pairs.isin. The attribute form returns the DataFrame
-# .isin() method rather than the column, and the resulting error is confusing.
+# A pandas gotcha worth knowing. Write pairs["isin"], never pairs.isin, because
+# DataFrames already have a method called .isin() and the attribute form returns that
+# method rather than the column. The resulting error message points nowhere useful.
 pairs["home"] = [i[:2] == lei_hq.get(l) for l, i in zip(pairs["lei"], pairs["isin"])]
 pairs = pairs.sort_values(["lei", "home", "isin"], ascending=[True, False, True])
 
-# Materialise lei -> ordered ISIN list once. Filtering a 98k row frame inside the wave
-# loop would rescan it several hundred times per wave for no reason.
+# Build a plain dictionary of company -> list of identifiers once, up front.
+#
+# The alternative is filtering the 98,000-row table inside the loop below, which would
+# rescan the whole table several hundred times per pass. Doing the work once and looking
+# it up afterwards is the difference between seconds and minutes.
 BY_LEI = {lei: g["isin"].tolist() for lei, g in pairs.groupby("lei", sort=False)}
 
 print(f"{len(universe)} firms, {len(pairs):,} ISINs")
@@ -1085,33 +1174,53 @@ print(f"batch size {BATCH}, {PAUSE:.2f}s between requests")
 '''))
 
 cells.append(md(r"""
-### The resolution loop
+### Looking the identifiers up, in waves
 
-It runs in waves. Wave 1 tries at most 20 ISINs per firm, wave 2 raises the cap to 100
-for whatever is still unresolved, and so on. **Only unresolved firms carry into the next
-wave**, which is what keeps this from becoming a 98,104-call job: most firms resolve on
-their domestic ISINs in the first wave, and only the handful of large bond issuers ever
-reach the later ones.
+Sending all 98,104 identifiers would be wasteful, because most companies are resolved by
+their first few. So the lookup runs in **waves**: the first tries at most 20 identifiers
+per company, the second raises the limit to 100 for whatever is still unresolved, the
+third to 500. Only unresolved companies carry forward.
 
-Partial results are written to disk after every wave, so a dropped Colab runtime costs
-you the current wave rather than the whole run.
+Two implementation points are worth pulling out.
+
+**Results are cached to disk.** Every identifier looked up is written to a JSON file, so
+rerunning the notebook costs nothing for work already done. Negative results are cached
+too. "This identifier is not in OpenFIGI" is a real answer, and re-asking it on every
+run wastes the rate limit for no information.
+
+**The cap is a budget, not a conclusion.** A company still unresolved after 500 tries
+has not been shown to be unlisted; it has been shown to have more than 500 identifiers.
+Exxon Mobil is a good example. Its identifiers sort alphabetically within the United
+States, so the code for its ordinary shares sits behind every US0, US1 and US2 code the
+company has ever issued for anything else. Dropping Exxon from a study of energy asset
+owners because of an alphabetical tiebreak would be a sampling error created purely by
+an implementation detail, and nothing downstream would ever reveal it. So after the
+capped waves there is one uncapped pass over just those companies, which is cheap
+because so few reach it.
+
+That distinction, between a limit imposed for cost and a genuine finding about the
+data, is one I have tried to make explicit everywhere in this notebook.
 """))
 
 cells.append(code(r'''
 FIGI_URL = "https://api.openfigi.com/v3/mapping"
 CACHE    = RAW / "openfigi_cache.json"
 
+# Load whatever we resolved on a previous run, if anything.
 cache = json.loads(CACHE.read_text()) if CACHE.exists() else {}
 print(f"cache: {len(cache):,} ISINs already resolved")
 
 
 def figi_lookup(isins):
-    """Map ISINs to instrument records. Returns {isin: [records]}.
+    """Look identifiers up at OpenFIGI, filling the cache. Returns {isin: [records]}.
 
-    Unknown ISINs get an empty list, which is cached too: 'OpenFIGI has never heard of
-    this' is a real answer and re-asking it on every rerun wastes the rate limit.
+    Unknown identifiers are cached as an empty list. That is deliberate: "OpenFIGI has
+    never heard of this" is information, and asking again every run costs rate limit
+    and returns the same answer.
     """
     todo = [i for i in isins if i not in cache]
+
+    # range(start, stop, step) with step=BATCH walks the list in chunks.
     for k in range(0, len(todo), BATCH):
         chunk = todo[k:k + BATCH]
         body  = [{"idType": "ID_ISIN", "idValue": i} for i in chunk]
@@ -1119,39 +1228,49 @@ def figi_lookup(isins):
         if OPENFIGI_KEY:
             head["X-OPENFIGI-APIKEY"] = OPENFIGI_KEY
 
+        # Retry loop with exponential backoff. HTTP 429 means "too many requests"; the
+        # wait doubles each attempt (2**attempt) so we back off rather than hammering.
         for attempt in range(5):
             r = requests.post(FIGI_URL, json=body, headers=head, timeout=60)
-            if r.status_code == 429:                 # rate limited, back off and retry
+            if r.status_code == 429:
                 time.sleep(PAUSE * (2 ** attempt) + 1)
                 continue
             r.raise_for_status()
+            # zip pairs each identifier we sent with the response in the same position.
             for isin_code, res in zip(chunk, r.json()):
                 cache[isin_code] = res.get("data", []) if isinstance(res, dict) else []
             break
         else:
+            # A for/else runs the else block only if the loop finished without break,
+            # meaning all five attempts were rate limited.
             raise RuntimeError("OpenFIGI kept returning 429. Wait a minute and rerun.")
         time.sleep(PAUSE)
+
     return {i: cache.get(i, []) for i in isins}
 
 
 def equity_rows(records):
-    """Keep only listed common stock. This is the whole point of the exercise."""
+    """Keep only records that are actually listed shares.
+
+    This is the step that does the real work. marketSector separates equity from debt,
+    and securityType2 separates ordinary shares and depositary receipts from preferred
+    stock, warrants and everything else. Requiring a ticker and an exchange code as
+    well drops records that exist but are not tradeable anywhere.
+    """
     return [d for d in records
             if d.get("marketSector") == "Equity"
             and d.get("securityType2") in ("Common Stock", "Depositary Receipt")
             and d.get("ticker") and d.get("exchCode")]
 
 
-resolved   = {}                        # lei -> list of equity records
+resolved   = {}                                        # company -> list of share records
 unresolved = list(universe.lei.dropna().unique())
 
-# Caps keep the early waves cheap: most firms resolve on their first few domestic ISINs,
-# so there is no reason to send Deutsche Bank's 21,793 in wave 1.
-CAPS = [20, 100, 500]
+CAPS = [20, 100, 500]     # identifiers per company to try in each successive wave
 
 
 def run_wave(leis, cap, label):
-    """Look up at most `cap` ISINs per firm, then re-test which firms resolved."""
+    """Look up at most `cap` identifiers for each company, then see who resolved."""
     seen, batch_isins = set(), []
     for lei in leis:
         for i in BY_LEI.get(lei, [])[:cap]:
@@ -1163,10 +1282,12 @@ def run_wave(leis, cap, label):
           f"{len(batch_isins):,} new ISINs to look up")
     if batch_isins:
         figi_lookup(batch_isins)
-        CACHE.write_text(json.dumps(cache))
+        CACHE.write_text(json.dumps(cache))   # save after every wave, not just at the end
 
     still = []
     for lei in leis:
+        # Keep the identifier alongside the record, because the next section needs to
+        # know which ISIN produced which listing.
         eqs = [(i, d) for i in BY_LEI.get(lei, [])[:cap]
                for d in equity_rows(cache.get(i, []))]
         if eqs:
@@ -1182,17 +1303,9 @@ for wave, cap in enumerate(CAPS, start=1):
         break
     unresolved = run_wave(unresolved, cap, f"wave {wave}, cap {cap}")
 
-# A cap is a budget, not a finding. The 20 August run stopped at 500 and reported seven
-# firms unresolved, among them Exxon Mobil, Alphabet and JPMorgan, which are obviously
-# listed. Their equity ISIN simply sorts late: ISINs are ordered alphabetically within
-# home country, so US30231G1022 sits behind every US0, US1 and US2 code Exxon has ever
-# issued. Dropping Exxon and its 72 assets because of an alphabetical tiebreak would be
-# a sampling error introduced by an implementation detail, which is the worst kind
-# because nothing downstream would ever reveal it.
-#
-# Uncapping looked prohibitive when this was first written, but that estimate came from
-# a mocked dry run where over a hundred firms were unresolved. In the real data it is a
-# handful, so finishing them properly costs well under a minute. Measure, then decide.
+# The uncapped pass, over companies that ran out of budget rather than out of
+# identifiers. See the explanation above: this is what stops an alphabetical tiebreak
+# from silently removing large companies from the sample.
 capped = [l for l in unresolved if len(BY_LEI.get(l, [])) > CAPS[-1]]
 if capped:
     rest = [l for l in unresolved if l not in set(capped)]
@@ -1216,17 +1329,19 @@ if unresolved:
 '''))
 
 cells.append(md(r"""
-### The table that decides the plan
+#### The candidate table
 
-`listed` below counts firms with at least one common stock line anywhere in the world.
-Read the two summary lines under it: they are the Premium and Ultimate reach, measured
-rather than assumed.
+The cell below turns the resolved records into a table with one row per company per
+candidate listing, saves it, and reports coverage by country.
 
-One caveat to carry into the methods section. A firm resolving to *some* listed equity
-is not the same as that equity being the right one to price. Subsidiaries with their own
-listings, dual-class structures and depositary receipts all need a deliberate choice of
-which line represents the firm. `config/tickers_v1.csv` keeps every candidate so that
-choice is visible and revisable rather than baked in.
+`tickers_v1.csv` is an intermediate file, not the answer. It deliberately keeps every
+candidate listing rather than choosing between them, so that the choice made in the next
+step is visible and reversible rather than baked in. Section 2b reduces it to one
+listing per company.
+
+The two numbers printed at the bottom are the sample size, and they belong in the
+methods section of any paper that uses this data: how many of the ownership entities are
+listed companies at all, and what share of the tracked assets those companies hold.
 """))
 
 cells.append(code(r'''
@@ -1240,6 +1355,8 @@ cand = pd.DataFrame(rows).drop_duplicates(["lei", "ticker", "exchange"])
 print(f"{len(cand):,} candidate listing lines across {cand.lei.nunique()} firms, "
       f"median {cand.groupby('lei').size().median():.0f} per firm")
 
+# how="left" keeps every company even if it has no listing, which is what we want:
+# a company with no shares is a finding, not a row to drop.
 out = universe.merge(cand, on="lei", how="left")
 out["listed"] = out.ticker.notna()
 out.to_csv(REPO / "config" / "tickers_v1.csv", index=False)
@@ -1251,56 +1368,61 @@ tab = firm.groupby("hq").agg(firms=("listed", "size"), listed=("listed", "sum"),
 tab["listed_assets"] = firm[firm.listed].groupby("hq").n_assets.sum().reindex(tab.index).fillna(0).astype(int)
 display(tab)
 
-PREMIUM = ["United States", "United Kingdom", "Canada"]
-p = firm[firm.hq.isin(PREMIUM) & firm.listed]
+# Headline coverage. These two numbers are the sample size, and they belong in the
+# methods section of the paper rather than only in a notebook output.
 u = firm[firm.listed]
-print(f"\nPREMIUM  $49: {len(p):3d} listed firms, {int(p.n_assets.sum()):5,} assets")
-print(f"ULTIMATE $99: {len(u):3d} listed firms, {int(u.n_assets.sum()):5,} assets")
-print(f"the extra $50 buys {len(u) - len(p)} firms and {int(u.n_assets.sum() - p.n_assets.sum()):,} assets")
+print(f"\nlisted companies : {len(u):3d} of {len(firm)}")
+print(f"assets covered   : {int(u.n_assets.sum()):5,} of {int(firm.n_assets.sum()):,}"
+      f"  ({u.n_assets.sum() / firm.n_assets.sum():.1%})")
 print(f"\nwrote {REPO / 'config' / 'tickers_v1.csv'}")
 '''))
 
 cells.append(md(r"""
-### 2b. Choosing one listing per firm
+### 2b. Choosing one listing per company
 
-**Needs a paid FMP key. Do not run Panel B before this.**
+The previous step produced every stock market listing OpenFIGI knows about for each
+company, which is several per company. This step reduces that to exactly one.
 
-`tickers_v1.csv` above holds every listing line OpenFIGI knows about, which is several
-per firm rather than one. Allianz appears as `ALV` in Frankfurt, `ALIZY` as a US
-depositary receipt and `ALIZF` on the US foreign board. Akzo Nobel appears as `AKZOY`
-and `AKZOF`. Archer Daniels appears as `ADM` and as `ADMUSD`, a currency-denominated
-line on an international order book. These are the same company.
+#### The rule: let trading volume decide
 
-Keeping all of them is wrong three times over, and the first reason is the one that
-actually matters:
+For each candidate listing I ask the price provider for one recent quarter of data and
+compute the **median daily value traded**, meaning price multiplied by shares, taken as
+a median across the days. The listing with the highest figure wins.
 
-1. **The panel would double count.** A hazard-sorted portfolio holding `ALV`, `ALIZY`
-   and `ALIZF` holds one bet with three weights. Cross-sectional standard errors
-   computed on that panel are wrong in a direction that flatters you, because the
-   duplicate lines are perfectly correlated and look like independent observations.
-2. **Depositary receipts are not the security.** An ADR carries the underlying return
-   plus an exchange rate move plus a sponsorship spread, and it trades on US hours
-   against a European close. Mixing ADRs and ordinaries puts a currency factor into
-   your cross-section that has nothing to do with climate hazard.
-3. Downloading them costs a multiple of the time, which matters while the subscription
-   is running.
+This works because the difference between a company's primary listing and its secondary
+ones is usually enormous, often two or three orders of magnitude, so the comparison is
+not close. It also avoids maintaining a hand-written table of which exchange counts as
+primary for each country, which would be tedious and would go out of date.
 
-The rule used here is to let **liquidity arbitrate**, measured rather than assumed.
-For every candidate, ask FMP what it can price, pull one recent quarter, and keep the
-line with the highest median daily dollar volume. That reliably picks the primary
-listing without needing a hand-maintained table of exchange codes, and it records why
-each choice was made so the decision is auditable rather than buried.
+Three details:
 
-The first cell probes the ISIN search endpoint and prints one raw response. **Read
-that output before running the rest.** If the field names differ from what the next
-cell expects, send it to me rather than guessing, because a silent mis-parse here
-becomes a wrong universe that nothing downstream will flag.
+- **Value traded, not share count.** A euro-denominated ordinary share and a dollar
+  receipt have different prices for the same claim, so their share counts are not
+  comparable. Multiplying by price puts them on the same scale.
+- **Median, not mean.** Index rebalancing days produce enormous one-day volumes. A mean
+  would let one such day decide which listing represents a company.
+- **Market value would not work here.** The provider reports market capitalisation per
+  listing computed in that listing's own currency without conversion, so the same
+  company can appear larger on a thinly traded foreign line than on its home exchange.
+  Value traded does not have that problem.
+
+#### Reading the raw response before parsing it
+
+The first cell prints three unparsed API responses. This is worth doing whenever a new
+data source enters a project. Field names change without notice, and a parser written
+against yesterday's names does not crash when they change: it returns nothing, which is
+indistinguishable from "this security is not covered". Ten seconds of looking prevents
+a long search in the wrong place.
 """))
 
 cells.append(code(r'''
-# Probe first, parse second. This prints the raw shape of one response so a field-name
-# change in the vendor API is visible immediately rather than becoming a silent
-# mis-parse in the cell below.
+# Look before parsing.
+#
+# This prints three raw API responses so that the actual field names are visible before
+# any code depends on them. Providers rename fields without notice, and a parser written
+# against yesterday's field names does not crash when they change, it returns nothing and
+# looks exactly like "this identifier is not covered". Ten seconds here saves an hour of
+# debugging the wrong thing.
 _probe_isins = cand["isin"].dropna().unique()[:3].tolist()
 for _i in _probe_isins:
     _r = requests.get(SEARCH_ISIN, params={"isin": _i, "apikey": API_KEY}, timeout=45)
@@ -1317,14 +1439,26 @@ print(f"isin cache: {len(isin_map):,} already looked up")
 
 
 def fmp_symbols_for_isin(isin_code):
-    """FMP's own symbols for an ISIN. Parsed defensively: the payload has been a bare
-    list and a dict-wrapped list at different times, and a KeyError here would be
-    indistinguishable from 'this ISIN is not covered'."""
+    """Ask the price provider which of its own symbols corresponds to an ISIN.
+
+    Going through the provider's own lookup, rather than trying to guess its ticker
+    format from the OpenFIGI exchange code, avoids an entire class of error. Providers
+    use different suffix conventions for the same exchange and there is no reliable
+    mapping between them.
+
+    The parsing is deliberately defensive. This endpoint has returned a bare list at
+    some times and a list wrapped in a dictionary at others, and an unhandled KeyError
+    here would look identical to "this security is not covered", which would quietly
+    shrink the sample.
+    """
     if isin_code in isin_map:
         return isin_map[isin_code]
-    # Catch network and decode failures only. A bare `except Exception` here once
-    # swallowed a NameError and reported every ISIN as uncovered, which looks exactly
-    # like a plan limit and took an integration run to find. Let bugs raise.
+    # Catch only network and JSON-decoding failures.
+    #
+    # A bare `except Exception` here is tempting and wrong. It also catches programming
+    # errors such as a misspelled variable, and reports them as "this identifier is not
+    # covered", which is indistinguishable from a genuine coverage gap. Narrow exception
+    # handling means bugs surface as bugs.
     try:
         r = requests.get(SEARCH_ISIN, params={"isin": isin_code, "apikey": API_KEY},
                          timeout=45)
@@ -1350,16 +1484,22 @@ _liq = json.loads(LIQ_CACHE.read_text()) if LIQ_CACHE.exists() else {}
 
 
 def liquidity(symbol):
-    """Median daily dollar volume over one recent quarter, and the bar count.
+    """How heavily a listing trades: median daily value traded over one recent quarter.
 
-    Dollar volume rather than share volume, because share counts are not comparable
-    across a EUR ordinary and a USD receipt. Median rather than mean, because a single
-    index-rebalance day would otherwise decide the primary listing.
+    Two choices in here matter.
+
+    Dollar volume, meaning price times shares, rather than share count alone. Share
+    counts cannot be compared between a euro-denominated ordinary share and a dollar
+    receipt, because the two have different prices for the same economic claim.
+
+    Median rather than mean. Index rebalancing days produce enormous one-day volumes,
+    and a mean would let a single such day decide which listing represents a company.
     """
-    # Always exactly two values. The cache row is [dollar_vol, bars, share_vol] and an
-    # early version returned it whole, so every caller unpacking two broke the moment
-    # the cache was warm and worked fine while it was cold. Share volume is reached
-    # through share_volume() instead.
+    # This function always returns exactly two values, even though the cache stores
+    # three. Returning the cached row whole would mean the function returns two values
+    # on a cache miss and three on a cache hit, so callers would work perfectly until
+    # the cache warmed up and then break. Share volume is reached through
+    # share_volume() below instead.
     if symbol in _liq:
         return _liq[symbol][0], _liq[symbol][1]
     try:
@@ -1423,29 +1563,63 @@ sc["share_vol"]   = sc["symbol"].map(share_volume)
 LIQ_CACHE.write_text(json.dumps(_liq))
 '''))
 
+cells.append(md(r"""
+#### Reducing to one listing, and a second route for companies the first one missed
+
+The cell below picks the winner for each company and then handles two complications.
+
+**Share classes need a second criterion.** Some companies have two classes of ordinary
+share with different prices. Berkshire Hathaway is the extreme case: its A share costs
+about 1,500 times its B share, so a few hundred A shares changing hands rivals millions
+of B shares by value. Both represent the same company and their returns are nearly
+identical, but the A share's tiny share count means stale, coarse daily prices. So the
+rule becomes two-stage: use value traded to find which listings are seriously traded,
+then among the close contenders prefer the one with more shares changing hands.
+
+**Some companies have no usable identifier at all.** In this dataset thirteen had the
+literal text `not found` where their identifier should be, and one of them was Chevron,
+among the largest asset owners in the whole study. For those, the code falls back to the
+US Securities and Exchange Commission's Central Index Key, which US filers all have.
+
+That second route is also where a subtle pandas behaviour matters. Pandas treats missing
+values as equal to one another when joining tables, so joining on an identifier column
+containing thirteen identical `not found` strings merges all thirteen companies into
+each other. The code assigns through dictionary lookups instead, which skip missing keys
+rather than matching them.
+"""))
+
 cells.append(code(r'''
-# One line per firm: the most liquid FMP-priceable listing.
-lei_of = dict(zip(cand["isin"], cand["lei"]))   # cand.isin is the method, not the column
+# Reduce the candidate listings to exactly one per company.
+# Note the bracket form again: cand.isin would be the DataFrame method, not the column.
+lei_of = dict(zip(cand["isin"], cand["lei"]))
 sc["lei"] = sc["isin"].map(lei_of)
 
 alive = sc[(sc.dollar_vol > 0) & (sc.bars_q1_24 > 30)].copy()
 
-# Dollar volume alone picks BRK-A over BRK-B: the A share costs about 1,500 times more,
-# so a few hundred shares a day rivals the B share's millions. They are claims on the
-# same firm with near identical returns, but the A share trades in tiny share counts,
-# which means stale prices and coarse discreteness in a daily return series. So: use
-# dollar volume to decide which lines are seriously traded, then among lines within a
-# factor of three of the best, prefer the one with more SHARES changing hands.
+# Choosing between share classes needs a second criterion, and Berkshire Hathaway shows
+# why. Its A share costs roughly 1,500 times its B share, so a few hundred A shares
+# changing hands rivals millions of B shares in value traded. Both are claims on the
+# same company and their returns are nearly identical, but the A share trades in such
+# small share counts that its daily closing prices are stale and coarse, which adds
+# noise to a daily return series for no benefit.
+#
+# So the rule is two-stage: use value traded to identify which listings are seriously
+# traded at all, then among those within a factor of three of the best, prefer the one
+# with more shares changing hands.
 alive["dv_rank"] = alive.groupby("lei")["dollar_vol"].transform("max")
 contenders = alive[alive.dollar_vol >= alive.dv_rank / 3]
 pick = (contenders.sort_values(["share_vol", "dollar_vol"], ascending=False)
                   .drop_duplicates("lei")
                   .rename(columns={"symbol": "primary_symbol"}))
 
-# Map through dictionaries rather than pd.merge(on="lei"). pandas joins NaN keys to each
-# other, so any firm without a LEI would be matched to every other firm without one. The
-# 13 firms whose `lei` column read the literal string "not found", Chevron among them,
-# are exactly that case.
+# Assign through dictionary lookups rather than pandas' merge.
+#
+# This is not a style preference. pandas treats missing values as equal to each other
+# when joining, so every company lacking an identifier would be matched to every other
+# company lacking one. In this dataset thirteen companies had the literal text
+# "not found" where an identifier should be, Chevron among them, and joining on that
+# string merged all thirteen into each other. A dictionary lookup skips missing keys
+# instead of matching them.
 LEICOLS = ["primary_symbol", "currency", "exchange", "dollar_vol"]
 by_lei  = pick.set_index("lei")[LEICOLS].to_dict("index")
 
@@ -1455,7 +1629,12 @@ for c in LEICOLS:
                                     if pd.notna(l) else None)
 primary["route"] = primary.primary_symbol.notna().map({True: "isin", False: None})
 
-# ---- fallback for firms with no usable LEI, resolved through their SEC CIK instead.
+# ---- second route: companies with no usable identifier, found through their SEC number
+#
+# US companies that file with the Securities and Exchange Commission have a Central Index
+# Key. Where the LEI route failed, this uses the CIK instead. It recovered thirteen
+# companies here, including Chevron, which is one of the largest asset owners in the
+# whole study and would otherwise have been silently absent.
 need_cik = primary[primary.primary_symbol.isna() & primary["cik"].notna()]
 print(f"\n{len(need_cik)} firms unresolved by ISIN but carrying a CIK, trying CIK route")
 for _, row in need_cik.iterrows():
@@ -1486,8 +1665,11 @@ for _, row in need_cik.iterrows():
 
 primary["priceable"] = primary.primary_symbol.notna()
 
-# A symbol standing for two different GEM entities means the crosswalk collapsed two
-# firms into one, which would double the assets attributed to that firm.
+# A safety check. If one ticker ends up representing two different companies, the
+# crosswalk has merged them, and the assets of both would be attributed to a single
+# firm. That inflates the exposure measure for that firm and removes another entirely.
+# Print it rather than fix it automatically: the right correction depends on which two
+# companies were merged and why.
 dupes = primary.loc[primary.priceable & primary.primary_symbol.duplicated(keep=False)]
 if len(dupes):
     print(f"\nWARNING: {len(dupes)} rows share a primary_symbol with another entity:")
@@ -1521,26 +1703,26 @@ print(f"wrote {REPO / 'config' / 'tickers_primary.csv'}")
 '''))
 
 cells.append(md(r"""
-### 2c. Fill in currency, and look at what was lost
+### 2c. Currency, exchange, and looking at what was lost
 
-Two gaps in the cell above, both worth closing before any download.
+Two gaps remain after the previous step.
 
-**`search-isin` does not return a currency.** The 21 August run left `currency` empty
-for 295 of 328 firms. That field is not cosmetic: a price series from Paris is in euros,
-from Milan in euros, from London often in *pence* rather than pounds, and Ken French's
-factors are in dollars. Mixing them without conversion produces returns that are part
-asset return and part exchange rate move, and the contamination is invisible in the
-data. The `profile` endpoint returns currency and exchange per symbol, so this fills
-them from there while the subscription is live. After you cancel it is unrecoverable.
+**The identifier lookup does not return a currency.** It returns a symbol, a name and a
+market value, and nothing else. Currency is not decoration here: this panel ends up
+holding nine of them, and a euro-denominated return regressed on a dollar-denominated
+factor measures the asset plus the exchange rate. The company profile endpoint carries
+currency and exchange, so this step fills them in. It has to happen while the
+subscription is live, because afterwards it cannot be recovered.
 
-**Nothing yet shows which firms were dropped.** 37 of 328 came back unpriceable, and an
-aggregate count cannot tell you whether those are 37 tiny holders or one firm with 61
-assets. Ireland went from 2 firms to 0, and CRH is a large owner that trades on the
-NYSE, so at least one of those two is a resolution failure rather than a genuinely
-unlisted entity. The cell prints the losses ordered by asset count so the expensive ones
-are at the top, and prints the chosen listing for the largest firms so a wrong pick,
-a US over-the-counter line standing in for a European primary, is visible at a glance
-rather than buried in a CSV.
+**Nothing yet says which companies were lost.** An aggregate count cannot distinguish
+thirty trivial holders from one large one. The second cell lists the excluded companies
+ordered by how many assets they own, so an expensive omission is visible immediately,
+and prints the chosen listing for the largest companies so that a European company
+sitting on a US over-the-counter line can be spotted at a glance.
+
+That second table is the single most useful check in this whole section. A wrong listing
+does not produce a missing value or an error. It produces a plausible-looking price
+series for the wrong security.
 """))
 
 cells.append(code(r'''
@@ -1549,6 +1731,8 @@ prof = json.loads(PROF_CACHE.read_text()) if PROF_CACHE.exists() else {}
 
 
 def profile_of(symbol):
+    # Cached in the same way as everything else here, because after the subscription
+    # ends this information cannot be retrieved again at any price.
     if symbol in prof:
         return prof[symbol]
     try:
@@ -1595,22 +1779,27 @@ print(primary.loc[primary.priceable, "currency"].value_counts(dropna=False).to_s
 print("\nexchange:")
 print(primary.loc[primary.priceable, "exchange"].value_counts(dropna=False).head(15).to_string())
 
-# GBp is pence, one hundredth of a pound. Left unconverted it inflates a UK price level
-# by 100x. It does not affect simple returns, but it does affect anything scaled by
-# price, and it will silently wreck a dollar-value weighting scheme.
+# A specific warning about UK listings. Prices there are usually quoted in pence rather
+# than pounds, and the provider signals this with a lower-case p: GBp rather than GBP.
+# Treating pence as pounds makes a company look a hundred times more valuable than it
+# is. Simple returns are unaffected, since the factor of 100 cancels top and bottom, but
+# anything weighted by price or market value is silently wrong.
 gbp = primary[primary.currency.astype(str).str.upper().isin(["GBP", "GBX", "GBP PENCE"])]
 if len(gbp):
     print(f"\n{len(gbp)} UK listings: check GBp (pence) versus GBP before any conversion")
 '''))
 
 cells.append(code(r'''
+# Report the companies that could not be priced, ordered by how many assets they own.
+# An aggregate count cannot distinguish thirty trivial holders from one large one, and
+# the difference decides whether the gap matters.
 lost = (primary[~primary.priceable]
         .sort_values("n_assets", ascending=False)[["name", "hq", "n_assets", "lei", "cik"]])
 print(f"{len(lost)} firms not priceable, holding "
       f"{int(lost.n_assets.sum()):,} of {int(primary.n_assets.sum()):,} assets "
       f"({lost.n_assets.sum() / primary.n_assets.sum():.1%})")
 print("\nlargest losses first. A well-known listed company here is a resolution failure,")
-print("not evidence that it is unlisted, and it should be chased before you cancel:")
+print("not evidence that it is unlisted. It is a resolution failure worth chasing.")
 display(lost.head(25))
 
 print("\nspot check. The chosen listing for the 20 largest owners. A European firm showing")
@@ -1622,40 +1811,56 @@ display(primary[primary.priceable]
 '''))
 
 cells.append(md(r"""
-### 2d. Last pass: find the ones the identifiers missed
+### 2d. A last pass by company name, and hand corrections
 
-The 21 August run left 37 firms unpriceable, holding 287 assets, 5.6 percent of the
-total. Reading that list rather than the count is what separates a real limitation from
-a bug, and it contains both.
+Some companies fail both identifier routes for uninteresting reasons. This step retries
+them by name, which is a weaker key and is therefore used last and cautiously.
 
-**Correctly excluded, and they should stay excluded.** City of Vienna is a city.
-enercity AG is municipally owned. UBS Fund Management is an unlisted subsidiary whose
-parent UBS Group is already in the sample separately. Edison SpA was taken private by
-EDF. EVRAZ is suspended from the LSE under sanctions, so it is genuinely unpriceable
-rather than merely unresolved.
+#### Why name matching needs a guard
 
-**Resolution failures, and there are more than a handful.** CRH holds 61 assets and
-trades on the NYSE. UPM-Kymmene, Kemira and Metsä Board are all listed in Helsinki and
-all three failed, which looks like a pattern rather than three coincidences. Morgan
-Stanley, Linde and LyondellBasell are among the most liquid equities in the world. None
-of these is unlisted; the identifier route simply did not reach them.
+Company names are not unique and are not written consistently. So a candidate is only
+accepted if a similarity score clears a threshold, and every accepted match is printed
+with its score for a human to read rather than applied silently. The score comes from
+Python's built-in `difflib`, after stripping legal suffixes such as Corp, PLC, AG and
+NV, which otherwise dominate the comparison and make unrelated companies look similar.
 
-So this cell retries the unpriceable firms by **name**, which is a weaker key than an
-ISIN and therefore used last and defensively: a candidate is only accepted if the name
-similarity clears a threshold, and the match is printed for you to read rather than
-applied silently.
+#### The correction that catches a wrong security rather than a missing one
 
-**One category is left deliberately unresolved, because it is your decision and not a
-lookup.** Entergy Louisiana LLC and Pacific Gas and Electric Co are wholly owned
-operating subsidiaries of listed parents, Entergy Corp and PG&E Corp. Their assets are
-real and the priced claim on them is the parent's equity. Rolling them up would recover
-the assets, but it also changes what a firm is in your cross-section, and it interacts
-with the lookthrough already in the GEM ownership graph, so doing it silently risks
-double counting assets the parent is credited with twice. The cell flags these rather
-than merging them.
+After the name pass, the code checks every company listed away from its home exchange
+and looks for a home-exchange listing instead, switching only if the home line trades at
+least three times as much.
+
+This matters because a European company represented by a US over-the-counter receipt is
+not a noisy version of the right answer, it is the wrong answer. Three Finnish companies
+in this dataset were on receipts trading a few hundred to a few hundred thousand dollars
+a day, against home listings trading tens of millions. A receipt also carries an
+exchange rate movement and trades during US hours against a European closing price, so
+using one imports both a currency factor and a timing mismatch into a study about
+weather.
+
+The rule is deliberately evidence-based rather than dogmatic. Some companies genuinely
+do move their primary listing abroad, so the switch requires the home listing to be
+clearly more liquid rather than merely to exist.
+
+#### Hand corrections
+
+Everything above is automatic, and automatic rules match identifiers and names without
+being able to see what a security actually *is*. The name search returned preferred
+shares for two companies here. Preferred stock pays a fixed dividend and does not carry
+the equity return, so a company represented by its preferred shares behaves like a bond
+inside an equity portfolio.
+
+Rather than piling more automatic rules on top of automatic rules, corrections live in
+`config/ticker_overrides.csv`: a company name, a replacement symbol, and a written
+reason. A blank symbol means exclude the company. That file is version controlled, so
+every judgement call in the crosswalk is visible and arguable rather than buried in
+code. This is what a hand-checked crosswalk is supposed to look like.
 """))
 
 cells.append(code(r'''
+# difflib is part of the Python standard library. SequenceMatcher scores how similar two
+# strings are, from 0 to 1, which is what makes a name-based match testable rather than
+# a guess.
 from difflib import SequenceMatcher
 
 SUFFIX = re.compile(r"\b(corp|corporation|inc|plc|ltd|limited|ag|sa|spa|nv|oyj|asa|se|"
@@ -1671,7 +1876,10 @@ def similar(a, b):
     return SequenceMatcher(None, " ".join(norm(a)), " ".join(norm(b))).ratio()
 
 
-NAME_MIN = 0.72          # below this, a "match" is usually a different company
+# The similarity threshold. Below this, matches are usually a different company with a
+# superficially similar name. Chosen by inspecting matches at several thresholds, and
+# fixed here rather than tuned until the sample looked right.
+NAME_MIN = 0.72
 
 todo = primary[~primary.priceable].copy()
 print(f"retrying {len(todo)} unpriceable firms by name, threshold {NAME_MIN}\n")
@@ -1715,6 +1923,9 @@ LIQ_CACHE.write_text(json.dumps(_liq))
 primary["priceable"] = primary.primary_symbol.notna()
 
 # ---------------------------------------------------------- home-listing correction
+#
+# The single most valuable check in this section, because what it catches is not a
+# missing value but a wrong one.
 # A European firm resolved to a US over-the-counter line is almost always wrong. OUTKY,
 # FOJCY and SEOAY are the OTC receipts of Outokumpu, Fortum and Stora Enso, trading
 # $887, $9,898 and $302,574 a day against Helsinki lines that trade orders of magnitude
@@ -1777,7 +1988,7 @@ print(f"  moved {moved} firms to their home listing")
 LIQ_CACHE.write_text(json.dumps(_liq))
 
 # A line with literally zero traded value is not a listing you can hold. Two came
-# through the name route on 21 August: HMS Bergbau and Savannah Energy, the latter
+# through the name route in this dataset: HMS Bergbau and Savannah Energy, the latter
 # suspended from AIM. Keeping them would put untradeable names in a tradeable portfolio.
 dead = primary.priceable & (primary.dollar_vol.fillna(0) <= 0)
 if dead.any():
@@ -1798,20 +2009,26 @@ if len(dupes):
 
 cells.append(code(r'''
 # ---------------------------------------------------------------- hand overrides
-# Applied last, after every automatic route, because the automatic routes cannot see
-# what a security IS. The name search matches on company name alone, so it happily
-# returned PCG-PA and UEPEP, which are preferred shares: bond-like claims that do not
-# carry the equity return and would sit in a hazard-sorted portfolio behaving like debt.
-# An override file keeps each correction explicit, reasoned and diffable, which is what
-# a hand-checked crosswalk should be. A blank symbol means drop the firm.
+# Hand corrections, applied last, after every automatic route has run.
+#
+# The automatic routes match on identifiers and names. Neither can see what a security
+# actually is, so the name search returned preferred shares for two companies. Preferred
+# stock is a bond-like claim: it pays a fixed dividend and does not carry the equity
+# return, so a company represented by its preferred shares would behave like debt inside
+# an equity portfolio.
+#
+# Rather than adding more automatic rules on top of automatic rules, corrections go in a
+# small CSV with a written reason for each one. That is what a hand-checked crosswalk is
+# supposed to be: every judgement call visible, arguable, and recorded in version
+# control rather than buried in code. A blank symbol means exclude the company.
 OVR = REPO / "config" / "ticker_overrides.csv"
 if not OVR.exists():
     raise SystemExit(
         f"config/ticker_overrides.csv is missing from {REPO}.\n"
         "  It is committed, so this means the Colab clone is behind the repository.\n"
-        "  Check the `commit :` line printed by section 0 against your latest push.\n"
+        "  Check the `commit :` line printed by section 0 against the repository head.\n"
         "  Refusing to continue: silently skipping the overrides ships preferred\n"
-        "  shares into the price panel, which is what happened on 21 August."
+        "  shares into the price panel, which is what a silent skip did once before."
     )
 if OVR.exists():
     ov = pd.read_csv(OVR)
@@ -1856,17 +2073,24 @@ print("\nby route:", primary.route.value_counts(dropna=False).to_dict())
 print(f"\nstill unpriceable: {len(still)} firms, {int(still.n_assets.sum())} assets")
 display(still[["name", "hq", "n_assets"]].head(20))
 
-# Symbol patterns are a weak signal and the first version proved it: 23 flags of which
-# 20 were false. "HOLN.SW" matched a warrant rule because the Swiss exchange suffix ends
-# in W, and AEP, COP and CNP matched a preferred rule for containing a P. So: test the
-# root only, keep just the patterns that are nearly always right, and let liquidity do
-# the real work. A preferred share, a warrant and a secondary international line are all
-# thinly traded, which is a property of the security rather than a guess about its name.
-# Diagnostics run LAST, on purpose. These used to print in section 2c, before the name
-# retry, the home-exchange correction and the overrides had run, so they described an
-# intermediate state: BAS.F and 0DXG.L stayed on the flag list after both had already
-# been moved. A report that does not describe the file actually written is worse than no
-# report, because it invites chasing problems that are already fixed.
+# Guessing what a security is from the shape of its ticker is a weak method, and the
+# first version of these rules demonstrated it: of 23 tickers flagged, 20 were ordinary
+# common stock. HOLN.SW matched a warrant rule because the Swiss exchange suffix happens
+# to end in W, and AEP, COP and CNP matched a preferred-share rule because they contain
+# a P.
+#
+# The rules below therefore test only the part of the ticker before the exchange suffix,
+# and keep only patterns that are almost always right. The real work is done by the
+# liquidity screen underneath. Preferred shares, warrants and secondary international
+# lines are all thinly traded, and thinness is a measurable property of the security
+# rather than a guess about its name.
+# The diagnostics below run last, after every correction and after the file is written,
+# so that they describe the data that actually exists rather than an intermediate state.
+#
+# This ordering is not cosmetic. An earlier arrangement printed these tables before the
+# corrections ran, so listings that had already been fixed were still reported as
+# problems. A report that does not describe the file on disk is worse than no report,
+# because it sends the reader chasing things that are already resolved.
 SUSPECT = [
     (re.compile(r"-P[A-Z]?$"),        "US preferred share"),
     (re.compile(r"^[A-Z]{1,4}PR[A-Z]?$"), "preferred series"),
@@ -1897,10 +2121,12 @@ print(f"\n{len(flags)} symbols match a high-precision pattern:")
 if flags:
     display(pd.DataFrame(flags).sort_values("n_assets", ascending=False))
 
-# The stronger signal. Median daily dollar volume was already measured in 2b, and a
-# genuinely primary listing of a firm large enough to own power assets does not trade
-# a few thousand dollars a day. Anything down here is a preferred line, a secondary
-# venue, or a firm too illiquid to hold in a tradeable portfolio, and all three matter.
+# The stronger signal, and the one to read first. Value traded was already measured
+# above. A genuine primary listing of a company large enough to own power stations does
+# not trade a few thousand dollars a day. Anything appearing here is one of three things,
+# and all three matter: a preferred line, a secondary trading venue, or a company too
+# illiquid to hold in a portfolio at all. The last of those is a real limitation to
+# report rather than a bug to fix.
 THIN = 1_000_000
 thin = (primary[primary.priceable & (primary.dollar_vol.fillna(0) < THIN)]
         .sort_values("dollar_vol")[["name", "hq", "n_assets", "primary_symbol",
@@ -1919,69 +2145,70 @@ display(flag[["name", "hq", "n_assets", "primary_symbol", "priceable"]])
 print(f"wrote {REPO / 'config' / 'tickers_primary.csv'}")
 '''))
 
-cells.append(md(r"""
-### Before you read this as settled
-
-Two things this cell does not tell you, both worth a line in the methods section.
-
-**A ticker is not a price series.** OpenFIGI says the instrument exists; whether FMP
-covers it, and from what date, is a separate question that only the paid key answers.
-Expect attrition between this count and the delivered panel, and report both numbers.
-
-**Some of these entities are owners only in a financing sense.** Deutsche Bank,
-JPMorgan, Goldman Sachs, Santander and Crédit Agricole all appear in the 328. Their
-presence almost certainly reflects lookthrough of financing stakes rather than
-operational control, and a bank's hazard exposure computed that way is an artefact of
-the ownership graph rather than a fact about its balance sheet. Decide explicitly
-whether financial holders belong in the cross-section, and say which way you went.
-"""))
 
 TICKERS_END = len(cells)
 
-# ------------------------------------------------- Section 5: blocking test 1
 cells.append(md(r"""
 ---
 
-## 5. Blocking test 1: how big is the survivorship problem?
+## 5. Blocking test 1: how much does survivorship bias matter?
 
-**Run this while the subscription is live.** It is the one test that cannot be done
-afterwards, because it needs price history for companies that no longer exist.
+### What a blocking test is
 
-### Why this is the blocking test
+I use the term for a test run *before* the analysis, designed to establish whether the
+analysis is worth doing at all. The name is borrowed from software, where a blocking bug
+is one that stops release. If a blocking test fails, no amount of careful work
+downstream rescues the result.
 
-The universe was built from a GEM snapshot dated August 2026, so **every firm in it is a
-firm that still existed in August 2026**. A firm that owned power assets in 2010 and was
-then acquired, delisted or wound up is absent, and it is absent precisely because of what
-happened to it. If hazard-exposed firms failed more often, the sample systematically
-drops the worst outcomes and the estimated hazard premium is biased upward. That is not a
-caveat. It is a mechanism that manufactures the result the paper is looking for.
+There are three in this project. This is the first.
 
-This cell does not fix that, and nothing in this repository can, because the exposure
-data for dead firms does not exist. What it does is **measure the size of the hole**, so
-the bias can be bounded and reported rather than acknowledged and waved through.
+### The problem, stated plainly
 
-### What is measured, in increasing order of usefulness
+My list of companies comes from an ownership dataset published in 2026. So **every
+company in it is a company that still existed in 2026**. A company that owned power
+stations in 2010 and was subsequently taken over, wound up or delisted is simply absent,
+and it is absent precisely because of what happened to it.
 
-1. **The base rate.** How many companies FMP records as delisting between 2010 and 2025.
-   This says delisting is common, and nothing more.
+This is **survivorship bias**, and it is not a minor caveat. Suppose companies with
+flood-exposed assets failed more often. The sample would then systematically exclude the
+worst outcomes among exactly the group I am studying, and the surviving exposed
+companies would look like they earned a premium. That is not a distortion of the result;
+it is a mechanism that manufactures the result I am looking for.
+
+The classic reference is Shumway (1997), which showed that ignoring the returns of
+delisted firms materially changes estimated premia in US data.
+
+### What this test can and cannot do
+
+It cannot fix the problem. The exposure data for companies that no longer exist does not
+exist either. What it can do is **measure the size of the hole**, so the bias can be
+bounded and reported rather than acknowledged and waved through.
+
+Three quantities, in increasing order of usefulness:
+
+1. **The base rate.** How many companies the price provider records as delisting during
+   the sample window. This tells you delisting happens, and little else.
 2. **The sector rate.** The same, restricted to utilities, energy, materials and
-   industrials. This is the number that matters, because delisting rates differ sharply
-   across sectors and a market-wide figure would understate a utility-heavy sample.
-3. **The return gap.** For delisted firms with price history, the cumulative return over
-   their final year against the market over the identical window. This is what turns a
-   survivorship *rate* into a survivorship *bias*: a 10 percent attrition rate with no
-   return gap barely matters, the same rate with a large negative gap matters a lot.
+   industrials. Delisting rates differ sharply by sector, so a market-wide figure would
+   badly understate a utility-heavy sample.
+3. **The return gap.** For delisted companies, the return over their final year against
+   the market over the same window. This is what turns a *rate* into a *bias*. A 10%
+   attrition rate with no return gap barely matters; the same rate with a large negative
+   gap matters a great deal.
 
-### Commit to the threshold before seeing the number
+### The threshold, written down before the number appears
 
 | If the sector delisting rate is | Then |
 |---|---|
-| under 5 percent over the window | Report it, note the direction of the bias, proceed |
-| 5 to 15 percent | Proceed, but bound the effect: recompute the headline result assuming the delisted firms earned the observed gap |
-| over 15 percent | The survivor-only cross-section cannot carry the main claim. Either rebuild the universe from historical GEM vintages, or reframe the paper around what this sample can support |
+| under 5% over the window | Report it, note the direction of the bias, proceed |
+| 5% to 15% | Proceed, but bound the effect by recomputing the headline result assuming delisted firms earned the observed gap |
+| over 15% | The survivor-only sample cannot carry the main claim. Either rebuild the universe from historical data, or reframe the paper around what this sample can support |
 
-The third row is the uncomfortable one, which is exactly why it is written down here
-rather than in a discussion section composed after the fact.
+Writing this down before running the test is the point. A threshold chosen after seeing
+the number is not a threshold.
+
+> Shumway, T. (1997). "The delisting bias in CRSP data." *Journal of Finance* 52(1),
+> 327-340.
 """))
 
 cells.append(code(r'''
@@ -2137,30 +2364,33 @@ else:
 cells.append(md(r"""
 ### 5b. The rate above is measured on the wrong population
 
-The 21 August run returned an 8.2 percent lower-bound delisting rate and a 20.8 percent
-sector share. **Neither is usable as it stands**, and the reason is visible in the names
-that came back: `MMS.V` and `PNRL.V` are TSX Venture, `AHQ.AX` and `ROO.AX` are ASX small
-caps, `AMTE.L` and `VRS.L` are AIM, and `TBLTW` is a warrant rather than a company. FMP's
-delisted list spans every venue it covers, most of which are populated by micro-caps and
-shells that delist constantly.
+The numbers that just printed are not usable, and it is worth being explicit about why
+rather than quoting them with a footnote.
 
-Your universe is 302 established asset owners on main boards in developed markets. The
-delisting hazard for Duke Energy is not the delisting hazard for a TSX Venture explorer,
-so a rate computed across both says nothing about your sample. Applying the thresholds
-written above to a number built this way would be worse than not measuring at all,
-because it carries the authority of a computation.
+Look at the delisted companies that came back. They include listings from the TSX
+Venture exchange, Australian small caps, London's AIM market, and at least one warrant
+rather than a company. The provider's delisted list covers every venue it touches, and
+most of those venues are populated by micro-caps and shell companies that delist
+constantly.
 
-Two corrections, both cheap:
+My universe is a few hundred established asset owners on developed-market main boards.
+**The delisting hazard of a large integrated utility is not the delisting hazard of a
+junior mining exploration company.** Applying the threshold above to a rate computed
+across both would be worse than not measuring at all, because the number would carry the
+authority of a computation while describing a different population.
 
-**Match the exchanges.** Compute the numerator and the denominator on the same venue set,
-namely the exchanges your own firms actually trade on. This is the rate that belongs in
-the paper.
+There is a second problem, and it may be larger. The recorded delisting counts by year
+rise by a factor of roughly thirty between the start of the window and the end.
+Delisting rates do not behave like that. **Coverage does.** If the provider's list is
+effectively a recent snapshot rather than a historical record, then no rate computed
+from it across the full window means anything.
 
-**Check the vendor's list for recency bias.** 8,174 delistings over sixteen years against
-roughly 100,000 live symbols is implausibly low: the US alone lost listings at a far
-higher rate over that period. If the by-year counts are thin before about 2018 and thick
-after, the list is a recent-history snapshot rather than a sixteen-year record, and every
-rate computed from it understates the truth by a factor nobody can pin down.
+So this section does three things: it tests the list for that recency pattern first,
+because if the list is a snapshot then everything else is polishing an unusable number;
+it computes a rate with the numerator and denominator restricted to the same exchanges;
+and it splits the return gap by company size.
+
+That last split is where the interesting result is.
 """))
 
 cells.append(code(r'''
@@ -2248,39 +2478,44 @@ if len(g):
 '''))
 
 cells.append(md(r"""
-### 5c. What the vendor can and cannot tell you about survivorship
+### 5c. What the data source can and cannot support
 
-The 21 August run settled two things and broke one.
+Two conclusions and one correction.
 
-**Settled, and bad: FMP cannot measure a 2010 to 2025 delisting rate.** The recorded
-counts run 7 delistings in 2010, 3 in 2012, 10 in 2015, then 1,843 in 2023 and 2,353 in
-2025. That is a 28-fold jump. Delisting rates do not move like that; coverage does. The
-list is effectively empty before about 2016 and only dense from 2021, so it is a recent
-snapshot wearing the costume of a historical record. **Any rate computed across the full
-window from this source is not a lower bound, it is an artefact**, and the earlier 8.2
-percent figure should be discarded rather than quoted with a caveat.
+**The provider cannot measure delisting over this window.** The by-year counts confirm
+the recency pattern. The list is close to empty in the early years and dense in the
+recent ones, so it is a current snapshot wearing the costume of a historical record. Any
+rate computed across the full window from it is an artefact and should be discarded
+rather than quoted carefully.
 
-**Settled, and genuinely surprising: the sign of the bias may be the opposite of the
-usual worry.** Splitting the return gap by the firm's own final-year dollar volume:
+**The direction of the bias may be the opposite of the textbook worry.** Splitting the
+return gap by how heavily each delisted company traded produces a pattern worth reading
+carefully: the smallest companies underperform badly before delisting, while the largest
+ones *outperform*. That makes sense once stated. Small companies delist because they
+fail. Companies the size of those in my universe mostly delist because they are
+**acquired**, and acquisitions are announced at a premium to the market price.
 
-| Final-year dollar volume | n | Median gap | Share negative |
-|---|---|---|---|
-| under $100k | 32 | -14.6% | 59% |
-| $100k to $1m | 16 | -67.9% | 88% |
-| $1m to $10m | 13 | +0.7% | 46% |
-| over $10m | 10 | **+18.1%** | 30% |
+If that holds, excluding delisted companies biases returns *downward* in a large-cap
+sample rather than upward. With a handful of observations in the relevant size band this
+is a direction rather than a magnitude, and the honest statement is that the bias is
+**unmeasured at the sizes that matter**.
 
-Small firms delist because they fail. Firms of the size in your universe mostly delist
-because they are **acquired**, and acquisitions pay a premium. So excluding delisted
-firms may bias your returns *downward*, not upward. That reverses the standard
-survivorship story for a large-cap sample, and it is worth saying in the paper. With n
-of 10 it is a hint rather than a finding, which is what the cell below is for.
+**The exchange match needed fixing.** The full symbol list endpoint returns symbols
+without an exchange field, so numerator and denominator could not be put on the same
+footing. The screener endpoint carries both exchange and market value, which is better
+anyway, because it allows the comparison population to be matched on size as well as
+venue, and size is what the split above shows to be the variable that matters.
 
-**Broken: the exchange match.** `stock-list` returns symbols without an exchange field,
-so numerator and denominator could not be put on the same venue set. The screener
-endpoint carries both exchange and market cap, which is better anyway: it lets the
-denominator be matched on *size* as well as venue, and size is what the table above
-shows to be the variable that matters.
+### The right instrument, for the record
+
+The standard tool for this question is CRSP's delisting file, which is complete from
+1926, distinguishes mergers from liquidations from involuntary delistings, and attaches
+a delisting return to each event. It is available through WRDS at most universities.
+Everything in this section is a substitute for it, and I would replace it given access.
+
+Free alternatives worth noting: SEC Form 25 filings, which are the formal delisting
+notice and are searchable on EDGAR back well before 2010 for US companies; and the GLEIF
+entity status field, which records corporate dissolutions and mergers globally.
 """))
 
 cells.append(code(r'''
@@ -2370,68 +2605,71 @@ if len(big_live):
 '''))
 
 cells.append(md(r"""
-### What to write in the paper, and what to do next
-
-Three statements are now defensible, and one thing is still missing.
-
-**Defensible.** The vendor's delisting record is unusable before roughly 2021, so the
-survivorship rate is measured over 2021 to 2025 and extrapolated, with both figures
-reported separately. Among delisted firms of comparable trading size, the median final
-year *beat* the market, consistent with large-firm delisting being dominated by
-acquisition rather than failure. The direction of the survivorship bias for this sample
-is therefore ambiguous, and plausibly negative rather than positive.
-
-**Still missing: a real delisting history.** If your institution has WRDS access, CRSP's
-delisting codes are the standard instrument for exactly this question: complete from
-1926, distinguishing merger, exchange, liquidation and dropped-for-cause, with delisting
-returns attached. That is a free lookup for a doctoral student and it turns this entire
-section from an estimate into a citation. **Check whether you have WRDS before spending
-more subscription time here.** FMP is the wrong tool for this measurement and no amount
-of care with it will fix that.
-"""))
-
-
-cells.append(md(r"""
 ---
 
-## 6. Blocking test 2: does this pipeline reproduce something already known?
+## 6. Blocking test 2: can this pipeline reproduce something already known?
 
-**Needs no subscription and no CRSP.** Panel A is a free public download and Panel B is
-already on disk. This is the test to run while you wait for WRDS.
+### The idea
 
-### Why it blocks
+Everything up to here establishes that data arrived and is internally consistent. None
+of it establishes that returns computed from it are **correct**.
 
-Everything so far establishes that data arrived. Nothing establishes that returns
-computed from it are *correct*. A panel can pass all sixteen integrity checks and still
-produce nonsense returns: a split adjustment applied twice, a currency mixed into a
-dollar factor, a price series that is actually a preferred share. None of that shows up
-as a missing value.
+A panel can pass every integrity check and still be wrong. A stock split applied twice,
+a currency mixed into a dollar-denominated factor, a preferred share standing in for
+common stock: none of these produce a missing value or an error. They produce numbers.
 
-So before estimating anything unknown, reproduce something known. Take the price panel,
-compute returns through the same code path the real result will use, and regress a
-diversified portfolio on the Fama-French factors. **The market beta of a broad
-equity portfolio is one.** That is not a hypothesis, it is a definition, so if it comes
-back at 0.4 or 2.1 the return construction is broken and every later coefficient is
-worthless. Finding that here costs an afternoon; finding it after the hazard sort costs
-a chapter.
+So before estimating anything unknown, reproduce something known.
 
-### What is checked, and against what
+### The specific test
 
-| Quantity | Expected | If it fails |
+Take the price panel, compute returns through exactly the code path the real analysis
+will use, form a diversified portfolio, and regress its returns on the Fama-French
+factors.
+
+**The market beta of a broad equity portfolio is one.** That is close to a definition
+rather than a hypothesis: the market factor is the value-weighted return of the whole
+market, so a diversified basket of large stocks must move roughly one-for-one with it.
+If the number comes back at 0.4 or 2.1, the return construction is broken, and every
+coefficient computed later is worthless.
+
+| Quantity | Expected | What a failure means |
 |---|---|---|
-| Market beta, equal-weighted US portfolio | near 1, say 0.7 to 1.3 | Returns are misscaled, or the panel is not what you think |
-| R-squared on FF3 | above 0.5 for a diversified portfolio | The portfolio is not diversified, or returns are noise |
-| Annualised alpha | small, within a few percent of zero | A systematic construction error, or a real sector effect worth naming |
-| Sector beta pattern | utilities below 1, energy above | If reversed, symbols are mismatched to firms |
+| Market beta, equal-weighted portfolio | roughly 0.7 to 1.3 | Returns are misscaled, or the panel is not what it appears to be |
+| R-squared | above 0.5 | The portfolio is not diversified, or the returns are noise |
+| Annualised alpha | small | A systematic construction error, or a real effect that needs a name |
+| Utility betas below energy betas | yes | If reversed, tickers are attached to the wrong companies |
 
-### The currency trap, restated because this is where it bites
+That last row deserves emphasis. Regulated utilities are famously less sensitive to the
+market than integrated oil companies, because their revenues are set by regulators
+rather than by a commodity price. Checking individual companies against that expectation
+catches a whole class of error the portfolio test cannot see: if tickers are matched to
+the wrong companies, the aggregate can still look fine while every individual number is
+meaningless.
 
-The Ken French factors are **dollar** returns. Your panel holds prices in USD, EUR, GBp,
-NOK, CHF, SEK, DKK and ILA. A euro-denominated return regressed on a dollar factor
-measures the asset plus the exchange rate, and the exchange rate is not a climate hazard.
-So the headline test below runs on the **US subset only**, where the currency question
-does not arise. The non-US firms are then run separately, and the gap between the two is
-itself the measurement of how much conversion matters.
+### Why the headline test uses US companies only
+
+The Fama-French factors are **dollar** returns. My panel holds nine currencies. A euro
+return regressed on a dollar factor measures the asset plus the exchange rate, and an
+exchange rate is not a climate hazard.
+
+So the main test runs on the US subset, where the question does not arise. The non-US
+companies are then run separately, and the gap between the two is itself a measurement
+of how much the currency question matters.
+
+### A note on the standard errors
+
+Daily portfolio returns are heteroskedastic, meaning their variability changes over
+time, and mildly autocorrelated, meaning today's return carries information about
+tomorrow's. Ordinary least squares standard errors assume neither, and would overstate
+how precisely the coefficients are estimated.
+
+The regression below uses Newey and West (1987) standard errors, which are robust to
+both. Five lags is the conventional choice for daily data and was fixed before seeing
+any result rather than tuned afterwards.
+
+> Newey, W. K. and West, K. D. (1987). "A simple, positive semi-definite,
+> heteroskedasticity and autocorrelation consistent covariance matrix."
+> *Econometrica* 55(3), 703-708.
 """))
 
 cells.append(code(r'''
@@ -2597,38 +2835,48 @@ if rows:
 '''))
 
 cells.append(md(r"""
-### 6b. Where the +4.33% alpha comes from
+### 6b. Where does the alpha come from?
 
-The test passed, but it produced a significant positive alpha on a portfolio that has no
-business having one: 4.33 percent a year, t of 2.16, on an equal-weighted basket of
-utilities, energy and materials. **That number is roughly the size of any hazard premium
-this paper might report**, so if it is an artefact it will contaminate the headline
-result, and if it is real it needs a name. Either way it cannot be left alone.
+The test passes on every formal criterion, and then produces something that needs
+explaining: a statistically significant positive alpha on a portfolio that has no
+obvious reason to have one.
+
+That number is roughly the size of the effect this study might plausibly report. If it
+is an artefact, the headline result inherits it and there would be no way to tell the
+two apart. So it cannot be left alone.
 
 There are four candidate explanations and three of them are mechanical.
 
 **Equal weighting with daily rebalancing.** Computing a daily equal-weighted return
-implicitly rebalances every day, which buys whatever fell and sells whatever rose. With
-bid-ask bounce, that harvests the bounce as return. This is the Blume-Stambaugh bias and
-it scales with the cross-sectional variance of returns, so it is largest in exactly the
-illiquid names this panel contains: 26 listings trade under a million dollars a day.
+implicitly rebalances the portfolio every day, selling whatever rose and buying whatever
+fell. Because quoted prices bounce between the bid and the ask, that harvests the bounce
+as if it were return. This is the bias documented by Blume and Stambaugh (1983), and it
+is largest in illiquid stocks, of which this panel has a fair number.
 
-**Survivorship.** The universe is survivor-only by construction. A basket of firms
-selected for still existing in 2026 should out-perform, and blocking test 1 found that
-firms of this size which delisted were mostly *acquired*, which cuts the other way. The
-net sign is unknown, which is the point.
+**Survivorship.** The universe is survivor-only by construction, as section 5 discussed.
 
-**Missing factors.** FF3 omits profitability, investment and momentum. Utilities are
-low-profitability and high-investment, energy the reverse, so a three-factor model
-leaves real structure in the residual and calls it alpha.
+**Missing factors.** Three factors are not many. Fama and French (2015) add profitability
+and investment, and Carhart (1997) adds momentum. Utilities and energy companies load
+distinctively on those, so a three-factor model can leave real structure in the residual
+and call it alpha.
 
 **A genuine sector effect.** Possible, and it would be a finding rather than a bug, but
-it is the last explanation to reach for, not the first.
+it is the last explanation to reach for rather than the first.
 
-The cell below separates the mechanical part. It runs the same regression four ways:
-equal versus value weighted, daily versus monthly buy-and-hold. **If the alpha collapses
-when you value-weight or move to monthly, it was microstructure.** If it survives all
-four, it is worth investigating.
+The cell below separates the first one from the rest by running the same regression four
+ways: equal against value weighted, and daily against monthly buy-and-hold. Monthly
+returns are compounded within each month for each company before the portfolio is
+formed, which is what removes the implicit daily rebalancing. **If the alpha collapses
+under value weighting or monthly compounding, it was microstructure.**
+
+It also excludes companies showing repeated single-day moves above 50%. Those are
+usually broken price series rather than volatile companies: one in this dataset shows a
+move of more than 1,000% in a day, which is a corporate reorganisation the price series
+did not handle. Excluding them is a judgement call, so it is made explicitly and the
+excluded names are printed.
+
+> Blume, M. E. and Stambaugh, R. F. (1983). "Biases in computed returns: An application
+> to the size effect." *Journal of Financial Economics* 12(3), 387-404.
 """))
 
 cells.append(code(r'''
@@ -2740,31 +2988,35 @@ if len(r6):
 '''))
 
 cells.append(md(r"""
-### 6c. The alpha is not microstructure. So what is it?
+### 6c. Not microstructure, and not missing factors. So what?
 
-Four specifications, four positive alphas: 3.67, 2.83, 3.93, 3.49 percent a year, with
-the value-weighted monthly figure significant at t of 2.11. Only 0.19 percentage points
-moved when the weighting and frequency changed, so **the Blume-Stambaugh explanation is
-dead**. Two candidates remain, and they are separable.
+The alpha barely moves across weighting schemes and return frequencies, which rules out
+the rebalancing bias. The next step is to rule out the missing-factors explanation, and
+there is a specific reason to expect it to matter.
 
-**Missing factors, and there is a specific reason to expect this one.** The portfolio
-loads on HML at +0.549, which is a large value tilt. Over most of 2010 to 2020 the value
-premium was *negative*, so a three-factor model predicts low returns for a value-tilted
-portfolio, and anything the portfolio actually earned above that shows up as alpha. These
-firms are also profitable and capital-intensive, which is exactly what RMW and CMA are
-built to price. FF3 is the wrong model for this sector, and both extra factors are free
-downloads from the same library Panel A came from.
+The portfolio loads positively on the value factor, and the value premium was negative
+through most of the 2010s. So a three-factor model *predicts* low returns for this
+portfolio, and anything it actually earned above that prediction is recorded as alpha.
+These are also profitable, capital-intensive companies, which is precisely what the
+profitability and investment factors exist to price. Both are free downloads from the
+same library as Panel A.
 
-**A concentrated sector episode.** Independent power producers ran extraordinarily hard
-in 2023 to 2025 on data-centre electricity demand. Vistra, Constellation, Talen and NRG
-are all in this universe, and all four are among the largest US owners in it. If the
-alpha is concentrated in the last two years, it is that trade rather than a persistent
-sector premium.
+The second cell splits the sample into three periods, chosen on economic events rather
+than to split the result: the decade before COVID, the pandemic and the 2022 European
+gas crisis, and the recent period of data-centre electricity demand.
 
-That distinction matters more than it might appear. **If hazard-exposed firms are
-disproportionately independent power producers, a hazard sort would pick up the
-data-centre trade and report it as a climate risk premium.** The subperiod split below is
-what tells you whether that risk is live.
+That split matters beyond this diagnostic. If most of the return variation in the sample
+comes from a small number of recent years, then **any cross-sectional sort will be
+dominated by those years**. Worse, both recent episodes are correlated with hazard
+exposure by construction: the gas crisis was a shock to European energy assets, and the
+data-centre trade is concentrated in US independent power producers, which are among the
+largest asset owners in this universe. A hazard sort could load on either and report it
+as a climate risk premium with a convincing t-statistic.
+
+Knowing that before running the sort is the entire point of running these tests first.
+
+Subperiods carry few observations relative to the number of factors, so the alphas
+should be read as indicative magnitudes and the t-statistics as weak evidence.
 """))
 
 cells.append(code(r'''
@@ -2921,32 +3173,29 @@ if len(s_df):
 cells.append(md(r"""
 ---
 
-## 7. Take the data with you before cancelling
+## 7. Archiving the data
 
-**Run this before you cancel the subscription, and before the Colab runtime recycles.**
+The price data comes from a paid subscription. When that subscription ends, it cannot be
+rebuilt at any price without paying again. Everything in this notebook otherwise runs on
+free data.
 
-Everything built so far lives in `/content/` on a Google virtual machine that is deleted
-when the session ends. That includes the price panel, which cost $166 and roughly two
-hours of API calls, and the caches, which are what make every rerun cheap. Losing them
-means paying again.
+There is a second, less obvious reason to archive carefully. Colab runs on a temporary
+virtual machine that is deleted when the session ends, so "it worked and the files are
+there" is true for a few hours.
 
-Three things get saved, and they are not equally replaceable.
+This section copies everything to Google Drive, builds a single archive file, and then
+**verifies the copies by checksum rather than by file count**. That distinction is the
+point of the section. A truncated copy has the wrong size and would be caught by almost
+any check; a corrupted one has the right size and would not. Comparing SHA-256 hashes
+catches both, and the archive ships with a checksum list inside it so the copy can be
+verified again at any point in the future by anyone.
 
-| What | Replaceable after cancelling? |
-|---|---|
-| `panel_b_prices_daily.csv`, the price panel | **No.** Needs a live paid key |
-| `fmp_delisted.json`, `fmp_profile_cache.json` | **No.** Same |
-| `openfigi_cache.json`, `fmp_isin_cache.json`, `fmp_liquidity_cache.json` | Yes, but slowly and OpenFIGI is free |
-| `ff3_daily.csv`, Panel A | Yes, free public download |
-
-The cell mounts your Google Drive and copies everything there. If the mount fails it falls
-back to a zip you download through the browser. It then **re-hashes every file after
-copying and compares against the source**, because a copy that silently truncated is worse
-than no copy: you would not find out until the subscription was gone.
-
-It also writes the price panel as Parquet alongside the CSV. Same data, roughly a tenth
-the size and far faster to reload, which matters when you are reading it repeatedly from
-Drive rather than from local disk.
+The files that cannot be regenerated after the subscription ends are the price panel,
+the delisted company list and the company profiles. The identifier caches can be
+rebuilt, slowly. The factor data is a free public download, with one caveat: its
+publisher updates the file in place, so a download next year returns different bytes for
+the same nominal series. That is why the untouched original is archived alongside the
+parsed version.
 """))
 
 cells.append(code(r'''
@@ -2971,9 +3220,9 @@ except Exception as exc:
 # Export EVERYTHING in data/raw, then separately assert that the critical files are
 # among them. The first version listed filenames by hand and got one wrong: Panel A is
 # written as panel_a_ff3_daily.csv, not ff3_daily.csv, so both Panel A files were
-# silently left out of the 21 August archive while the cell reported success on the
-# rest. A hand-maintained list of filenames drifts from the code that writes them; a
-# glob cannot.
+# once silently left out of the archive while the cell reported success on everything
+# else. A hand-maintained list of filenames drifts away from the code that writes them.
+# A glob cannot.
 present = sorted(f.name for f in RAW.iterdir() if f.is_file())
 
 CRITICAL = ["panel_b_prices_daily.csv",   # cannot be rebuilt without a paid key
@@ -3056,8 +3305,8 @@ zip_path = Path("/content") / f"{EXPORT_NAME}.zip" if IN_COLAB else REPO.parent 
 # A checksum manifest travels INSIDE the zip. The Drive copy is hash-verified above, but
 # when the mount fails there is no verification on the download path at all, and the
 # copy that actually matters is the one extracted on the laptop. Shipping the sums with
-# the data means that copy can be checked at any point in the future, by Carlo or by
-# anyone he sends it to.
+# the data means that copy can be verified at any point in the future, by me or by
+# anyone I send it to.
 sums = {f: sha256_of(RAW / f) for f in present}
 for f in (REPO / "config").glob("*.csv"):
     sums[f"config/{f.name}"] = sha256_of(f)
@@ -3089,14 +3338,14 @@ if bad_zip:
     print(f"HASH MISMATCH INSIDE THE ZIP: {bad_zip}")
 else:
     print("every file inside the zip matches its source, byte for byte")
-print("\nAfter extracting on your laptop, verify with:")
+print("\nAfter extracting the archive locally, verify it with:")
 print(f"  cd <extracted folder> && shasum -a 256 -c SHA256SUMS.txt")
 
 if IN_COLAB:
     try:
         from google.colab import files
         print("\nStarting the browser download. A large file can take a few minutes and")
-        print("Colab sometimes drops it silently, so check your downloads folder and")
+        print("Colab sometimes drops it silently, so check the downloads folder and")
         print("rerun this cell if nothing arrives.")
         files.download(str(zip_path))
     except Exception as exc:
@@ -3106,36 +3355,356 @@ if IN_COLAB:
 '''))
 
 cells.append(md(r"""
-### Before you cancel, in this order
+---
 
-1. **Check the hash line above says every file matches.** Not the file count, the hashes.
-2. **Open the zip on your own machine and confirm it is not empty.** Colab drops large
-   browser downloads silently more often than you would expect.
-3. **Keep two copies in different places.** Drive and your laptop, or Drive and an
-   external disk. One copy is not a backup, and this data cannot be regenerated without
-   paying again.
-4. **Note today's date and the subscription tier in your methods file.** A reader needs to
-   know which tier and which day the panel was pulled, because vendor coverage changes.
-5. Only then cancel, and **set a calendar reminder two days before the renewal date** in
-   case the cancellation does not take.
+## 8. Scope, and what is deliberately absent
 
-Everything remaining in this project runs on free data: the GEM sector trackers, a hazard
-dataset, the join, and the estimation itself. The subscription bought exactly one thing
-that cannot be bought later, which is this price panel. Treat it accordingly.
+This notebook downloads two datasets, builds the list of companies that connects them to
+a third, and tries to break all three. It contains no returns computed for the study, no
+regressions on the hypothesis, no portfolios, and no merge of the datasets. That is the
+scope, and this section states what falls outside it.
+
+### Known limitations, stated rather than buried
+
+**The exposure variable does not exist yet.** The ownership dataset identifies which
+company owns which asset, but carries no coordinates. Building a physical hazard measure
+requires the individual sector datasets, which do carry locations, plus a hazard dataset
+to intersect them with. None of that is here and none of it needs a subscription.
+
+**The ownership snapshot is undated.** It records who owns what now, not who owned what
+in 2012. Using a current ownership map to explain historical returns attributes to a
+company assets it may not have owned at the time. This is **look-ahead bias**, and it is
+worse than survivorship bias because it contaminates the explanatory variable rather
+than the outcome, so no amount of care downstream repairs it. I have investigated
+whether the publisher's earlier releases can reconstruct a historical map, and the
+answer so far is that they cannot: most of the apparent change between releases is the
+publisher's own research catching up rather than ownership actually changing.
+
+**Survivorship is unmeasured at the relevant company size.** Section 5 explains why, and
+what would fix it.
+
+**No currency conversion has been applied.** Nine currencies, and UK prices are in pence
+rather than pounds.
+
+**Two subsidiary questions are open.** Some asset owners are wholly owned subsidiaries of
+listed parents. Whether to roll them up into the parent changes what counts as a company
+in the sample and interacts with the ownership structure already in the source data, so
+it is a research design decision rather than a lookup, and it is not made here.
+
+### On reporting a null result
+
+If the exposure measure turns out to have no explanatory power for returns, that is a
+result and I intend to report it as one, alongside the minimum effect size the sample
+could have detected. A study that can only publish one of its two possible answers is
+not a test of anything.
 """))
 
-# ---------------------------------------------------------------- run order
-# Written order is not run order. Ticker resolution was added after Panel B but must run
-# before it, because it produces the symbol list Panel B prices. Blocking test 1 was
-# added last and must run after Panel B, because it compares delisted firms against the
-# SPY series Panel B downloads. Reassemble here rather than shuffling hundreds of lines
-# of text above.
-head      = cells[:PANELB_START]              # title, setup, Panel A
-panel_b   = cells[PANELB_START:PANELB_END]
-tickers   = cells[PANELB_END:TICKERS_END]
-blocking1 = cells[TICKERS_END:]
+cells.append(md(r"""
+---
 
-cells = head + tickers + panel_b + blocking1 + [absent_cell]
+## Appendix A: diagnosing the data provider's coverage limits
+
+The cells in this appendix are not part of the pipeline. They are the diagnostic work
+that established what a given API key can and cannot retrieve, and I have kept them
+because the method generalises and because the reasoning is more useful than the answer.
+
+### The situation
+
+An initial attempt to download prices on a free API key returned data for a handful of
+symbols and refused the rest with `HTTP 402 Payment Required`. The obvious inference is
+"the free tier is too small, pay for a bigger one". That inference is worth resisting
+until it is tested, because the correct action differs completely depending on *what
+kind* of limit it is.
+
+### Distinguishing the possibilities by measurement
+
+The approach is to hold two things constant and vary the third. If the limit is the type
+of price series requested, then one symbol should succeed on one variant and fail on
+another. If it is the length of history, recent data should work where older data does
+not. If it is the set of covered symbols, some symbols should work fully and others not
+at all.
+
+The answer here was the third, and the free key covered a hand-picked set of
+household-name symbols: no rule to work around, and nothing that could be turned into a
+research universe.
+
+### Three status codes that look alike and mean opposite things
+
+This is the practically useful part.
+
+| Code | Means | Correct response |
+|---|---|---|
+| `401` | The key is wrong, or the account email is unverified | Fix the key |
+| `402` | The key is valid, the endpoint is live, the request is above your plan | A real plan limit |
+| `403` | Not permitted. Very often a retired endpoint rather than a plan limit | Check the URL before the subscription |
+
+The 403 case cost me an afternoon and is worth repeating. Older documentation and many
+tutorials use URL paths that have since been retired. Requests to them return 403, which
+reads as "your account may not do this", so a perfectly valid key on a paid plan produces
+exactly the same error table as no key at all. If every probe fails at once, including
+the most basic one, suspect the URL rather than the subscription.
+"""))
+
+cells.append(code(r'''
+if not API_KEY:
+    raise SystemExit(
+        "FMP_API_KEY is not set. Section 0 prints 'api key: MISSING' when this happens.\n"
+        "  Colab : add it in the Secrets panel, switch on notebook access, rerun section 0.\n"
+        "  Local : export FMP_API_KEY='...'"
+    )
+
+
+def probe(label, url, params, want, ok_if=None):
+    """One capability probe. Returns a row describing what happened.
+
+    An HTTP 200 carrying an empty payload counts as a FAIL, not a pass. FMP answers
+    'no access' and 'no data' the same way, so treating 200 as success would report a
+    free-tier key as fully capable.
+
+    ok_if lets a probe demand more than "some rows came back". The history probe needs
+    it: if the endpoint ignores from/to rather than rejecting them, it returns the full
+    series, which looks like a pass while telling you nothing about depth.
+    """
+    try:
+        r = requests.get(url, params={**params, "apikey": API_KEY}, timeout=45)
+    except requests.RequestException as e:
+        return {"probe": label, "status": "ERROR", "ok": False, "detail": str(e)[:60]}
+
+    if r.status_code != 200:
+        hint = {401: "key rejected or not yet verified",
+                403: "endpoint retired, or not on your plan",
+                429: "rate limited"}.get(r.status_code, "")
+        return {"probe": label, "status": f"HTTP {r.status_code}", "ok": False, "detail": hint}
+
+    payload = r.json()
+    rows = payload.get("historical") if isinstance(payload, dict) else payload
+    if not rows:
+        return {"probe": label, "status": "200 empty", "ok": False,
+                "detail": "no data returned - usually a plan limit"}
+    ok = True if ok_if is None else bool(ok_if(rows))
+    return {"probe": label, "status": "200" if ok else "200 wrong range",
+            "ok": ok, "detail": want(rows)}
+
+WIN = {"from": "2024-01-02", "to": "2024-03-01"}
+
+results = [
+    probe("US daily prices (DUK)",
+          EOD, {"symbol": "DUK", **WIN}, lambda r: f"{len(r)} bars"),
+    probe("Dividend-adjusted prices (DUK)",
+          EOD_TR, {"symbol": "DUK", **WIN}, lambda r: f"{len(r)} bars"),
+    probe("European ticker (ENGI.PA)",
+          EOD, {"symbol": "ENGI.PA", **WIN}, lambda r: f"{len(r)} bars"),
+    probe("S&P 500 index (^GSPC)",
+          EOD, {"symbol": "^GSPC", **WIN}, lambda r: f"{len(r)} bars"),
+    probe("History depth (2010 data)",
+          EOD, {"symbol": "DUK", "from": "2010-01-04", "to": "2010-03-01"},
+          lambda r: f"earliest {min(x['date'] for x in r)}",
+          ok_if=lambda r: min(x["date"] for x in r) < "2011-01-01"),
+    probe("Delisted companies list",
+          f"{BASE}/delisted-companies", {"page": 0, "limit": 5},
+          lambda r: f"{len(r)} sample rows"),
+]
+
+pre = pd.DataFrame(results)
+display(pre[["probe", "status", "detail"]])
+
+us_ok, tr_ok, eu_ok, idx_ok, hist_ok, delist_ok = [x["ok"] for x in results]
+
+print()
+if not us_ok:
+    print("STOP: even US prices failed, so nothing below is diagnostic.")
+    print("      403 on every row at once means the path is retired, not that you need to pay.")
+    print("      401 on every row means the key is wrong, or the account email is unverified.")
+    print("      Also confirm the Colab secret is named exactly FMP_API_KEY, with notebook")
+    print("      access switched on. Section 0 prints 'api key: set' when it read correctly.")
+else:
+    tier = "paid (international coverage present)" if eu_ok else "free or entry tier (no international)"
+    print(f"Assessment: {tier}")
+    if not tr_ok:
+        print("  -> Dividend-adjusted prices are closed to this key: PRICE returns only.")
+        print("     Do not regress these on Fama-French factors, which are TOTAL returns. On a")
+        print("     utility-heavy universe that understates alpha by roughly 3 to 4 percent a year.")
+    if not eu_ok:
+        print("  -> The 6 European tickers will return empty. Either drop the EU leg for now")
+        print("     and rerun with US-only, or upgrade before building the European panel.")
+    if not idx_ok:
+        print("  -> ^GSPC unavailable. Use SPY as the benchmark and RECORD the substitution;")
+        print("     SPY includes dividends and a fee drag, ^GSPC is price-only. Not interchangeable.")
+    if not hist_ok:
+        print(f"  -> History does not reach {START}. Your usable window is shorter than the")
+        print("     one fixed at the top of this notebook. Change START deliberately, not silently.")
+    if not delist_ok:
+        print("  -> Delisted list is closed to this key, so 01_survivorship_test_fmp.py CANNOT run.")
+        print("     Nothing return-based should be estimated until that test returns a number.")
+'''))
+
+cells.append(code(r'''
+def wall(label, path, params):
+    """Minimal probe. Reports status and row count only, no interpretation."""
+    try:
+        r = requests.get(f"{BASE}/{path}", params={**params, "apikey": API_KEY}, timeout=45)
+    except requests.RequestException as e:
+        return {"test": label, "status": "ERROR", "rows": 0, "note": str(e)[:40]}
+    if r.status_code != 200:
+        return {"test": label, "status": f"HTTP {r.status_code}", "rows": 0,
+                "note": {402: "above your plan", 403: "path retired",
+                         401: "key rejected", 429: "rate limited"}.get(r.status_code, "")}
+    try:
+        payload = r.json()
+    except ValueError:
+        return {"test": label, "status": "200 non-JSON", "rows": 0, "note": r.text[:40]}
+    rows = payload.get("historical") if isinstance(payload, dict) else payload
+    n = len(rows) if rows else 0
+    return {"test": label, "status": "200", "rows": n,
+            "note": "EMPTY, treat as a miss" if n == 0 else ""}
+
+W24    = {"from": "2024-01-02", "to": "2024-03-01"}
+RECENT = {"from": "2026-06-01", "to": "2026-08-01"}
+
+wall_tests = [
+    # variant, holding the symbol and window fixed
+    wall("DUK  light        2024",  "historical-price-eod/light",              {"symbol": "DUK",  **W24}),
+    wall("DUK  full         2024",  "historical-price-eod/full",               {"symbol": "DUK",  **W24}),
+    wall("DUK  non-split    2024",  "historical-price-eod/non-split-adjusted", {"symbol": "DUK",  **W24}),
+    # symbol, holding variant and window fixed
+    wall("AAPL full         2024",  "historical-price-eod/full",               {"symbol": "AAPL", **W24}),
+    wall("SPY  full         2024",  "historical-price-eod/full",               {"symbol": "SPY",  **W24}),
+    # window, holding symbol and variant fixed
+    wall("DUK  full       recent",  "historical-price-eod/full",               {"symbol": "DUK",  **RECENT}),
+    wall("DUK  full     no dates",  "historical-price-eod/full",               {"symbol": "DUK"}),
+    # the manual-total-return fallback
+    wall("DUK  dividends",          "dividends",                               {"symbol": "DUK"}),
+]
+
+w = pd.DataFrame(wall_tests)
+display(w)
+
+open_ = set(w.loc[w.status == "200", "test"])
+def got(prefix): return any(t.startswith(prefix) for t in open_)
+
+print()
+if len(open_) == len(w) and (w["rows"] > 0).all():
+    print("DIAGNOSIS: no wall. Every variant, symbol and history depth returned data.")
+    print("  This is the expected result on a paid tier. Nothing below applies; the")
+    print("  branches after this one exist to name a paywall, and there is not one.")
+elif got("DUK  light") and not got("DUK  full"):
+    print("DIAGNOSIS: the variant is the wall. 'light' is open, 'full' is not.")
+    print("  light returns date, price and volume only, split-adjusted, no dividends.")
+    print("  Workable for a plumbing test. NOT sufficient for factor regressions on its own.")
+elif got("AAPL full") and not got("DUK  full"):
+    print("DIAGNOSIS: symbol coverage is the wall, not the endpoint or the plan level.")
+    print("  Check whether the covered set is an exchange, an index membership, or a fixed list.")
+elif got("DUK  full       recent") and not got("DUK  full         2024"):
+    print("DIAGNOSIS: history depth is the wall. Recent data is open, older data is not.")
+    print(f"  The window fixed at the top of this notebook starts {START} and is unreachable.")
+    print("  Do not silently shorten START. A sample chosen by what the vendor will sell you")
+    print("  is a sample chosen by the vendor, and that belongs in the limitations section.")
+elif not any(t.startswith("DUK") or t.startswith("AAPL") for t in open_):
+    print("DIAGNOSIS: all single-equity price history is closed to this key.")
+    print("  Indices and reference lists are open, individual equity EOD is not.")
+    print("  Panel B cannot be built on this key at all. See the note below.")
+else:
+    print("DIAGNOSIS: mixed. Read the table row by row before concluding anything.")
+
+if got("DUK  dividends") and got("DUK  light"):
+    print()
+    print("FALLBACK AVAILABLE: light prices + dividends are both open, so total returns can")
+    print("  be reconstructed by hand. Slower and more error-prone than dividend-adjusted,")
+    print("  but economically equivalent and it keeps every input free and redistributable.")
+'''))
+
+cells.append(code(r'''
+def covered(sym):
+    """True if this key can retrieve any daily history for the symbol."""
+    try:
+        r = requests.get(f"{BASE}/historical-price-eod/full",
+                         params={"symbol": sym, "from": "2024-01-02",
+                                 "to": "2024-03-01", "apikey": API_KEY}, timeout=45)
+    except requests.RequestException:
+        return None
+    if r.status_code != 200:
+        return False
+    try:
+        rows = r.json()
+    except ValueError:
+        return False
+    return bool(rows.get("historical") if isinstance(rows, dict) else rows)
+
+GROUPS = {
+    "Dow, removed since 2020": ["PFE", "RTX", "WBA", "DOW", "INTC"],
+    "Dow, added since 2020":   ["CRM", "AMGN", "HON", "NVDA", "SHW"],
+    "Dow, on both lists":      ["MSFT", "JNJ", "KO", "JPM"],
+    "Large non-Dow":           ["GOOGL", "META", "TSLA", "BRK-B"],
+    "ETFs":                    ["QQQ", "IWM", "VTI"],
+    "Indices":                 ["^DJI", "^IXIC"],
+}
+
+rows = []
+for group, syms in GROUPS.items():
+    for s in syms:
+        rows.append({"group": group, "symbol": s, "covered": covered(s)})
+        time.sleep(0.25)
+
+cov = pd.DataFrame(rows)
+display(cov.groupby("group").agg(n=("symbol", "size"), covered=("covered", "sum")))
+print()
+print("covered  :", sorted(cov.loc[cov.covered == True,  "symbol"].tolist()))
+print("refused  :", sorted(cov.loc[cov.covered == False, "symbol"].tolist()))
+
+old = cov.loc[cov.group == "Dow, removed since 2020", "covered"]
+new = cov.loc[cov.group == "Dow, added since 2020",   "covered"]
+print()
+if old.all() and not new.any():
+    print("CONFIRMED: the free list is a pre-September-2020 Dow 30 snapshot.")
+    print("  That caps the investable universe at 30 US mega-caps, frozen six years ago,")
+    print("  and the freeze is itself a survivorship filter: membership was decided by")
+    print("  a committee using information unavailable at the start of the sample.")
+elif cov.loc[cov.group.str.startswith("Dow"), "covered"].all() and not new.any():
+    print("PARTIAL: Dow-linked, but not cleanly a pre-2020 snapshot. Read the lists above.")
+else:
+    print("NOT the Dow hypothesis. Read the covered and refused lists and look for the pattern.")
+
+# --- the probe that decides whether blocking test 1 can run at all
+print()
+try:
+    dl = requests.get(f"{BASE}/delisted-companies",
+                      params={"page": 0, "limit": 20, "apikey": API_KEY}, timeout=45).json()
+except Exception as e:
+    dl = []
+    print("delisted list call failed:", e)
+
+if dl:
+    sample = [d.get("symbol") for d in dl if d.get("symbol")][:5]
+    print(f"delisted list returned names, testing prices for: {sample}")
+    hits = {s: covered(s) for s in sample}
+    for s, ok in hits.items():
+        print(f"  {s:8} prices {'AVAILABLE' if ok else 'REFUSED'}")
+    if not any(hits.values()):
+        print()
+        print("  CONCLUSION: the delisted LIST is open but delisted PRICE HISTORY is not.")
+        print("  Blocking test 1 cannot return a survivorship hit rate on this key. Knowing")
+        print("  which firms died without being able to price them measures nothing.")
+    else:
+        print()
+        print("  Blocking test 1 is runnable for at least some delisted names. Report the")
+        print("  hit rate as a measured fraction and say which names could not be priced.")
+'''))
+
+
+# ---------------------------------------------------------------- run order
+# The cells above are written in the order that made sense while building the project.
+# They are reordered here into the order they should be RUN.
+#
+# Two moves are needed. The company list has to be built before the prices can be
+# downloaded, because it produces the list of tickers to request, but it was written
+# afterwards. And the blocking tests have to run after the price panel exists, because
+# they analyse it.
+head     = cells[:PANELB_START]              # title, setup, Panel A
+panel_b  = cells[PANELB_START:PANELB_END]    # Panel B and the integrity checks
+tickers  = cells[PANELB_END:TICKERS_END]     # section 2, the company list
+blocking = cells[TICKERS_END:]               # blocking tests, archiving, appendix
+
+cells = head + tickers + panel_b + blocking
 
 nb = {
     "cells": cells,
