@@ -177,6 +177,7 @@ requires a subscription.
 ```
 notebooks/01_raw_panels.ipynb   the analysis, with the reasoning
 build_notebook.py               generates the notebook, keeps it diffable in git
+code/                           two upstream scripts, blocking test 3 and the identifier audit
 EXECUTION_CHECKLIST.html        how to reproduce it, and what each step should print
 FINDINGS_2026-08-21.md          results of the three blocking tests, with numbers
 config/universe.csv             the 328 ownership entities
