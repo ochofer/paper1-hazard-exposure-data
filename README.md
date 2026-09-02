@@ -32,8 +32,27 @@ to prove it wrong.
 
 **Current state of the sample:** 302 of 328 ownership entities resolve to a tradeable
 listing, covering 4,900 of 5,115 tracked assets, or 95.8%. The price panel holds
-1,122,798 daily rows across 305 symbols, on a single total-return convention, and passes
-16 of 16 integrity checks.
+1,122,798 daily rows across 304 symbols, being those 302 companies plus two benchmarks,
+on a single total-return convention, and passes 16 of 16 integrity checks.
+
+### Three counts, and why they differ
+
+Three company counts appear in this project and they measure different things, so it is
+worth separating them here rather than letting a reader assume one is a subset of another.
+
+| Count | What it is |
+|---|---|
+| 372 | Listed US and developed-Europe companies holding at least one tracked asset of **any** status. 200 of them hold five or more |
+| 328 | The same audit, keeping only assets that are **operating**, rather than announced, permitted or cancelled. 175 of them hold five or more |
+| 302 | The subset of those 328 that resolves to a tradeable listing. This is the price panel |
+
+The step from 372 to 328 is the operating-asset filter and nothing else. The step from 328
+to 302 is identifier coverage: whether I can find a company's shares, not whether it owns
+anything.
+
+Both filters are switches at the top of
+[`code/00_coverage_and_crosswalk.py`](code/00_coverage_and_crosswalk.py), so you can rerun
+the audit either way and watch the counts move rather than take my word for it.
 
 The hazard measurement itself is separate work and is not in this repository.
 
@@ -121,16 +140,20 @@ Nothing in this repository nets transaction costs, deliberately. The panels are 
 Costs belong at the portfolio layer, applied once, visibly, and to turnover rather than
 to holdings.
 
-- **I report gross and net together**, in the same table. A net figure alone hides the
-  cost assumption. A gross figure alone is not a claim about anything achievable.
-- **Costs apply to turnover**, computed from realised portfolio weights, so drift-driven
-  rebalancing is charged for and not only deliberate signal changes.
-- **The cost assumption is fixed in advance** and varied only as a stated sensitivity
-  across a range, rather than tuned to a preferred number. A flat one-way cost is
-  defensible for a universe of large utilities, energy and materials companies. It would
-  not be for small caps.
-- **The break-even cost is the honest headline.** Rather than defending one cost figure,
-  I report the one-way cost at which the excess return reaches zero. That number is
+**What I have committed to, for when a portfolio layer exists.** There is no portfolio
+layer yet, so these are rules written in advance rather than descriptions of something
+already done.
+
+- **Gross and net will be reported together**, in the same table. A net figure alone hides
+  the cost assumption. A gross figure alone is not a claim about anything achievable.
+- **Costs will apply to turnover**, computed from realised portfolio weights, so
+  drift-driven rebalancing is charged for and not only deliberate signal changes.
+- **The cost assumption is fixed in advance** and will be varied only as a stated
+  sensitivity across a range, rather than tuned to a preferred number. A flat one-way cost
+  is defensible for a universe of large utilities, energy and materials companies. It
+  would not be for small caps.
+- **The break-even cost will be the headline.** Rather than defending one cost figure, I
+  will report the one-way cost at which the excess return reaches zero. That number is
   assumption-free and lets a reader apply their own beliefs. If break-even sits below
   plausible real costs, that is the finding.
 
@@ -161,22 +184,33 @@ makes them worth writing down.
 ## What this repository does not contain, and why
 
 **The price panel.** Financial Modeling Prep's terms require a separate licensing
-agreement to redistribute their data, so `data/raw/` is excluded from version control.
+agreement to redistribute their data, so `data/raw/` is excluded from version control and
+the panel itself lives outside this repository.
 
-What I publish instead is everything needed to rebuild it: the fetch code, the resolved
-company list, the hand corrections with a written reason for each, and a manifest of
-SHA-256 checksums so anyone with their own access can prove their panel matches mine
-rather than assuming it.
+What I publish instead is the fetch code, the resolved company list, the hand corrections
+with a written reason for each, and
+[`data/raw/manifest.json`](data/raw/manifest.json): SHA-256 checksums, byte sizes and row
+counts for every file the findings were computed on, plus per-symbol date coverage for all
+304 symbols in the price panel. Anyone with their own FMP access can use it to prove their
+panel matches mine rather than assuming it.
 
-**The hazard exposure variable.** Not built yet. The ownership dataset carries no asset
-coordinates, so it needs the separate sector datasets plus a hazard dataset. None of that
-requires a subscription.
+**The claim is that my pull is auditable, not that it is repeatable.** Rebuilding the
+price layer requires a paid FMP subscription. Every other input here is free and
+redistributable. The manifest also records what it lacks: the pull of 21 August 2026 did
+not capture per-file fetch timestamps, and I have not back-filled them from filesystem
+timestamps, which change whenever a file is copied and would therefore be fiction.
+
+**The hazard exposure variable.** Not built, and not started. The ownership dataset
+carries no asset coordinates, so it needs the separate sector datasets plus a hazard
+dataset. None of that requires a subscription. There are no exposure results anywhere in
+this repository, because there is no exposure variable yet.
 
 ## Layout
 
 ```
 notebooks/01_raw_panels.ipynb   the analysis, with the reasoning
 build_notebook.py               generates the notebook, keeps it diffable in git
+build_manifest.py               generates data/raw/manifest.json from my local pull
 code/                           two upstream scripts, blocking test 3 and the identifier audit
 EXECUTION_CHECKLIST.html        how to reproduce it, and what each step should print
 FINDINGS_2026-08-21.md          results of the three blocking tests, with numbers
@@ -184,7 +218,8 @@ config/universe.csv             the 328 ownership entities
 config/universe_isins.csv       their security identifiers, from GLEIF
 config/ticker_overrides.csv     hand corrections to the crosswalk, each with a reason
 config/tickers_draft_v0.csv     a 20-name sample kept only for testing the data path
-data/raw/                       downloads and manifest.json, gitignored
+data/raw/                       the downloaded panel. Gitignored, licensed, not here
+data/raw/manifest.json          checksums and coverage for that panel. Committed
 ```
 
 `config/tickers_primary.csv`, the resolved one-listing-per-company file, is generated by

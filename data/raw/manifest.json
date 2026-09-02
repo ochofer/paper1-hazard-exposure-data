@@ -1,0 +1,1961 @@
+{
+  "schema": "paper1-data-manifest/1",
+  "generated_utc": "2026-09-02T15:10:55Z",
+  "generated_by": "build_manifest.py",
+  "pull": {
+    "id": "fmp_2026-08-21",
+    "source": "Financial Modeling Prep",
+    "pull_date": "2026-08-21",
+    "pull_date_provenance": "declared, from the archive README. Per-file fetch timestamps were not captured for this pull and are not inferred from filesystem mtimes, which change when a file is copied.",
+    "capture_fetch_timestamps": "TODO for the next extraction: record the request time per symbol at fetch time, not afterwards.",
+    "redistributable": false,
+    "repeatable_without_payment": false,
+    "note": "This manifest makes the pull auditable, not repeatable. Rebuilding the price layer requires a paid FMP subscription. Every other input in this repository is free and redistributable."
+  },
+  "files": [
+    {
+      "path": "data/raw/panel_b_prices_daily.csv",
+      "sha256": "ace57cc81d9413ec9881e6b8f6d61939d657f0b2bf1b321bfdf97399d3daec2a",
+      "bytes": 90742812,
+      "source": "Financial Modeling Prep",
+      "redistributable": false,
+      "rows": 1122798
+    },
+    {
+      "path": "data/raw/panel_a_ff3_daily.csv",
+      "sha256": "5a41d1975215badf8ac11f09d356823e6a6b552a2aa3237bec54fa86b8a48587",
+      "bytes": 126890,
+      "source": "Kenneth French Data Library",
+      "redistributable": true,
+      "rows": 4024
+    },
+    {
+      "path": "data/raw/ff3_daily_original.csv",
+      "sha256": "3d73942f7c0ba3accd021721876fef3059c6b02764a476dbdd9c311817f09710",
+      "bytes": 1209019,
+      "source": "Kenneth French Data Library",
+      "redistributable": true,
+      "rows": 26280
+    },
+    {
+      "path": "data/raw/blocking_test_1_return_gaps.csv",
+      "sha256": "68fae626183cafc9b630bc4f2d88ce1bfe0b8716db484359091ad1a759187137",
+      "bytes": 7561,
+      "source": "derived",
+      "redistributable": true,
+      "rows": 71
+    },
+    {
+      "path": "data/raw/blocking_test_2_ff3.csv",
+      "sha256": "26db242756b4a07c19beb2e79596e6558a4ca8a72cb1cee8db6997451fbb7a5b",
+      "bytes": 433,
+      "source": "derived",
+      "redistributable": true,
+      "rows": 2
+    },
+    {
+      "path": "data/raw/blocking_test_2_subperiods.csv",
+      "sha256": "544041f67ef9fbe96fcf017afec4bef7e2d4d68acc841ce9b350e8797dd0a25d",
+      "bytes": 700,
+      "source": "derived",
+      "redistributable": true,
+      "rows": 3
+    },
+    {
+      "path": "data/raw/blocking_test_2_weighting.csv",
+      "sha256": "0209c9dc740af1534125e5c6e71e1e1b32f40a177afd18a381aa733883303d54",
+      "bytes": 385,
+      "source": "derived",
+      "redistributable": true,
+      "rows": 4
+    },
+    {
+      "path": "config/tickers_primary.csv",
+      "sha256": "75a1bf8541f0438e54c7405da6b4578989652b9587f62624b2aeb89802ef5487",
+      "bytes": 39276,
+      "source": "derived",
+      "redistributable": true,
+      "rows": 328
+    },
+    {
+      "path": "config/tickers_v1.csv",
+      "sha256": "1520c84e7f82afc3f1a9149a2655e3be2c592c0baf227065d96b7e0d4866d52a",
+      "bytes": 4176716,
+      "source": "derived",
+      "redistributable": true,
+      "rows": 32885
+    },
+    {
+      "path": "config/universe.csv",
+      "sha256": "b82662d17f338cc92cc73c7fdf4d6081c24f057aa6afae4f1b6ac0d11798b826",
+      "bytes": 22930,
+      "source": "derived",
+      "redistributable": true,
+      "rows": 328
+    },
+    {
+      "path": "config/universe_isins.csv",
+      "sha256": "d864fb78e8a059a6f6758b8a3d29c7da8e7dff65367bf8c57325385d9841553b",
+      "bytes": 3335545,
+      "source": "GLEIF",
+      "redistributable": true,
+      "rows": 98104
+    },
+    {
+      "path": "config/ticker_overrides.csv",
+      "sha256": "81b41f066ce5cce313ade7c4f7f15863ce10939f455b788533779b31e142765f",
+      "bytes": 1455,
+      "source": "hand-written",
+      "redistributable": true,
+      "rows": 6
+    },
+    {
+      "path": "config/tickers_draft_v0.csv",
+      "sha256": "68630aba44b486e2ebe799c8f6f6e9d96fa9b23683f083f3bd1c99f1ab3bc1de",
+      "bytes": 1453,
+      "source": "derived",
+      "redistributable": true,
+      "rows": 20
+    }
+  ],
+  "price_panel": {
+    "file": "data/raw/panel_b_prices_daily.csv",
+    "rows": 1122798,
+    "symbols": 304,
+    "benchmark_symbols": [
+      "SPY",
+      "^GSPC"
+    ],
+    "company_symbols": 302,
+    "date_min": "2010-01-04",
+    "date_max": "2025-12-31",
+    "price_convention": "dividend-adjusted close, single convention across the whole panel",
+    "per_symbol": [
+      {
+        "symbol": "A2A.MI",
+        "rows": 4065,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "AA",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "AAL.L",
+        "rows": 4039,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "ABDN.L",
+        "rows": 4040,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "ABF.L",
+        "rows": 4040,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "ACA.PA",
+        "rows": 4094,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "ACX.MC",
+        "rows": 4095,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "ADM",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "AEP",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "AES",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "AI.PA",
+        "rows": 4099,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "AKRBP.OL",
+        "rows": 4017,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "AKZA.AS",
+        "rows": 4098,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "ALBI.PA",
+        "rows": 4086,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "ALE",
+        "rows": 4012,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-12"
+      },
+      {
+        "symbol": "ALHGR.PA",
+        "rows": 1589,
+        "first_date": "2019-10-21",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "ALTR.LS",
+        "rows": 4098,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "ALV.DE",
+        "rows": 4062,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "AMR",
+        "rows": 2329,
+        "first_date": "2016-08-18",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "AMRC",
+        "rows": 3886,
+        "first_date": "2010-07-22",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "ANA.MC",
+        "rows": 4095,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "APA",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "APD",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "APO",
+        "rows": 3712,
+        "first_date": "2011-03-30",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "ARES",
+        "rows": 2935,
+        "first_date": "2014-05-02",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "ARLP",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "ATO",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "AVA",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "AVIO.MI",
+        "rows": 2649,
+        "first_date": "2015-07-31",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "AZN.L",
+        "rows": 4040,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "BAM",
+        "rows": 773,
+        "first_date": "2022-12-01",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "BAS.DE",
+        "rows": 4067,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "BILL.ST",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "BISI.L",
+        "rows": 4040,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "BKH",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "BKW.SW",
+        "rows": 3527,
+        "first_date": "2011-12-12",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "BN.PA",
+        "rows": 4099,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "BNC.L",
+        "rows": 4040,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "BNOR.OL",
+        "rows": 4017,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "BP.L",
+        "rows": 4040,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "BPT.L",
+        "rows": 1122,
+        "first_date": "2021-07-21",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "BREE.L",
+        "rows": 4040,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "BRK-B",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "BTU",
+        "rows": 2200,
+        "first_date": "2017-04-03",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "BX",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "BZU.MI",
+        "rows": 4064,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "CAT",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "CE",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "CEG",
+        "rows": 992,
+        "first_date": "2022-01-19",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "CEIX",
+        "rows": 1842,
+        "first_date": "2017-11-14",
+        "last_date": "2025-03-14"
+      },
+      {
+        "symbol": "CG",
+        "rows": 3436,
+        "first_date": "2012-05-03",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "CLF",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "CLN.SW",
+        "rows": 4020,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "CLW",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "CMC",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "CMS",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "CNA.L",
+        "rows": 4039,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "CNP",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "COP",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "CPK",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "CQP",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "CRC",
+        "rows": 2726,
+        "first_date": "2014-11-13",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "CRH.L",
+        "rows": 4040,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "CRN.AX",
+        "rows": 1826,
+        "first_date": "2018-10-23",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "CS.PA",
+        "rows": 4099,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "CVX",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "CWEN",
+        "rows": 3135,
+        "first_date": "2013-07-17",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "D",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "DANR.MI",
+        "rows": 4064,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "DBK.DE",
+        "rows": 4062,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "DBRG",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "DCC.L",
+        "rows": 4040,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "DD",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "DINO",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "DK",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "DKL",
+        "rows": 3310,
+        "first_date": "2012-11-02",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "DNB.OL",
+        "rows": 4019,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "DNO.OL",
+        "rows": 4014,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "DOM.MC",
+        "rows": 2479,
+        "first_date": "2016-04-27",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "DOW",
+        "rows": 1707,
+        "first_date": "2019-03-20",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "DRX.L",
+        "rows": 4040,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "DTE",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "DTM",
+        "rows": 1140,
+        "first_date": "2021-06-18",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "DUK",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "EBK.DE",
+        "rows": 4066,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "ED",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "EDP.LS",
+        "rows": 4098,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "EE",
+        "rows": 933,
+        "first_date": "2022-04-13",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "EGL.LS",
+        "rows": 4098,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "EIX",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "ELE.MC",
+        "rows": 4094,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "ELPE.AT",
+        "rows": 3982,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "EMN",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "ENC.MC",
+        "rows": 4095,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "ENEL.MI",
+        "rows": 4064,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "ENG.MC",
+        "rows": 4096,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "ENGI.PA",
+        "rows": 4099,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "ENI.MI",
+        "rows": 4065,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "ENOG.TA",
+        "rows": 2119,
+        "first_date": "2018-10-29",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "ENQ.L",
+        "rows": 3975,
+        "first_date": "2010-04-06",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "ENR.DE",
+        "rows": 1340,
+        "first_date": "2020-09-28",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "EOAN.DE",
+        "rows": 4067,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "EOG",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "EPD",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "EQNR.OL",
+        "rows": 4019,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "EQT",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "ERA.PA",
+        "rows": 4099,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "ERG.MI",
+        "rows": 4065,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "ES",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "ESSITY-B.ST",
+        "rows": 2152,
+        "first_date": "2017-06-15",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "ET",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "ETR",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "ETRN",
+        "rows": 1438,
+        "first_date": "2018-10-31",
+        "last_date": "2024-07-22"
+      },
+      {
+        "symbol": "EVK.DE",
+        "rows": 3221,
+        "first_date": "2013-04-25",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "EVN.VI",
+        "rows": 4017,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "EVRG",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "EXC",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "EXP",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "FANG",
+        "rows": 3323,
+        "first_date": "2012-10-12",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "FCC.MC",
+        "rows": 4094,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "FCX",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "FE",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "FER.MC",
+        "rows": 4095,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "FIP",
+        "rows": 867,
+        "first_date": "2022-07-20",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "FLUX.BR",
+        "rows": 4094,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "FMC",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "FORTUM.HE",
+        "rows": 4021,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "FXPO.L",
+        "rows": 4040,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "GALP.LS",
+        "rows": 4098,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "GE",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "GEKTERNA.AT",
+        "rows": 3981,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "GEL",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "GLEN.L",
+        "rows": 3694,
+        "first_date": "2011-05-19",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "GOOGL",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "GPK",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "GREE",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "GS",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "GSM",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "GSP.MI",
+        "rows": 4064,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "HBR.L",
+        "rows": 4031,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "HCC",
+        "rows": 2192,
+        "first_date": "2017-04-13",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "HE",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "HEI.DE",
+        "rows": 4067,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "HEIA.AS",
+        "rows": 4098,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "HEN3.DE",
+        "rows": 4067,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "HER.MI",
+        "rows": 4065,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "HNRG",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "HOLM-B.ST",
+        "rows": 4025,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "HOLN.SW",
+        "rows": 4018,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "IBE.MC",
+        "rows": 4095,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "IDA",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "IP",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "IRE.MI",
+        "rows": 4065,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "ISP.MI",
+        "rows": 4064,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "ITH.L",
+        "rows": 797,
+        "first_date": "2022-11-09",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "JPM",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "KBC.BR",
+        "rows": 4098,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "KEMIRA.HE",
+        "rows": 4021,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "KKR",
+        "rows": 4021,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "KMI",
+        "rows": 3744,
+        "first_date": "2011-02-11",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "KNTK",
+        "rows": 2057,
+        "first_date": "2017-05-02",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "L",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "LEG",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "LEG.DE",
+        "rows": 3278,
+        "first_date": "2013-02-01",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "LIN",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "LNG",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "LNT",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "LNZ.VI",
+        "rows": 4005,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "LXS.DE",
+        "rows": 4067,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "MAIRE.MI",
+        "rows": 4064,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "MAU.PA",
+        "rows": 4099,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "MBG.DE",
+        "rows": 4067,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "MCEM",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "MERC",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "METC",
+        "rows": 2240,
+        "first_date": "2017-02-03",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "METSB.HE",
+        "rows": 4021,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "MGEE",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "MHK",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "MLM",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "MNDI.L",
+        "rows": 4040,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "MOH.AT",
+        "rows": 3982,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "MPC",
+        "rows": 3653,
+        "first_date": "2011-06-23",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "MPLX",
+        "rows": 3313,
+        "first_date": "2012-10-26",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "MS",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "MSFT",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "MTUS",
+        "rows": 2902,
+        "first_date": "2014-06-19",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "MTZ",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "MUV2.DE",
+        "rows": 4067,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "MVV1.DE",
+        "rows": 4066,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "MYTIL.AT",
+        "rows": 3893,
+        "first_date": "2010-01-04",
+        "last_date": "2025-08-25"
+      },
+      {
+        "symbol": "NC",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "NEE",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "NEM",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "NESTE.HE",
+        "rows": 4022,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "NFE",
+        "rows": 1740,
+        "first_date": "2019-01-31",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "NFG",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "NG.L",
+        "rows": 4040,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "NGL",
+        "rows": 3682,
+        "first_date": "2011-05-12",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "NHY.OL",
+        "rows": 4014,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "NI",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "NJR",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "NPWR",
+        "rows": 1106,
+        "first_date": "2021-08-06",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "NRG",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "NSKOG.OL",
+        "rows": 1559,
+        "first_date": "2019-10-18",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "NTGY.MC",
+        "rows": 4095,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "NUE",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "NVG.LS",
+        "rows": 4097,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "NWE",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "OBS.VI",
+        "rows": 4017,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "OGE",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "OKE",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "OKEA.OL",
+        "rows": 1647,
+        "first_date": "2019-06-18",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "OLN",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "OMV.VI",
+        "rows": 4018,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "OPAL",
+        "rows": 1158,
+        "first_date": "2021-05-24",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "ORSTED.CO",
+        "rows": 2393,
+        "first_date": "2016-06-09",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "OTTR",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "OUT1V.HE",
+        "rows": 4021,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "OXY",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "PAA",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "PAGP",
+        "rows": 3071,
+        "first_date": "2013-10-16",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "PAH3.DE",
+        "rows": 4063,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "PARR",
+        "rows": 3348,
+        "first_date": "2012-09-07",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "PBF",
+        "rows": 3282,
+        "first_date": "2012-12-13",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "PCG",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "PEAB-B.ST",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "PG",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "PGHN.SW",
+        "rows": 4020,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "PKG",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "PNW",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "POR",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "PPC.AT",
+        "rows": 3982,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "PPL",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "PSX",
+        "rows": 3451,
+        "first_date": "2012-04-12",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "RANA.OL",
+        "rows": 1217,
+        "first_date": "2021-02-26",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "REHN.SW",
+        "rows": 4020,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "RENE.LS",
+        "rows": 4098,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "REP.MC",
+        "rows": 4095,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "RIO.L",
+        "rows": 4040,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "RROS.ST",
+        "rows": 4016,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "RWE.DE",
+        "rows": 4067,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "RYAM",
+        "rows": 2905,
+        "first_date": "2014-06-16",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "SCA-B.ST",
+        "rows": 4015,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "SCHP.PA",
+        "rows": 4099,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "SDF.DE",
+        "rows": 4059,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "SDR.L",
+        "rows": 4040,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "SEB",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "SEIT.L",
+        "rows": 1780,
+        "first_date": "2018-12-11",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "SEM.LS",
+        "rows": 4097,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "SGO.PA",
+        "rows": 4099,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "SHEL.L",
+        "rows": 4040,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "SIE.DE",
+        "rows": 4062,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "SLVM",
+        "rows": 1073,
+        "first_date": "2021-09-23",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "SO",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "SOLB.BR",
+        "rows": 4097,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "SON",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "SPY",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "SR",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "SRE",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "SRG.MI",
+        "rows": 4065,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "SSAB-B.ST",
+        "rows": 4025,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "SSE.L",
+        "rows": 4040,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "STERV.HE",
+        "rows": 4021,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "STLAM.MI",
+        "rows": 4064,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "STLD",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "STT",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "SUN",
+        "rows": 3339,
+        "first_date": "2012-09-20",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "SXC",
+        "rows": 3634,
+        "first_date": "2011-07-21",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "SZG.DE",
+        "rows": 4067,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "TATE.L",
+        "rows": 4040,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "TESB.BR",
+        "rows": 4098,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "TITC.BR",
+        "rows": 1653,
+        "first_date": "2019-07-23",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "TKA.DE",
+        "rows": 4067,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "TLN",
+        "rows": 648,
+        "first_date": "2023-06-02",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "TRGP",
+        "rows": 3790,
+        "first_date": "2010-12-07",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "TTE.PA",
+        "rows": 4099,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "TXNM",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "UBSG.SW",
+        "rows": 4021,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "UGI",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "UN0.DE",
+        "rows": 2364,
+        "first_date": "2016-09-12",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "UPM.HE",
+        "rows": 4021,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "VAR.OL",
+        "rows": 972,
+        "first_date": "2022-02-16",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "VCT.PA",
+        "rows": 4099,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "VER.VI",
+        "rows": 4018,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "VIE.PA",
+        "rows": 4099,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "VIO.BR",
+        "rows": 3098,
+        "first_date": "2013-11-22",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "VK.PA",
+        "rows": 4094,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "VLO",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "VLTSA.PA",
+        "rows": 4094,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "VOE.VI",
+        "rows": 4018,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "VONN.SW",
+        "rows": 4021,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "VOW.DE",
+        "rows": 4067,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "VST",
+        "rows": 2323,
+        "first_date": "2016-10-05",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "WBD.MI",
+        "rows": 4065,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "WCH.DE",
+        "rows": 4067,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "WEC",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "WES",
+        "rows": 3287,
+        "first_date": "2012-12-06",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "WLK",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "WMB",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "WRT1V.HE",
+        "rows": 4022,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "XEL",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "XOM",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      },
+      {
+        "symbol": "YAR.OL",
+        "rows": 4019,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-30"
+      },
+      {
+        "symbol": "^GSPC",
+        "rows": 4024,
+        "first_date": "2010-01-04",
+        "last_date": "2025-12-31"
+      }
+    ]
+  },
+  "missing_at_generation": []
+}
