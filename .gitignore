@@ -1,4 +1,6 @@
-# Raw data is reproducible from the notebook; the manifest is the audit record.
+# The price panel is licensed by Financial Modeling Prep and cannot be redistributed,
+# so it stays out of git. The manifest is the audit record and IS published: it holds
+# checksums and coverage, never prices. See build_manifest.py.
 data/raw/*
 !data/raw/.gitkeep
 !data/raw/manifest.json
