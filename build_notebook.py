@@ -419,7 +419,7 @@ all fail that test, so they are dropped without needing to know they exist.
 **They are in percent, not decimals.** `Mkt-RF = 0.55` means 0.55%, not 55%. I store
 them exactly as published and leave the division by 100 to my analysis code. Getting
 this wrong by a factor of 100 is one of the most common errors in factor work, so it is
-recorded in the data manifest as well as here.
+recorded in both data manifests as well as here.
 
 **`-99.99` and `-999` mean "missing".** They are not real observations. Left in place
 they would be catastrophic, since a -99.99% daily return is not something a regression
@@ -962,17 +962,18 @@ print(f"\n{len(report) - n_fail}/{len(report)} checks passed"
 '''))
 
 cells.append(md(r"""
-### The manifest
+### The manifest, and why there are two of them
 
-The last step writes `manifest.json`, a small file recording what was downloaded, when,
-how many rows, and a **SHA-256 checksum** of every file.
+The last step writes `manifest_run.json`, a small file recording what **your** run
+downloaded: when, how many rows, and a **SHA-256 checksum** of every file in
+`data/raw/`.
 
 A checksum is a short fingerprint computed from a file's contents. Change one byte
 anywhere in a 90 megabyte file and the fingerprint changes completely. That makes it
 possible to prove two copies are identical rather than assume it, which matters here
 for three reasons:
 
-- The price data comes from a paid subscription that will be cancelled. Once it is
+- The price data comes from a paid subscription that has been cancelled. Once it is
   gone, this archive cannot be rebuilt, so being able to detect corruption in a backup
   is not a theoretical nicety.
 - The factor file is updated in place by its publisher. A checksum of what was received
@@ -980,9 +981,30 @@ for three reasons:
 - If someone wants to replicate this work, comparing manifests is a faster and more
   conclusive test than comparing results.
 
-The manifest also records the things that are easy to forget and expensive to get
-wrong: that the factors are in percent, and that no currency conversion has been
-applied.
+### The second manifest, and why comparing them is the point
+
+There is another file next to it, `data/raw/manifest.json`. It is the only thing in
+that folder git tracks, and it is the audit record of **my** pull on 21 August 2026:
+the same kind of checksums, plus per-symbol row counts and date ranges for all 304
+symbols. I generate it with `build_manifest.py` at the root of the repository, and it
+holds no prices at all, because Financial Modeling Prep's licence does not let me
+redistribute those.
+
+That is the whole idea. I cannot hand you my price data, so I hand you a fingerprint of
+it. If you have your own subscription and your checksums match mine, you have
+**proved** you are working with the same bytes rather than hoping so, and every number
+in the findings is yours to recompute. If they do not match, the per-symbol coverage in
+`manifest.json` shows you exactly which symbols differ, which is usually a company that
+has gained or lost history since August 2026 rather than anything wrong with your run.
+
+The two files have different names on purpose. An earlier version of this notebook
+wrote to `manifest.json` as well, so a single run in Colab would have quietly
+overwritten the published record with a local one. `manifest_run.json` is gitignored,
+like everything else in `data/raw/`, so your run cannot disturb the published record
+even by accident.
+
+Both manifests record the things that are easy to forget and expensive to get wrong:
+that the factors are in percent, and that no currency conversion has been applied.
 """))
 
 cells.append(code(r'''
@@ -1028,7 +1050,13 @@ manifest = {
               for p in sorted(RAW.glob("*")) if p.is_file()},
 }
 
-(RAW / "manifest.json").write_text(json.dumps(manifest, indent=2))
+# manifest_run.json, NOT manifest.json. The tracked manifest.json in this folder is the
+# published audit record of my own 21 August 2026 pull, written by build_manifest.py at
+# the repository root. Writing to that name here would let any Colab run silently
+# replace it, which is exactly the kind of fault that is invisible until someone tries
+# to verify a checksum against it. The two files are meant to be compared, so they must
+# not be the same file.
+(RAW / "manifest_run.json").write_text(json.dumps(manifest, indent=2))
 print(json.dumps(manifest, indent=2)[:1500])
 '''))
 
@@ -3224,7 +3252,7 @@ present = sorted(f.name for f in RAW.iterdir() if f.is_file())
 CRITICAL = ["panel_b_prices_daily.csv",   # cannot be rebuilt without a paid key
             "panel_a_ff3_daily.csv",      # parsed Panel A
             "ff3_daily_original.csv",     # the exact bytes Ken French served, the audit record
-            "manifest.json",
+            "manifest_run.json",           # written by this run, not the tracked one
             "fmp_delisted.json", "fmp_profile_cache.json"]
 missing_req = [f for f in CRITICAL if f not in present]
 

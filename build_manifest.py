@@ -29,19 +29,26 @@ manifest says so rather than inventing them from filesystem mtimes, which
 change when a file is copied. The next extraction must capture real fetch
 timestamps at request time; see `capture_fetch_timestamps` in the schema notes.
 
-A COLLISION TO FIX, RECORDED HERE SO IT IS NOT DISCOVERED LATE
-----------------------------------------------------------------
-The notebook's final cell also writes `data/raw/manifest.json`, with a
-different and partly complementary schema: it records the download window, the
-factor units, the currency mix and which tickers came back empty, but not
-per-symbol date coverage, and it fingerprints only files in `data/raw/`.
+THE COMPANION FILE
+------------------
+The notebook writes `data/raw/manifest_run.json`, which is the same idea applied
+to whatever a reader's own run produced. It is gitignored, like everything else
+in `data/raw/`, so a run cannot disturb the published record. Comparing the two
+is the intended use: matching checksums prove a reader is holding the same bytes
+the findings were computed on.
 
-So there are currently two producers of one path. That is wrong and should be
-resolved by having the notebook write `manifest_run.json` instead, leaving this
-file as the single published audit record. It is not urgent, because
-`data/raw/manifest.json` is the one path in `data/raw/` that git tracks, so an
-overwrite shows up immediately as a modified file rather than passing silently.
-It is still a latent trap and it is on the follow-up list.
+Both files used to be called `manifest.json`, so a single Colab run silently
+overwrote the published audit record. Fixed 28 August 2026 by renaming the
+notebook's output. The four fields that only the run manifest used to carry, the
+download window, the factor units, the currency mix and the empty-ticker list,
+are now recorded here as well, because those are exactly the facts that are easy
+to forget and expensive to get wrong, and they belong in the published artefact
+rather than only in a local one.
+
+Everything below is DERIVED FROM THE ARCHIVE rather than declared. The window is
+read off the files, the empty-ticker list is computed by comparing the resolved
+ticker list against the symbols actually present in the panel. A declared
+constant would drift away from the data it describes; a derived one cannot.
 
 USAGE
     python3 build_manifest.py                    # default archive location
@@ -89,6 +96,28 @@ FILES = [
 ]
 
 PRICE_PANEL = "data/raw/panel_b_prices_daily.csv"
+FACTOR_PANEL = "data/raw/panel_a_ff3_daily.csv"
+TICKER_LIST = "config/tickers_primary.csv"
+
+# The two benchmark series. They are not companies and must not be counted as
+# such, which is where the "305 symbols" error came from: 302 companies plus
+# these two is 304.
+BENCHMARKS = ("SPY", "^GSPC")
+
+# Ken French publishes the factors in percent. Storing them as published and
+# dividing by 100 in the analysis is a deliberate choice, but it only works if
+# the convention is written down somewhere a reader will actually look. A
+# factor-of-100 error here is one of the most common faults in factor work.
+FACTOR_UNITS = {
+    "units": "PERCENT: divide by 100 before combining with decimal returns",
+    "missing_codes": [-99.99, -999],
+    "note": "Stored exactly as Ken French publishes them. No rescaling applied.",
+}
+
+CURRENCY_NOTE = ("No FX conversion applied anywhere in this panel. GBp is pence, "
+                 "one hundredth of a pound, not pounds. Convert before any "
+                 "dollar-value weighting or the affected companies are wrong by "
+                 "a factor of 100.")
 
 
 def sha256(path, chunk=1 << 20):
@@ -139,6 +168,54 @@ def price_panel_coverage(path):
             if dmax is None or d > dmax:
                 dmax = d
     return per, dmin, dmax
+
+
+def date_range(path, col="date"):
+    """First and last value of a date column, streamed. Returns (None, None) if
+    the file is absent, so a partial archive degrades rather than crashes."""
+    if not os.path.exists(path):
+        return None, None
+    lo = hi = None
+    with open(path, newline="", encoding="utf-8") as f:
+        r = csv.DictReader(f)
+        if col not in (r.fieldnames or []):
+            return None, None
+        for row in r:
+            d = row[col]
+            if not d:
+                continue
+            if lo is None or d < lo:
+                lo = d
+            if hi is None or d > hi:
+                hi = d
+    return lo, hi
+
+
+def ticker_list_facts(path, panel_symbols):
+    """Currency mix and empty-ticker list, both derived rather than declared.
+
+    An "empty ticker" is a company the crosswalk resolved to a symbol that then
+    came back with no price rows. That is a different failure from a company
+    that never resolved at all, and it is worth naming, because a symbol that
+    silently returns nothing looks identical to a symbol nobody asked for once
+    the panel is written.
+    """
+    if not os.path.exists(path):
+        return {}, [], 0
+    currencies, requested = {}, []
+    with open(path, newline="", encoding="utf-8") as f:
+        for row in csv.DictReader(f):
+            if str(row.get("priceable", "")).strip().lower() not in ("true", "1", "yes"):
+                continue
+            sym = (row.get("primary_symbol") or "").strip()
+            if not sym:
+                continue
+            requested.append(sym)
+            cur = (row.get("currency") or "unknown").strip()
+            currencies[cur] = currencies.get(cur, 0) + 1
+    empty = sorted(set(requested) - set(panel_symbols))
+    currencies = dict(sorted(currencies.items(), key=lambda kv: (-kv[1], kv[0])))
+    return currencies, empty, len(set(requested))
 
 
 def main():
@@ -194,6 +271,40 @@ def main():
               f"({panel['company_symbols']} companies + "
               f"{len(benchmarks)} benchmarks), {dmin} to {dmax}")
 
+    # ---- the four fields folded in from the notebook's run manifest ----------
+    panel_symbols = [e["symbol"] for e in panel.get("per_symbol", [])]
+    currencies, empty_tickers, n_requested = ticker_list_facts(
+        os.path.join(arch, TICKER_LIST), panel_symbols)
+
+    fa_min, fa_max = date_range(os.path.join(arch, FACTOR_PANEL))
+
+    window = {
+        "price_panel": {"first": panel.get("date_min"), "last": panel.get("date_max")},
+        "factor_panel": {"first": fa_min, "last": fa_max},
+        "provenance": "Read off the archived files, not declared. If these two "
+                      "ranges disagree, the overlap is what any regression "
+                      "actually uses.",
+    }
+
+    coverage = {
+        "symbols_requested": n_requested,
+        "symbols_returned": len([s for s in panel_symbols if s not in BENCHMARKS]),
+        "empty_tickers": empty_tickers,
+        "empty_tickers_note":
+            "Companies the crosswalk resolved to a symbol that then returned no "
+            "rows. An empty list means every resolved symbol produced data. This "
+            "is derived by comparing the resolved ticker list against the "
+            "symbols present in the panel, so it cannot drift out of date.",
+        "currencies": currencies,
+        "currency_note": CURRENCY_NOTE,
+    }
+
+    if empty_tickers:
+        print(f"  empty tickers ({len(empty_tickers)}): {empty_tickers}")
+    else:
+        print(f"  empty tickers: none, all {n_requested} resolved symbols returned data")
+    print(f"  currencies: {currencies}")
+
     man = {
         "schema": "paper1-data-manifest/1",
         "generated_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -217,9 +328,20 @@ def main():
                 "Every other input in this repository is free and "
                 "redistributable.",
         },
+        "window": window,
+        "factor_units": FACTOR_UNITS,
+        "coverage": coverage,
         "files": entries,
         "price_panel": panel,
         "missing_at_generation": missing,
+        "companion": {
+            "path": "data/raw/manifest_run.json",
+            "written_by": "notebooks/01_raw_panels.ipynb, final cell",
+            "tracked": False,
+            "note": "The same idea applied to your own run. Compare the file "
+                    "checksums here against yours to prove you are holding the "
+                    "same bytes these findings were computed on.",
+        },
     }
 
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
