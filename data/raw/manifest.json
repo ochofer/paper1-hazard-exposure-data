@@ -1,6 +1,6 @@
 {
   "schema": "paper1-data-manifest/1",
-  "generated_utc": "2026-09-02T15:10:55Z",
+  "generated_utc": "2026-09-02T15:29:00Z",
   "generated_by": "build_manifest.py",
   "pull": {
     "id": "fmp_2026-08-21",
@@ -11,6 +11,43 @@
     "redistributable": false,
     "repeatable_without_payment": false,
     "note": "This manifest makes the pull auditable, not repeatable. Rebuilding the price layer requires a paid FMP subscription. Every other input in this repository is free and redistributable."
+  },
+  "window": {
+    "price_panel": {
+      "first": "2010-01-04",
+      "last": "2025-12-31"
+    },
+    "factor_panel": {
+      "first": "2010-01-04",
+      "last": "2025-12-31"
+    },
+    "provenance": "Read off the archived files, not declared. If these two ranges disagree, the overlap is what any regression actually uses."
+  },
+  "factor_units": {
+    "units": "PERCENT: divide by 100 before combining with decimal returns",
+    "missing_codes": [
+      -99.99,
+      -999
+    ],
+    "note": "Stored exactly as Ken French publishes them. No rescaling applied."
+  },
+  "coverage": {
+    "symbols_requested": 302,
+    "symbols_returned": 302,
+    "empty_tickers": [],
+    "empty_tickers_note": "Companies the crosswalk resolved to a symbol that then returned no rows. An empty list means every resolved symbol produced data. This is derived by comparing the resolved ticker list against the symbols present in the panel, so it cannot drift out of date.",
+    "currencies": {
+      "USD": 149,
+      "EUR": 99,
+      "GBp": 26,
+      "NOK": 11,
+      "CHF": 7,
+      "SEK": 7,
+      "AUD": 1,
+      "DKK": 1,
+      "ILA": 1
+    },
+    "currency_note": "No FX conversion applied anywhere in this panel. GBp is pence, one hundredth of a pound, not pounds. Convert before any dollar-value weighting or the affected companies are wrong by a factor of 100."
   },
   "files": [
     {
@@ -1957,5 +1994,11 @@
       }
     ]
   },
-  "missing_at_generation": []
+  "missing_at_generation": [],
+  "companion": {
+    "path": "data/raw/manifest_run.json",
+    "written_by": "notebooks/01_raw_panels.ipynb, final cell",
+    "tracked": false,
+    "note": "The same idea applied to your own run. Compare the file checksums here against yours to prove you are holding the same bytes these findings were computed on."
+  }
 }
