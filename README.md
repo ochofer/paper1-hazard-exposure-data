@@ -200,6 +200,24 @@ so a run cannot overwrite the published record. Comparing the two is the point: 
 checksums prove you are holding the same bytes, and if they differ, the per-symbol
 coverage shows you which symbols diverge.
 
+**What the price series actually is.** Every return in this project is computed from a
+single field, `adjClose`, taken from Financial Modeling Prep's
+`historical-price-eod/dividend-adjusted` endpoint and pulled on 21 August 2026. **The
+adjustment is the vendor's, not mine.** It is back-adjusted for splits as well as
+dividends: NextEra's four-for-one split of 26 October 2020 shows no discontinuity in the
+series, and 2010 levels sit well below the nominal closes of the time, for example Exxon
+at 37.14 on 4 January 2010 against a nominal close near 69. **No unadjusted close is
+stored beside it in the archive**, so the adjustment cannot be undone or independently
+checked from what this repository describes.
+
+That matters more than it first appears, and it cuts in the same direction as the rest of
+this work. A vendor's adjusted price history is itself a restated, vintage-dependent
+object: every historical adjusted price moves whenever a new dividend or split is applied.
+The panel pulled on 21 August 2026 is therefore a snapshot of FMP's back-adjustment as it
+stood that day, and could not be reproduced later even with a live subscription. That
+supports the manifest rather than undermining it, and it is the reason the claim below is
+worded the way it is.
+
 **The claim is that my pull is auditable, not that it is repeatable.** Rebuilding the
 price layer requires a paid FMP subscription. Every other input here is free and
 redistributable. The manifest also records what it lacks: the pull of 21 August 2026 did
