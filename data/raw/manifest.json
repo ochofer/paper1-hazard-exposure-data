@@ -1,6 +1,6 @@
 {
-  "schema": "paper1-data-manifest/1",
-  "generated_utc": "2026-09-02T15:29:00Z",
+  "schema": "paper1-data-manifest/2",
+  "generated_utc": "2026-09-05T21:04:09Z",
   "generated_by": "build_manifest.py",
   "pull": {
     "id": "fmp_2026-08-21",
@@ -166,7 +166,26 @@
     "company_symbols": 302,
     "date_min": "2010-01-04",
     "date_max": "2025-12-31",
-    "price_convention": "dividend-adjusted close, single convention across the whole panel",
+    "price_adjustment": {
+      "convention": "adjClose from FMP historical-price-eod/dividend-adjusted, pulled 2026-08-21. Vendor back-adjustment for dividends AND splits. No unadjusted close is archived alongside, so the adjustment cannot be reversed or independently verified from the files in this manifest.",
+      "source_endpoint": "historical-price-eod/dividend-adjusted",
+      "price_field": "adjClose",
+      "adjusted_by": "vendor",
+      "adjusts_for": [
+        "dividends",
+        "splits"
+      ],
+      "unadjusted_close_archived": false,
+      "pull_date": "2026-08-21",
+      "vintage_note": "An adjusted price history is restated whenever a new dividend or split is applied, so this is a snapshot of the vendor's back-adjustment on the pull date rather than a stable series. It could not be reproduced later even with a live subscription.",
+      "evidence": {
+        "test": "count of one-day price moves beyond the threshold",
+        "threshold": 0.5,
+        "count": 47,
+        "distinct_symbols": 27,
+        "interpretation": "An unadjusted panel would show one such move per split, and there are hundreds of splits in a universe this size over sixteen years. The observed count is far too low for that, and the moves that do appear cluster in March 2020 and in a handful of distressed small caps rather than on split dates."
+      }
+    },
     "per_symbol": [
       {
         "symbol": "A2A.MI",
