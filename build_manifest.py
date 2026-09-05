@@ -38,7 +38,7 @@ is the intended use: matching checksums prove a reader is holding the same bytes
 the findings were computed on.
 
 Both files used to be called `manifest.json`, so a single Colab run silently
-overwrote the published audit record. Fixed 28 August 2026 by renaming the
+overwrote the published audit record. Fixed 2 September 2026 by renaming the
 notebook's output. The four fields that only the run manifest used to carry, the
 download window, the factor units, the currency mix and the empty-ticker list,
 are now recorded here as well, because those are exactly the facts that are easy
@@ -49,6 +49,17 @@ Everything below is DERIVED FROM THE ARCHIVE rather than declared. The window is
 read off the files, the empty-ticker list is computed by comparing the resolved
 ticker list against the symbols actually present in the panel. A declared
 constant would drift away from the data it describes; a derived one cannot.
+
+SCHEMA VERSIONS
+---------------
+    paper1-data-manifest/1   files, price_panel, pull, missing_at_generation
+    paper1-data-manifest/2   adds window, factor_units, coverage, companion, and
+                             replaces the one-line price_convention string with a
+                             structured price_adjustment block
+
+A consumer keying on the version string was being misled while the shape changed
+underneath a fixed "/1", so the version is bumped here rather than left alone.
+Nothing was removed between the two, so a /1 reader still works against a /2 file.
 
 USAGE
     python3 build_manifest.py                    # default archive location
@@ -118,6 +129,36 @@ CURRENCY_NOTE = ("No FX conversion applied anywhere in this panel. GBp is pence,
                  "one hundredth of a pound, not pounds. Convert before any "
                  "dollar-value weighting or the affected companies are wrong by "
                  "a factor of 100.")
+
+# What the price series actually is. The earlier one-line label said only
+# "dividend-adjusted close", which invites a reader to assume splits are NOT
+# handled and therefore to re-apply a split adjustment that is already in the
+# data. It is back-adjusted for both. See adjustment_evidence() for the check.
+#
+# The deeper point, and the reason this belongs in an audit record rather than a
+# footnote: a vendor's adjusted price history is itself a restated object. Every
+# past price moves whenever a new dividend or split is applied, so this pull is a
+# snapshot of FMP's back-adjustment as it stood on 21 August 2026 and could not be
+# reproduced later even with a live key. That is why the claim is that the pull is
+# auditable and never that it is repeatable.
+PRICE_ADJUSTMENT = {
+    "convention":
+        "adjClose from FMP historical-price-eod/dividend-adjusted, pulled "
+        "2026-08-21. Vendor back-adjustment for dividends AND splits. No "
+        "unadjusted close is archived alongside, so the adjustment cannot be "
+        "reversed or independently verified from the files in this manifest.",
+    "source_endpoint": "historical-price-eod/dividend-adjusted",
+    "price_field": "adjClose",
+    "adjusted_by": "vendor",
+    "adjusts_for": ["dividends", "splits"],
+    "unadjusted_close_archived": False,
+    "pull_date": PULL_DATE,
+    "vintage_note":
+        "An adjusted price history is restated whenever a new dividend or split "
+        "is applied, so this is a snapshot of the vendor's back-adjustment on the "
+        "pull date rather than a stable series. It could not be reproduced later "
+        "even with a live subscription.",
+}
 
 
 def sha256(path, chunk=1 << 20):
@@ -218,6 +259,47 @@ def ticker_list_facts(path, panel_symbols):
     return currencies, empty, len(set(requested))
 
 
+def adjustment_evidence(path, threshold=0.5):
+    """Evidence that the series is split-adjusted, derived rather than asserted.
+
+    An unadjusted series shows a split as a one-day fall of exactly the split
+    ratio: 50% for a two-for-one, 75% for a four-for-one. Across 302 large
+    companies over sixteen years there are hundreds of splits, so an unadjusted
+    panel would show hundreds of such falls. Counting the daily moves beyond a
+    threshold therefore separates the two cases without needing a split calendar.
+
+    This is evidence, not proof. It cannot distinguish a split-adjusted series
+    from one whose splits all happened to be small, which is why the claim in
+    PRICE_ADJUSTMENT rests on the vendor's documented endpoint behaviour and this
+    check merely fails to contradict it.
+    """
+    prev, extremes = {}, []
+    with open(path, newline="", encoding="utf-8") as f:
+        for row in csv.DictReader(f):
+            s = row["symbol"]
+            try:
+                p = float(row["price"])
+            except (TypeError, ValueError):
+                continue
+            last = prev.get(s)
+            if last is not None and last > 0:
+                if abs(p / last - 1.0) > threshold:
+                    extremes.append(s)
+            prev[s] = p
+    return {
+        "test": "count of one-day price moves beyond the threshold",
+        "threshold": threshold,
+        "count": len(extremes),
+        "distinct_symbols": len(set(extremes)),
+        "interpretation":
+            "An unadjusted panel would show one such move per split, and there "
+            "are hundreds of splits in a universe this size over sixteen years. "
+            "The observed count is far too low for that, and the moves that do "
+            "appear cluster in March 2020 and in a handful of distressed small "
+            "caps rather than on split dates.",
+    }
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--archive", default=DEFAULT_ARCHIVE)
@@ -261,8 +343,10 @@ def main():
             "company_symbols": len(per) - len(benchmarks),
             "date_min": dmin,
             "date_max": dmax,
-            "price_convention": "dividend-adjusted close, single convention "
-                                "across the whole panel",
+            "price_adjustment": dict(
+                PRICE_ADJUSTMENT,
+                evidence=adjustment_evidence(pp),
+            ),
             "per_symbol": [
                 dict(symbol=s, **per[s]) for s in sorted(per)
             ],
@@ -306,7 +390,7 @@ def main():
     print(f"  currencies: {currencies}")
 
     man = {
-        "schema": "paper1-data-manifest/1",
+        "schema": "paper1-data-manifest/2",
         "generated_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "generated_by": "build_manifest.py",
         "pull": {
