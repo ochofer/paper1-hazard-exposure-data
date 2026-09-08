@@ -1,0 +1,21 @@
+{
+  "script": "08_event_validation_sample",
+  "generated_utc": "2026-09-08T11:07:06Z",
+  "release_pin": {
+    "March 2025": "Global-Energy-Ownership-Tracker-March-2025.xlsx",
+    "August 2026": "Global-Energy-Ownership-Tracker-August-2026-V1.xlsx",
+    "August 2026 V2": "Global-Energy-Ownership-Tracker-August-2026-V2_External.xlsx"
+  },
+  "inputs": {
+    "old": {
+      "filename": "Global-Energy-Ownership-Tracker-March-2025.xlsx",
+      "bytes": 21332621,
+      "sha256": "395d2080038cb06153aa53344fb72dc8d85271d53b5b920d2792cda98bb0e056"
+    },
+    "new": {
+      "filename": "Global-Energy-Ownership-Tracker-August-2026-V1.xlsx",
+      "bytes": 51937718,
+      "sha256": "1494cd6aed8220bd15f355f72329da940e621ad4c66e60f3775e776d40c488d2"
+    }
+  }
+}

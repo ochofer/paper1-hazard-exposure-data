@@ -1,0 +1,100 @@
+POWER COMPARISON: cross-sectional premium against hazard event study
+assumptions: sd(gamma)=2.0%/month, sd(CAR)=2.0%/event, t hurdle=3.0
+
+DESIGN A. Cross-sectional premium, Fama-MacBeth
+  plausible true effect: 2.0%/year = 0.167%/month
+
+      sample  months   MDE %/mth   MDE %/yr  power ratio  verdict
+     5 years      60       0.775       9.30          4.6  CANNOT detect
+     8 years      96       0.612       7.35          3.7  CANNOT detect
+    10 years     120       0.548       6.57          3.3  CANNOT detect
+    12 years     144       0.500       6.00          3.0  CANNOT detect
+    15 years     180       0.447       5.37          2.7  CANNOT detect
+    20 years     240       0.387       4.65          2.3  CANNOT detect
+    30 years     360       0.316       3.79          1.9  CANNOT detect
+
+  months needed to detect a 2.0%/year premium at t=3.0: 1,296
+  which is 108 years.
+
+DESIGN B. Hazard event study
+  plausible true effect: 1.0% CAR per event
+
+      events   MDE % CAR  power ratio  verdict
+          20       1.342          1.3  CANNOT detect
+          30       1.095          1.1  CANNOT detect
+          50       0.849          0.8  can detect
+          75       0.693          0.7  can detect
+         100       0.600          0.6  can detect
+         150       0.490          0.5  can detect
+         200       0.424          0.4  can detect
+
+  events needed to detect a 1.0% CAR at t=3.0: 36
+
+SENSITIVITY. The assumed standard deviations are the soft inputs,
+so both designs are re-scored across a plausible range.
+
+  Design A, 10 years (120 months), against 2.0%/year:
+    sd=1.0%/month -> MDE  3.29%/year, power ratio  1.6
+    sd=1.5%/month -> MDE  4.93%/year, power ratio  2.5
+    sd=2.0%/month -> MDE  6.57%/year, power ratio  3.3
+    sd=2.5%/month -> MDE  8.22%/year, power ratio  4.1
+
+  Design B, 75 events, against 1.0% CAR:
+    sd=1.5%/event -> MDE  0.52%, power ratio  0.5
+    sd=2.0%/event -> MDE  0.69%, power ratio  0.7
+    sd=2.5%/event -> MDE  0.87%, power ratio  0.9
+    sd=3.0%/event -> MDE  1.04%, power ratio  1.0
+
+CONCLUSION
+  Design A at 10 years: power ratio 3.3. Underpowered by roughly 3x.
+  Design B at 75 events: power ratio 0.7.
+  The event study can detect a plausible effect on this data. The
+  cross-sectional premium cannot, and would need decades to.
+
+  Both use the same 328 firms and the same exposure measure, so this
+  is a change of question rather than a change of dataset.
+
+DOES A BIGGER CROSS-SECTION RESCUE DESIGN A?
+  measured firm counts, from running the traversal over every country:
+    Europe 16 + US ......... 328 firms, 175 with 5+ assets, 5,115 assets
+    Ken French Developed ... 541 firms, 266 with 5+ assets, 7,695 assets
+    excluded rest of world . 960 firms, 315 with 5+ assets, 8,997 assets
+
+  optimistic bound: sd(gamma) falls by at most a factor of sqrt(328/541) = 0.779
+  so sd(gamma) 2.0%/month becomes at best 1.56%/month
+
+      sample  MDE %/yr now   MDE %/yr expanded  ratio now  ratio exp
+    10 years          6.57                5.12        3.3        2.6
+    15 years          5.37                4.18        2.7        2.1
+    20 years          4.65                3.62        2.3        1.8
+
+  VERDICT: expanding to developed markets does NOT rescue design A.
+  Even on the optimistic bound the power ratio at 10 years falls from
+  3.3 to 2.6, which is still far above 1.0.
+
+  It helps DESIGN B considerably more, and for a different reason.
+  Adding Japan, Australia, Hong Kong and Singapore adds typhoon and
+  cyclone exposure, so it raises the EVENT COUNT rather than only the
+  firm count, and event count is what drives design B's power.
+  Japan alone adds 103 firms and 1,488 operating assets.
+
+  COST, measured. The identifier crosswalk degrades badly:
+    ISINs in the ANNA file by country prefix
+      Canada 0, Hong Kong 0, Singapore 0, New Zealand 0
+      Japan 3,640, Australia 7,104
+      against United States 2,281,221 and Germany 4,232,134
+    So 73 of the 213 new firms have no ANNA route at all, and Japan's
+    103 firms rest on a very thin file. The three-lane crosswalk would
+    need a fourth lane before expansion is usable.
+
+WHAT DESIGN B STILL NEEDS, none of it free of difficulty
+  1. An event list. NOAA storm data is free. EM-DAT is free for
+     academic use. Both need cleaning to asset-relevant events.
+  2. Events must be UNANTICIPATED. Hurricanes are forecast days
+     ahead, so the event date should be the forecast or track
+     announcement, not landfall. Getting this wrong destroys the
+     design more quietly than getting the returns wrong.
+  3. Asset coordinates, to know which firm was in the path. This is
+     the SAME blocker as design A: the GEM sector trackers.
+  4. Independence. Two hurricanes in one season hitting the same
+     coast are not independent events. Cluster or drop.

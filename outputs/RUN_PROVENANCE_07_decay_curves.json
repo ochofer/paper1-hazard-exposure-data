@@ -1,0 +1,86 @@
+{
+  "script": "07_decay_curves",
+  "generated_utc": "2026-09-07T06:53:44Z",
+  "release_pin": {
+    "March 2025": "Global-Energy-Ownership-Tracker-March-2025.xlsx",
+    "August 2026": "Global-Energy-Ownership-Tracker-August-2026-V1.xlsx",
+    "August 2026 V2": "Global-Energy-Ownership-Tracker-August-2026-V2_External.xlsx"
+  },
+  "inputs": {
+    "release_2024-06": {
+      "filename": "Global_Energy_Ownership_Tracker_June_2024.xlsx",
+      "bytes": 1999910,
+      "sha256": "9873bbd37e28f65859f93ae553deecf59fa2311008fbeb882202afefc470db40"
+    },
+    "release_2025-03": {
+      "filename": "Global-Energy-Ownership-Tracker-March-2025.xlsx",
+      "bytes": 21332621,
+      "sha256": "395d2080038cb06153aa53344fb72dc8d85271d53b5b920d2792cda98bb0e056"
+    },
+    "release_2025-05": {
+      "filename": "Global-Energy-Ownership-Tracker-May-2025-V1.xlsx",
+      "bytes": 22317316,
+      "sha256": "958c2aa39b85f034f9917ee131f280db3020170a256e2205dc62ca1a52a9ea8b"
+    },
+    "release_2025-07": {
+      "filename": "Global-Energy-Ownership-Tracker-July-2025-V2.xlsx",
+      "bytes": 28666431,
+      "sha256": "3d9ada7dd3cb5db448a97ae7bdc4dbfbd020aab30aeca89d755c1990381ecefa"
+    },
+    "release_2025-08": {
+      "filename": "Global-Energy-Ownership-Tracker-August-2025-V1.xlsx",
+      "bytes": 26679121,
+      "sha256": "0439ddcb8b9bd550402e9b753e7e9d83f3d41d872228a90b4dcf707b97bca83e"
+    },
+    "release_2025-09": {
+      "filename": "Global-Energy-Ownership-Tracker-September-2025-V1.xlsx",
+      "bytes": 30387366,
+      "sha256": "12601494482798ca300420328fae49827c407d38e9fca935f5f9222fb54a1de7"
+    },
+    "release_2025-10": {
+      "filename": "Global-Energy-Ownership-Tracker-October-2025-V1.xlsx",
+      "bytes": 27918289,
+      "sha256": "6b536f7f3f8f8bde8f05e86b1c5197ec412f5df7e201cf8acdbe781f6e4a68ae"
+    },
+    "release_2025-11": {
+      "filename": "Global-Energy-Ownership-Tracker-November-2025-V1.xlsx",
+      "bytes": 28024790,
+      "sha256": "ec6f7742e38191ab204716b94e07eb7c6be221c7f4eb5b3d079bfa4919cafa46"
+    },
+    "release_2025-12": {
+      "filename": "Global-Energy-Ownership-Tracker-December-2025.xlsx",
+      "bytes": 28540401,
+      "sha256": "1985ec16adba0749bbe9ba2a8715edb05c544f2f7ff8383790e6aaa6656dd702"
+    },
+    "release_2026-01": {
+      "filename": "Global-Energy-Ownership-Tracker-January-2026-V1.xlsx",
+      "bytes": 28557709,
+      "sha256": "340dc48bd3b80210106d7739856627161368240713ac51543a6b4048018ea4d9"
+    },
+    "release_2026-02": {
+      "filename": "Global-Energy-Ownership-Tracker-February-2026-V1.xlsx",
+      "bytes": 28578894,
+      "sha256": "a5c74a8affd6eb3ecb3bccb630532765ef1f40ef30edfec118b8e6f521d528f7"
+    },
+    "release_2026-03": {
+      "filename": "Global-Energy-Ownership-Tracker-March-2026-V1.xlsx",
+      "bytes": 40210834,
+      "sha256": "4241a21adc7c213de91b6d11f35ceebba6ecaaaa5ba6820b7b88082364614d3b"
+    },
+    "release_2026-05": {
+      "filename": "Global-Energy-Ownership-Tracker-May-2026-V2.xlsx",
+      "bytes": 40210834,
+      "sha256": "931feaf890cfe80ce40cd49c7a87268cfd99502926ea06491752dd97964366b8"
+    },
+    "release_2026-07": {
+      "filename": "Global-Energy-Ownership-Tracker-July-2026-V1.xlsx",
+      "bytes": 50295954,
+      "sha256": "2fb95609b8ba4cad18b743c76acdefe710c9196ba83661feb0ab6da00d141697"
+    },
+    "release_2026-08": {
+      "filename": "Global-Energy-Ownership-Tracker-August-2026-V1.xlsx",
+      "bytes": 51937718,
+      "sha256": "1494cd6aed8220bd15f355f72329da940e621ad4c66e60f3775e776d40c488d2"
+    }
+  }
+}

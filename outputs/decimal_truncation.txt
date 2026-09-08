@@ -1,0 +1,50 @@
+TASK 1.1 SUPPLEMENT  DECIMAL-PRECISION TRUNCATION
+  replaces the ad-hoc 74.9% figure, which could not be reproduced
+
+DECIMAL PLACES CARRIED BY EACH RELEASE
+  March 2025  (Global-Energy-Ownership-Tracker-March-2025.xlsx)
+    rows 18,807 | carrying a share value 16,315 | duplicate edge keys dropped 0
+    values needing 2+ decimal places: 4,382 of 16,315 (26.9%)
+  August 2026  (Global-Energy-Ownership-Tracker-August-2026-V1.xlsx)  PINNED
+    rows 24,881 | carrying a share value 24,881 | duplicate edge keys dropped 0
+    values needing 2+ decimal places: 0 of 24,881 (0.0%)
+  August 2026 V2  (Global-Energy-Ownership-Tracker-August-2026-V2_External.xlsx)  reported alongside
+    rows 25,206 | carrying a share value 25,206 | duplicate edge keys dropped 0
+    values needing 2+ decimal places: 0 of 25,206 (0.0%)
+
+==========================================================================
+MATCHED EDGES: HOW MUCH OF THE MOVEMENT IS PRECISION AND NOTHING ELSE
+
+  March 2025 against August 2026 (PINNED, quote this)
+    edges with a numeric share in BOTH releases       14,904
+    value differs at all                               4,454  (29.9% of matched)
+    STRICT: explained by 1dp rounding alone            3,561  (80.0% of all changes)
+    BROAD:  strict, or below half the last place       3,561  (80.0% of all changes)
+    suppressed by the 0.06 threshold in 08           3,567  (80.1% of all changes)
+    survives into the restatement bucket                 887  (19.9% of all changes)
+
+  March 2025 against August 2026 V2 (reported alongside)
+    edges with a numeric share in BOTH releases       14,790
+    value differs at all                               4,453  (30.1% of matched)
+    STRICT: explained by 1dp rounding alone            3,496  (78.5% of all changes)
+    BROAD:  strict, or below half the last place       3,496  (78.5% of all changes)
+    suppressed by the 0.06 threshold in 08           3,502  (78.6% of all changes)
+    survives into the restatement bucket                 951  (21.4% of all changes)
+
+==========================================================================
+WHAT THIS MEANS
+  80.0% of all apparent share-value changes between the pinned
+  vintages are a change in the file's decimal precision and nothing else.
+  That is a formatting decision, not research, not a correction, and
+  certainly not an ownership event.
+
+  R IS UNAFFECTED. The 0.06 threshold in 08_event_validation_sample.py
+  already suppressed 3,567 of the 4,454 changes before task 1.1 ran, so the 36.0%
+  figure never contained them. Anyone rerunning this with a tighter
+  threshold will manufacture roughly 3,561 spurious changes.
+
+  DO NOT QUOTE 74.9%. It was an ad-hoc calculation with an unrecorded
+  rule and it is not reproducible. Quote the STRICT figure above and
+  cite this script.
+
+  written to /sessions/rcw-01x512ciuk9onswtpod4uzve/mnt/Projects/Finance Project A/outputs

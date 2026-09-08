@@ -1,0 +1,87 @@
+TASK 1.5 SETUP  PANEL JOIN
+  panel      328 firms from cross_section.csv
+  exposure   824 distinct firms worldwide
+  join key   GEM entity ID, exact, no name matching
+
+==========================================================================
+HOW MUCH OF THE PANEL THE PROXY ACTUALLY COVERS
+  the proxy is coal and gas POWER only, so a panel firm whose only
+  fossil assets are pipelines, mines, steel or cement scores zero
+  March 2025    firms with any exposure  155 of 328   total   553.3 GW
+  August 2026   firms with any exposure  188 of 328   total   618.2 GW
+  never exposed in either vintage       137 of 328  (42%)
+  the EFFECTIVE panel for task 1.5 is therefore 191 firms, not 328
+
+==========================================================================
+SELECTION: THE PANEL IS DEFINED ON THE LATER VINTAGE
+  of the 328 panel firms, appearing in the exposure universe:
+    March 2025   155
+    August 2026  188
+    entered between the two vintages   36
+    left between the two vintages       3
+  panel membership itself is conditioned on August 2026. Not fixed
+  here, by design. See the docstring and the task 1.6 note.
+
+==========================================================================
+DOES THE SORT MOVE? 5-QUANTILE PORTFOLIOS
+  computed on the 191 firms with exposure in either vintage
+  top quintile = 38 firms
+
+  --- blank=zero ---
+    Spearman, all 328 panel firms incl. zeros   0.8200
+    Spearman, 191 active firms                0.7309
+    Pearson,  191 active firms                0.9078
+    total GW  2025   515.1   2026   618.2   (+20.0%)
+    TOP-QUINTILE OVERLAP  86.8%  (33 of 38 firms in common)
+    dropped out of the top quintile: 5
+       Carlyle Group Inc                        7,724 ->     3,269 MW
+       EDP SA                                   4,600 ->     3,142 MW
+       Public Power Corporation SA              4,647 ->     3,647 MW
+       E.ON SE                                  3,320 ->     3,152 MW
+       National Grid PLC                        3,480 ->     3,480 MW
+    entered the top quintile:        5
+       Entergy Louisiana LLC                        0 ->    11,121 MW
+       DTE Energy Co                                0 ->     7,719 MW
+       Union Electric Co                            0 ->     6,991 MW
+       Blackstone Inc                           3,201 ->     4,827 MW
+       KKR & Co. Inc                            2,601 ->     3,716 MW
+
+  --- blank=impute ---
+    Spearman, all 328 panel firms incl. zeros   0.8507
+    Spearman, 191 active firms                0.7749
+    Pearson,  191 active firms                0.9152
+    total GW  2025   553.3   2026   618.2   (+11.7%)
+    TOP-QUINTILE OVERLAP  92.1%  (35 of 38 firms in common)
+    dropped out of the top quintile: 3
+       Carlyle Group Inc                        9,094 ->     3,269 MW
+       EDP SA                                   4,600 ->     3,142 MW
+       Public Power Corporation SA              4,647 ->     3,647 MW
+    entered the top quintile:        3
+       Entergy Louisiana LLC                        0 ->    11,121 MW
+       Union Electric Co                            0 ->     6,991 MW
+       KKR & Co. Inc                            3,153 ->     3,716 MW
+
+==========================================================================
+HOW MUCH THE BLANK-SHARE CONVENTION ALONE MOVES THE SORT
+  March 2025 top quintile, zero vs impute: 36 of 38 in common (94.7%)
+  August 2026 top quintile, zero vs impute: 38 of 38 in common (100.0%)
+  the August figure should be 100%: August 2026 has no blank shares,
+  so the two conventions are identical there. It is a self-check.
+
+==========================================================================
+LARGEST PANEL MOVES (blank=impute)
+  firm                                     2025       2026     change
+  Constellation Energy Corp               6,053     33,534    +27,481
+  Entergy Corp                           22,462      8,721    -13,742
+  Entergy Louisiana LLC                       0     11,121    +11,121
+  RWE AG                                 15,172     22,754     +7,582
+  Berkshire Hathaway Inc                 14,429     21,471     +7,042
+  Union Electric Co                           0      6,991     +6,991
+  Carlyle Group Inc                       9,094      3,269     -5,826
+  Enel SpA                               12,071      8,111     -3,960
+  Bridgepoint Group PLC                       0      3,368     +3,368
+  Evergy Inc                              7,346     10,562     +3,216
+  Southern Co                            33,019     35,714     +2,695
+  Xcel Energy Inc                        12,150     14,567     +2,417
+  NRG Energy Inc                         15,831     18,148     +2,317
+  Talen Energy Corp                       7,988     10,242     +2,255

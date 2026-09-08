@@ -1,0 +1,46 @@
+SALIENCE LAG  CURATED EVIDENCE, VALIDATED AND MEASURED
+  evidence/salience_lag_cases.csv is a hand-verified INPUT, not an output.
+  Transaction dates come from exchange filings, company press releases and
+  EDINET. This script validates it against the verified sample and computes
+  the arithmetic over it.
+
+VALIDATION against event_validation_sample.csv, matched on subject_id + party_id
+  cases in the evidence file                6
+  cases in the sample verdicted REAL or REAL BUT MISDATED   6
+  all cases present, matched and verdict-consistent. No case added or dropped.
+
+==============================================================================
+THE LAG. Transaction date to the first day of the month of the first GEM
+release carrying the change. One uniform rule, stated because the choice
+of endpoint moves the number.
+
+  case subject                           transaction  release   lag days  stamp
+  19   Daiichi Jitsugyo                  2025-09-19   2025-10         12  2025-09-25
+  11   Lakeside Syracuse                 2025-10-22   2026-01         71  -
+  1    State Street                      2024-09-30   2026-08        670  -
+  7    Footprint Power Salem Harbor Dev  2023-04-24   2026-07      1,164  2026-06-26
+  17   BBL                               2023-05-17   2026-08      1,172  2026-03-26
+  10   Initec Energia                    2021-12-31   2026-08      1,674  -
+
+  fast, within four months: 2 cases, 12 to 71 days
+  slow, beyond four months: 4 cases, 670 to 1,674 days (1.8 to 4.6 years)
+
+  A PHRASING CORRECTION FOR THE NOTE. The slow group has been described as
+  'two to four and a half years'. The shortest of the four is 670 days,
+  which is 1.8 years, not two. The accurate phrase is
+  '1.8 to 4.6 years', or the days themselves.
+
+  The two fast cases are the recent, heavily covered transactions: a
+  statutory disclosure by a listed Japanese issuer, and a 1.9bn USD
+  acquisition by a listed US utility. The four slow ones are older or reach
+  the affected entity only through a perimeter. Salience note per case is in
+  the evidence file.
+
+  WHAT THIS IS NOT. Six cases cannot establish a correlation. The claim the
+  note makes is that the lag is not a constant, which one fast case and one
+  slow case would establish, and that its variation lines up with salience,
+  which is offered as the reading of six hand-checked cases and labelled as
+  such. An offset cannot fix a lag that is not constant, and that is the
+  consequence that matters.
+
+  written to /sessions/rcw-01x512ciuk9onswtpod4uzve/mnt/Projects/Finance Project A/outputs

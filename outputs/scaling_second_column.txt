@@ -1,0 +1,66 @@
+TASK 1.5 SUPPLEMENT  SCALING: CAN A SECOND COLUMN BE BUILT INSIDE GEM?
+  ruling (d), research design chat, 3 September 2026
+  thresholds pre-committed before this ran; see PROJECT_STATUS.md
+
+  GEM's ownership tracker carries NO wind, solar, hydro, nuclear or
+  geothermal sheets. The only generation sheets are coal, gas and
+  bioenergy, so any fleet share computed here has an almost entirely
+  fossil denominator. That is the thing being tested.
+
+--------------------------------------------------------------------------
+loading March 2025   (Global-Energy-Ownership-Tracker-March-2025.xlsx)
+  sheets present: 10
+  NOT in this vintage: Oil & NGL Pipeline Ownership, Cement and Concrete Ownership, Asset Ownership
+  entities 19,412 | listed 1,567 | listed and identified 1,336
+  entity ownership edges 18,807 | BLANK share 2,492 (13.3%)
+  Coal Plant Ownership     operating rows   30,993  units  6,429  DROPPED 63 (unknown share or capacity)
+  Gas Plant Ownership      operating rows   40,394  units  9,123  DROPPED 184 (unknown share or capacity)
+  Bioenergy Power Ownership operating rows    3,980  units  1,087  DROPPED 29 (unknown share or capacity)
+
+--------------------------------------------------------------------------
+loading August 2026   (Global-Energy-Ownership-Tracker-August-2026-V1.xlsx)
+  sheets present: 13
+  entities 26,943 | listed 2,150 | listed and identified 1,896
+  entity ownership edges 24,881 | BLANK share 0 (0.0%)
+  flagged `imputed value` by GEM: 4,392 (17.7%)
+  Coal Plant Ownership     operating rows   75,774  units  6,457
+  Gas Plant Ownership      operating rows  129,550  units  9,309  DROPPED 251 (unknown share or capacity)
+  Bioenergy Power Ownership operating rows   26,351  units  2,460  DROPPED 1,116 (unknown share or capacity)
+
+  sector labels seen in the loaded units: ['bioenergy power ownership', 'coal', 'gas']
+
+  NOTE THE BIOENERGY DROP ASYMMETRY in the load log above. Rows dropped for
+  unknown share or capacity: 29 in March 2025 against 1,116 in August 2026.
+  Bioenergy is the whole of the denominator's non-fossil part, so its data
+  quality changing between vintages feeds straight into any fleet share.
+
+==========================================================================
+TEST 1 (PRE-COMMITTED). IS FOSSIL SHARE DEGENERATE?
+  degenerate if median > 0.95 AND interquartile range < 0.1
+    worldwide      blank=zero    n= 932  median 1.000  IQR 0.046 (0.954 to 1.000)  share at exactly 1.000 67.3%  -> DEGENERATE
+    worldwide      blank=impute  n= 932  median 1.000  IQR 0.046 (0.954 to 1.000)  share at exactly 1.000 67.3%  -> DEGENERATE
+    the 328 panel  blank=zero    n= 229  median 1.000  IQR 0.125 (0.875 to 1.000)  share at exactly 1.000 62.0%  -> usable
+    the 328 panel  blank=impute  n= 229  median 1.000  IQR 0.125 (0.875 to 1.000)  share at exactly 1.000 62.0%  -> usable
+
+TEST 3 (PRE-COMMITTED). DOES FOSSIL SHARE ORDER FIRMS DIFFERENTLY FROM RAW MW?
+  within one vintage. If these agree, the second column adds nothing.
+    the 328 panel, blank=zero    n= 229  Spearman(fossil share, raw fossil MW) = 0.5140
+    the 328 panel, blank=impute  n= 229  Spearman(fossil share, raw fossil MW) = 0.5140
+
+TEST 2 (PRE-COMMITTED). DOES EACH MEASURE MOVE BETWEEN VINTAGES?
+  drops to a footnote if the between-vintage Spearman exceeds 0.95
+    --- fossil_mw ---
+      blank=zero    n= 171  Spearman 0.9146  top-quintile overlap 97.1% (33 of 34)  -> reportable
+      blank=impute  n= 171  Spearman 0.9761  top-quintile overlap 97.1% (33 of 34)  -> footnote
+    --- fossil_share ---
+      blank=zero    n= 159  Spearman 0.8107  top-quintile overlap 75.0% (24 of 32)  -> reportable
+        like-for-like, RAW fossil MW on those same 159 firms: Spearman 0.9688, top-quintile overlap 93.8% (30 of 32)
+      blank=impute  n= 171  Spearman 0.8509  top-quintile overlap 79.4% (27 of 34)  -> reportable
+        like-for-like, RAW fossil MW on those same 171 firms: Spearman 0.9761, top-quintile overlap 97.1% (33 of 34)
+    --- coal_share ---
+      blank=zero    n= 143  Spearman 0.9652  top-quintile overlap 82.8% (24 of 29)  -> footnote
+        like-for-like, RAW fossil MW on those same 143 firms: Spearman 0.9571, top-quintile overlap 93.1% (27 of 29)
+      blank=impute  n= 152  Spearman 0.9610  top-quintile overlap 80.0% (24 of 30)  -> footnote
+        like-for-like, RAW fossil MW on those same 152 firms: Spearman 0.9661, top-quintile overlap 93.3% (28 of 30)
+
+  written to /root/fp/outputs

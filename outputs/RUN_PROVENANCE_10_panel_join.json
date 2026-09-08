@@ -1,0 +1,27 @@
+{
+  "script": "10_panel_join",
+  "generated_utc": "2026-09-07T14:20:26Z",
+  "release_pin": {
+    "March 2025": "Global-Energy-Ownership-Tracker-March-2025.xlsx",
+    "August 2026": "Global-Energy-Ownership-Tracker-August-2026-V1.xlsx",
+    "August 2026 V2": "Global-Energy-Ownership-Tracker-August-2026-V2_External.xlsx"
+  },
+  "inputs": {
+    "panel": {
+      "filename": "cross_section.csv",
+      "bytes": 34995,
+      "sha256": "eacbb9df5d2b1cec4975012d9b9666030bf2b7056a6bc24976bf3b2374ec0d0c"
+    },
+    "exposure": {
+      "filename": "exposure_proxy_by_firm.csv",
+      "bytes": 190552,
+      "sha256": "4d89f2d7443faa18089db2867daa09b81c0577535b991fb015cffc9493f6b3d3"
+    },
+    "upstream_provenance_09": {
+      "filename": "RUN_PROVENANCE_09_exposure_proxy.json",
+      "bytes": 761,
+      "sha256": "21d143f89ee3e5947804f6fa065b757099e56f81b0e77c681471cef498ddecb9"
+    }
+  },
+  "release_reaches_this_script_via": "09_exposure_proxy, which resolves the pin in _release.RELEASES"
+}

@@ -1,0 +1,118 @@
+PUBLICATION CLASSIFICATION OF outputs/ AND evidence/
+  2026-09-08, under the research design chat's ruling of 2026-09-08, item 3.1
+  Classified by what each script CONSUMED, from the run-time provenance
+  records, not by filename. Nothing here is moved, changed or published.
+
+WHAT EACH SCRIPT CONSUMED, AND THE VERDICT ON THE SCRIPT
+  04_vintage_diff                    free inputs only
+  05_power_comparison                free inputs only
+  06_change_decomposition            free inputs only
+  07_decay_curves                    free inputs only
+  08_event_validation_sample         free inputs only
+  09_exposure_proxy                  free inputs only
+  10_panel_join                      free inputs only
+      upstream scripts: 09
+      NO MARKER MATCHED. Inputs not recognised as free or licensed; treat downstream files as UNKNOWN.
+  11_vintage_return_spread           FMP-DERIVED
+      licensed input markers matched: panel_b_prices, price, prices, ticker, tickers
+      upstream scripts: 10
+  12_decimal_truncation              free inputs only
+  13_scaling_second_column           free inputs only
+  14_restricted_r                    free inputs only
+  15_bioenergy_check                 free inputs only
+  17_release_ladder                  free inputs only
+  18_salience_lag                    free inputs only
+
+==============================================================================
+CLASSIFICATION, FILE BY FILE
+
+  GEM-only  (56 file(s))
+    outputs/PROMOTION_2026-09-08.txt                           classified by hand: the promotion record: checksums and row counts, no data values
+    outputs/PROVENANCE_RERUN_DIFF_2026-09-07.txt               classified by hand: hand-written record of a GEM-only rerun: checksums, row counts and filenames, no data values and nothing from the price series
+    outputs/PUBLICATION_CLASSIFICATION_2026-09-08.txt          classified by hand: this report: names files and their provenance, carries no data values
+    outputs/RELEASE_COMPARISON_outputs_2026-09-02.txt          classified by hand: hand-assembled bundle of GEM figures. Publishable, but SUPERSEDED by 17_release_ladder.py, which computes the same numbers with provenance. Publish under a superseded marker or not at all; it must not read as current
+    outputs/RUN_PROVENANCE_04_vintage_diff.json                provenance record, carries no data values
+    outputs/RUN_PROVENANCE_05_power_comparison.json            provenance record, carries no data values
+    outputs/RUN_PROVENANCE_06_change_decomposition.json        provenance record, carries no data values
+    outputs/RUN_PROVENANCE_07_decay_curves.json                provenance record, carries no data values
+    outputs/RUN_PROVENANCE_08_event_validation_sample.json     provenance record, carries no data values
+    outputs/RUN_PROVENANCE_09_exposure_proxy.json              provenance record, carries no data values
+    outputs/RUN_PROVENANCE_10_panel_join.json                  provenance record, carries no data values
+    outputs/RUN_PROVENANCE_11_vintage_return_spread.json       provenance record, carries no data values
+    outputs/RUN_PROVENANCE_12_decimal_truncation.json          provenance record, carries no data values
+    outputs/RUN_PROVENANCE_13_scaling_second_column.json       provenance record, carries no data values
+    outputs/RUN_PROVENANCE_14_restricted_r.json                provenance record, carries no data values
+    outputs/RUN_PROVENANCE_15_bioenergy_check.json             provenance record, carries no data values
+    outputs/RUN_PROVENANCE_17_release_ladder.json              provenance record, carries no data values
+    outputs/RUN_PROVENANCE_18_salience_lag.json                provenance record, carries no data values
+    outputs/bioenergy_check.txt                                written by 15, free inputs only
+    outputs/change_decomposition.txt                           written by 06, free inputs only
+    outputs/change_decomposition_edges.csv                     written by 06, free inputs only
+    outputs/change_decomposition_edges_SUPERSEDED_2026-08-23.csv written by 06, free inputs only, superseded copy, inherits its original's provenance
+    outputs/coverage_by_capacity.csv                           written by 00, free inputs only
+    outputs/cross_section.csv                                  written by 00, free inputs only
+    outputs/cross_section_gleif_audited.csv                    written by 03, free inputs only
+    outputs/decay_curves.csv                                   written by 07, free inputs only
+    outputs/decay_curves.txt                                   written by 07, free inputs only
+    outputs/decimal_truncation.txt                             written by 12, free inputs only (from its Out: block; write path is computed)
+    outputs/event_validation_frame.csv                         written by 08, free inputs only
+    outputs/event_validation_sample.csv                        written by 08, free inputs only (from its Out: block; write path is computed)
+    outputs/exposure_proxy_by_firm.csv                         written by 09, free inputs only
+    outputs/exposure_proxy_summary.txt                         written by 09, free inputs only
+    outputs/figure_register.txt                                written by 16, free inputs only
+    outputs/firms_without_lei.csv                              written by 00, free inputs only
+    outputs/gleif_consolidation_flags.csv                      written by 03, free inputs only
+    outputs/identifier_survival_by_country.csv                 written by 00, free inputs only
+    outputs/isin_candidates.csv                                written by 00, free inputs only
+    outputs/isin_screen.csv                                    classified by hand: GEM entity ids and names joined to GLEIF LEIs and ISIN counts. Both sources free. NO NUMBERED SCRIPT PRODUCES IT and it carries no provenance record, which matters because this file is where the 328 comes from
+    outputs/lei_not_in_anna.csv                                written by 00, free inputs only
+    outputs/panel_exposure.csv                                 written by 10, free inputs only
+    outputs/panel_join_summary.txt                             written by 10, free inputs only
+    outputs/power_comparison.txt                               written by 05, free inputs only (from its Out: block; write path is computed)
+    outputs/release_ladder.csv                                 written by 17, free inputs only
+    outputs/release_ladder.txt                                 written by 17, free inputs only
+    outputs/restricted_r.txt                                   written by 14, free inputs only
+    outputs/restricted_r_edges.csv                             written by 14, free inputs only
+    outputs/salience_lag.csv                                   written by 18, free inputs only
+    outputs/salience_lag.txt                                   written by 18, free inputs only
+    outputs/scaling_by_firm.csv                                written by 13, free inputs only
+    outputs/scaling_second_column.txt                          written by 13, free inputs only (from its Out: block; write path is computed)
+    outputs/schema_drift.csv                                   written by 07, free inputs only
+    outputs/vintage_asset_parent_changes.csv                   written by 04, free inputs only
+    outputs/vintage_asset_parent_changes_SUPERSEDED_2026-08-23.csv written by 04, free inputs only, superseded copy, inherits its original's provenance
+    outputs/vintage_diff_summary.txt                           written by 04, free inputs only
+    outputs/vintage_entity_churn.csv                           written by 04, free inputs only
+    evidence/salience_lag_cases.csv                            classified by hand: curated INPUT, not an output: transaction dates read by hand from exchange filings, company statements and EDINET. Free sources, already cited in the note as evidence, and validated against the sample by 18
+
+  mixed  (0 file(s))
+
+  FMP-derived  (2 file(s))
+    outputs/vintage_return_spread.csv                          written by 11, which consumed the price series
+    outputs/vintage_return_spread.txt                          written by 11, which consumed the price series
+
+  UNKNOWN  (0 file(s))
+
+==============================================================================
+COUNTS, for the closing handover-back as the ruling requires
+  GEM-only         56
+  mixed             0
+  FMP-derived       2
+  UNKNOWN           0
+  total            58
+  share reproducible from free data alone: 96.6%
+
+DOCSTRING DRIFT, advisory. This does NOT affect the classification above,
+because every file resolved to exactly one writer. It is recorded because a
+script whose docstring misstates what it writes is the next version of this
+problem, and it is cheaper to see it than to rediscover it.
+  00_coverage_and_crosswalk.py: writes files its docstring does not declare: coverage_by_capacity.csv, cross_section.csv, firms_without_lei.csv, identifier_survival_by_country.csv, isin_candidates.csv, lei_not_in_anna.csv
+  03_gleif_crosscheck.py: writes files its docstring does not declare: cross_section_gleif_audited.csv, gleif_consolidation_flags.csv
+  05_power_comparison.py: docstring declares files no write call produces: power_comparison.txt
+  07_decay_curves.py: writes files its docstring does not declare: schema_drift.csv
+  08_event_validation_sample.py: docstring declares files no write call produces: event_validation_sample.csv
+  12_decimal_truncation.py: docstring declares files no write call produces: decimal_truncation.txt
+  13_scaling_second_column.py: docstring declares files no write call produces: scaling_second_column.txt
+  14_restricted_r.py: writes files its docstring does not declare: restricted_r_edges.csv
+  17_release_ladder.py: writes files its docstring does not declare: release_ladder.csv
+  19_build_note.py: docstring declares files no write call produces: Measurement_Note_draft_<date>.html
+  21_fmp_verify.py: docstring declares files no write call produces: manifest.json

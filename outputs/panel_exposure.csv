@@ -1,0 +1,329 @@
+entity_id,name,hq,mw_2025_zero,mw_2025_impute,mw_2026_zero,mw_2026_impute
+E100000001194,Duke Energy Corp,United States,33366.41,40444.98,39407.34,39407.34
+E100000000382,ENGIE SA,France,22096.68,22802.92,21529.88,21529.88
+E100001014534,Snam SpA,Italy,0.0,0.0,0.0,0.0
+E100000001309,Southern Co,United States,33018.87,33018.87,35713.62,35713.62
+E100000000746,Shell PLC,United Kingdom,3092.32,3429.32,3339.17,3339.17
+E100000000414,Heidelberg Materials AG,Germany,0.0,0.0,0.0,0.0
+E100000000387,TotalEnergies SE,France,6672.74,6674.3,7984.2,7984.2
+E100000001155,Berkshire Hathaway Inc,United States,14428.71,14428.71,21470.93,21470.93
+E100001000571,Holcim Ltd,Switzerland,0.0,0.0,0.0,0.0
+E100000000610,Eni SpA,Italy,5542.8,5784.8,5621.32,5621.32
+E100000001322,Vistra Corp,United States,28281.0,32632.0,32322.85,32322.85
+E100001000208,Constellation Energy Corp,United States,5500.0,6052.97,33533.71,33533.71
+E100000000433,RWE AG,Germany,15172.0,15172.0,22754.38,22754.38
+E100000001179,Chevron Corp,United States,794.3,1113.3,1059.3,1059.3
+E100000001213,Exxon Mobil Corp,United States,1970.01,2047.51,2102.48,2102.48
+E100000001247,KKR & Co. Inc,United States,2600.64,3152.75,3715.63,3715.63
+E100000000968,Endesa SA,Spain,7912.6,7912.6,7784.6,7784.6
+E100001014294,Energy Transfer LP,United States,0.0,0.0,0.0,0.0
+E100001014505,Enagás SA,Spain,0.0,0.0,0.0,0.0
+E100000001262,NRG Energy Inc,United States,15169.4,15830.52,18147.74,18147.74
+E100000001329,Xcel Energy Inc,United States,12150.26,12150.26,14567.36,14567.36
+E100000131458,CRH PLC,Ireland,0.0,0.0,0.0,0.0
+E100000001245,Kinder Morgan Inc,United States,0.0,0.0,0.0,0.0
+E100000001140,American Electric Power Company Inc,United States,18339.77,18339.77,19149.07,19149.07
+E100000001210,Evergy Inc,United States,7345.96,7345.96,10561.5,10561.5
+E100002016384,Bridgepoint Group PLC,United Kingdom,0.0,0.0,3367.5,3367.5
+E100001014282,Enterprise Products Partners LP,United States,0.0,0.0,0.0,0.0
+E100000001193,Dominion Energy Inc,United States,12540.1,16654.2,16654.2,16654.2
+E100000001096,BP PLC,United Kingdom,1805.93,1805.93,1916.71,1916.71
+E100000001267,NextEra Energy Inc,United States,28180.85,28373.85,28407.85,28407.85
+E100000000388,Veolia Environnement SA,France,1683.11,2018.72,1693.31,1693.31
+E100000000457,Uniper SE,Germany,13617.27,13617.27,12397.27,12397.27
+E100000001158,Blackstone Inc,United States,3201.45,4461.45,4826.94,4826.94
+E100002005243,Buzzi SpA,Italy,0.0,0.0,0.0,0.0
+E100000000407,EnBW Energie Baden-Württemberg AG,Germany,5650.17,5650.17,7651.3,7651.3
+E100000001241,International Paper Co,United States,171.7,171.7,508.7,508.7
+E100000004265,Union Electric Co,United States,0.0,0.0,6991.2,6991.2
+E100000001305,AES Corp,United States,10195.76,10664.03,10544.31,10544.31
+E100001014325,Plains All American Pipeline LP,United States,0.0,0.0,0.0,0.0
+E100001015278,ONEOK Inc,United States,0.0,0.0,0.0,0.0
+E100002006770,UBS Fund Management (Switzerland) AG,Switzerland,0.0,0.0,57.24,57.24
+E100000001005,UBS Group AG,Switzerland,0.0,0.0,733.09,733.09
+E100000001282,Phillips 66 ,United States,631.0,631.0,631.0,631.0
+E100000000608,Enel SpA,Italy,12044.0,12071.0,8111.0,8111.0
+E100000001283,Pinnacle West Capital Corp,United States,5322.97,5322.97,5355.21,5355.21
+E100000001324,WEC Energy Group Inc,United States,5739.65,5739.65,6991.21,6991.21
+E100002004748,DTE Energy Co,United States,0.0,8283.55,7718.57,7718.57
+E100000000978,Naturgy Energy Group SA,Spain,8664.13,8664.13,8664.13,8664.13
+E100000001454,E.ON SE,Germany,3320.15,3339.15,3152.14,3152.14
+E100000001116,National Grid PLC,United Kingdom,3480.4,3480.4,3480.4,3480.4
+E100001011247,ConocoPhillips Corp,United States,0.0,0.0,5.17,5.17
+E100000001173,Carlyle Group Inc,United States,7723.84,9094.32,3268.68,3268.68
+E100000001223,General Electric Co,United States,2609.64,3189.56,3044.43,3044.43
+E100000001269,OGE Energy Corp,United States,7601.39,7601.39,7381.39,7381.39
+E100000002988,Entergy Louisiana LLC,United States,0.0,0.0,11121.4,11121.4
+E100000000766,Equinor ASA,Norway,1161.0,1161.0,1161.0,1161.0
+E100000000476,Public Power Corporation SA,Greece,4647.0,4647.0,3647.11,3647.11
+E100000001278,PPL Corp,United States,7244.89,7478.29,8486.66,8486.66
+E100001000400,Glencore PLC,Switzerland,163.5,163.5,132.3,132.3
+E100000000602,A2A SpA,Italy,6766.5,6766.5,6779.0,6779.0
+E100001000649,Cleveland-Cliffs Inc,United States,307.8,377.8,442.8,442.8
+E100000131246,Alpha Metallurgical Resources Inc,United States,0.0,0.0,0.0,0.0
+E100000000975,Iberdrola SA,Spain,7280.3,7280.3,7280.3,7280.3
+E100000001209,Entergy Corp,United States,22462.49,22462.49,8720.92,8720.92
+E100000000369,Stora Enso Oyj,Finland,39.2,39.2,39.2,39.2
+E100000003523,Mainova AG,Germany,0.0,0.0,665.98,665.98
+E100000001534,JPMorgan Chase & Co Corp,United States,427.31,427.31,427.53,427.53
+E100000001135,Alliant Energy Corp,United States,6248.9,6248.9,4951.1,4951.1
+E100000002899,Edison SpA,Italy,6873.0,6873.0,6453.0,6453.0
+E100000000372,UPM-Kymmene Oyj,Finland,262.0,262.0,262.0,262.0
+E100000001123,SSE PLC,United Kingdom,6146.8,6146.8,6117.8,6117.8
+E100001014841,Williams Companies Inc,United States,0.0,0.0,0.0,0.0
+E100001010181,Nucor Corp,United States,0.0,0.0,0.0,0.0
+E100001011985,Hawaiian Electric Industries Inc,United States,66.0,1557.1,1491.1,1491.1
+E100001015054,MPLX LP,United States,0.0,0.0,0.0,0.0
+E100002002419,Vicat SA,France,0.0,0.0,0.0,0.0
+E100000000428,Munich RE AG,Germany,0.0,200.25,0.0,0.0
+E100001000402,Peabody Energy Corp,United States,2.01,46.16,46.16,46.16
+E100000001164,CMS Energy Corp,United States,5359.03,5359.03,5409.03,5409.03
+E100000000980,Repsol SA,Spain,2216.0,2216.0,2216.0,2216.0
+E100000152192,Partners Group Holding AG,Switzerland,0.0,0.0,2171.0,2171.0
+E100000001270,Occidental Petroleum Corp,United States,1781.66,1781.66,1786.83,1786.83
+E100000000030,Verbund AG,Austria,1106.2,1106.2,1106.2,1106.2
+E100000002328,Talen Energy Corp,United States,7351.2,7987.68,10242.48,10242.48
+E100001014304,Loews Corp,United States,0.0,0.0,0.0,0.0
+E100001000641,Archer-Daniels-Midland Co,United States,842.5,842.5,842.5,842.5
+E100000001293,Sempra ,United States,1827.0,1827.0,1639.5,1639.5
+E100000000050,Solvay SA,Belgium,634.96,634.96,995.96,995.96
+E100000001906,enercity AG,Germany,0.0,0.0,415.86,415.86
+E100002005704,Titan Cement International SA,Belgium,0.0,0.0,0.0,0.0
+E100000000394,Allianz SE,Germany,0.0,0.0,0.0,0.0
+E100000001607,Ørsted A/S,Denmark,107.68,107.68,41.36,41.36
+E100000002718,Clearway Energy Inc,United States,828.0,828.0,1610.0,1610.0
+E100001010596,State Street Corp,United States,0.0,0.0,1.15,1.15
+E100000132107,Ramaco Resources Inc,United States,0.0,0.0,0.0,0.0
+E100000000426,MVV Energie AG,Germany,844.21,844.21,844.2,844.2
+E100000001384,Ares Management Corp,United States,1979.0,2442.85,1484.82,1484.82
+E100002001305,Associated British Foods PLC,United Kingdom,0.0,0.0,0.0,0.0
+E100000000375,Air Liquide SA,France,968.0,968.0,996.0,996.0
+E100001000638,Alliance Resource Partners LP,United States,0.0,0.0,0.0,0.0
+E100002003558,Fomento de Construcciones y Contratas SA,Spain,0.0,0.0,0.0,0.0
+E100000004212,thyssenkrupp AG,Germany,1075.0,1075.0,1075.0,1075.0
+E100000001157,Black Hills Corp,United States,613.88,755.88,676.52,676.52
+E100000000834,EDP SA,Portugal,4600.42,4600.42,3141.61,3141.61
+E100001000653,Core Natural Resources Inc,United States,0.0,0.0,0.0,0.0
+E100000000027,OMV AG,Austria,994.12,994.12,42.33,42.33
+E100000150310,NorthWestern Energy Group Inc,United States,968.55,968.55,1623.35,1623.35
+E100001010315,Salzgitter AG,Germany,0.0,592.0,592.0,592.0
+E100001015599,Sunoco LP,United States,0.0,0.0,0.0,0.0
+E100000000395,BASF SE,Germany,1138.2,1138.2,1138.2,1138.2
+E100002004300,Brookfield Asset Management Ltd,United States,0.0,0.0,155.5,155.5
+E100000001114,Mondi PLC,United Kingdom,0.0,0.0,279.3,279.3
+E100001000124,Ence Energía y Celulosa SA,Spain,0.0,0.0,0.0,0.0
+E100000001251,MGE Energy Inc,United States,730.62,730.62,730.62,730.62
+E100000001734,Westlake Corp,United States,991.5,991.5,991.5,991.5
+E100001001070,Billerud AB,Sweden,0.0,0.0,0.0,0.0
+E100002005937,Cementos Molins SA,Spain,0.0,0.0,0.0,0.0
+E100000001254,Marathon Petroleum Corp,United States,973.95,1087.95,973.95,973.95
+E100000001235,IDACORP Inc,United States,1337.96,1337.96,1530.38,1530.38
+E100000152934,Genesis Energy LP,United States,0.0,0.0,0.0,0.0
+E100000001101,Centrica PLC,United Kingdom,627.0,627.0,565.0,565.0
+E100001011575,Celanese Corp,United States,94.47,130.97,130.97,130.97
+E100001014386,Targa Resources Corp,United States,0.0,0.0,0.0,0.0
+E100000130754,Commercial Metals Co,United States,0.0,0.0,0.0,0.0
+E100001000488,Coronado Global Resources Inc,United States,0.0,0.0,0.0,0.0
+E100001012815,Harbour Energy PLC,United Kingdom,0.0,0.0,0.0,0.0
+E100000001198,Edison International Corp,United States,1286.0,1586.0,1286.0,1286.0
+E100000000360,Fortum Oyj,Finland,1053.56,1053.56,1053.56,1053.56
+E100000132450,Packaging Corporation of America ,United States,0.0,0.0,0.0,0.0
+E100001000232,Mercer International Inc,United States,0.0,0.0,0.0,0.0
+E100000000459,Volkswagen AG,Germany,697.0,804.25,672.0,672.0
+E100000001177,CenterPoint Energy Inc,United States,530.4,530.4,581.47,581.47
+E100000001651,SSAB AB,Sweden,120.31,120.31,73.44,73.44
+E100000001713,The Navigator Co,Portugal,0.0,0.0,147.0,147.0
+E100000000436,Siemens AG,Germany,1165.4,1233.73,1270.66,1270.66
+E100000000473,HELLENiQ ENERGY Holdings SA,Greece,441.65,441.65,856.84,856.84
+E100000001132,Air Products and Chemicals Inc,United States,1779.96,1802.36,1973.11,1973.11
+E100002005093,Cementir Holding NV,Netherlands,0.0,0.0,0.0,0.0
+E100002006131,Eagle Materials Inc,United States,0.0,0.0,0.0,0.0
+E100000002169,ALLETE Inc,United States,926.9,926.9,926.9,926.9
+E100000001104,Drax Group PLC,United Kingdom,96.0,96.0,96.0,96.0
+E100000002305,Portland General Electric Co,United States,2401.8,2401.8,2401.8,2401.8
+E100000000838,Semapa - Sociedade de Investimento e Gestão SGPS SA,Portugal,147.0,147.0,0.0,0.0
+E100001016064,Cheniere Energy Partners LP,United States,0.0,0.0,1249.2,1249.2
+E100001000155,Evonik Industries AG,Germany,0.0,423.8,423.8,423.8
+E100002021926,City of Vienna ,Austria,0.0,0.0,1775.0,1775.0
+E100001015934,Redes Energéticas Nacionais SGPS SA,Portugal,0.0,0.0,0.0,0.0
+E100002002718,Vontobel Holding AG,Switzerland,0.0,0.0,0.0,0.0
+E100000001186,Consolidated Edison Inc,United States,716.0,716.0,716.0,716.0
+E100000001268,NiSource Inc,United States,2264.0,2264.0,2264.0,2264.0
+E100001011576,Clariant AG,Switzerland,100.56,100.56,100.56,100.56
+E100000000620,Iren SpA,Italy,2523.0,2523.0,2523.0,2523.0
+E100000000021,EVN AG,Austria,922.1,922.1,922.1,922.1
+E100000001277,PNM Resources Inc,United States,930.21,930.21,930.21,930.21
+E100002000151,Kemira Oyj,Finland,0.0,0.0,0.0,0.0
+E100001010336,Steel Dynamics Inc,United States,0.0,0.0,0.0,0.0
+E100001000054,Metsä Board Oyj,Finland,0.0,0.0,0.0,0.0
+E100000000619,Hera SpA,Italy,241.6,241.6,241.6,241.6
+E100001000636,Alcoa Corp,United States,0.0,0.0,661.3,661.3
+E100000132404,Clearwater Paper Corp,United States,0.0,0.0,0.0,0.0
+E100000000475,Metlen Energy & Metals SA,Greece,2040.6,2040.6,1887.79,1887.79
+E100002024593,Braunschweig Beteiligungen GmbH,Germany,0.0,0.0,45.68,45.68
+E100001014430,Cheniere Energy Inc,United States,0.0,432.0,432.0,432.0
+E100000001321,Valero Energy Corp,United States,95.0,173.0,173.0,173.0
+E100000001169,California Resources Corp,United States,623.0,623.0,797.0,797.0
+E100001014542,DT Midstream Inc,United States,0.0,0.0,0.0,0.0
+E100000136992,Deutsche Bank AG,Germany,0.0,0.0,0.0,0.0
+E100000001220,FreePort-McMoran Inc,United States,229.55,229.55,211.62,211.62
+E100001014129,APA Corp,United States,0.0,0.0,0.0,0.0
+E100000002180,Avista Corp,United States,748.4,748.4,515.0,515.0
+E100001010299,Nacco Industries Inc,United States,0.0,0.0,0.0,0.0
+E100002000031,Dow Inc,United States,0.0,460.0,1868.8,1868.8
+E100000000472,"GEK TERNA Holdings, Real Estate, Construction SA",Greece,582.0,582.0,1020.5,1020.5
+E100001010324,Vallourec SA,France,128.0,128.0,128.0,128.0
+E100001001053,FirstEnergy Corp,United States,3204.0,3204.0,3204.0,3204.0
+E100000132862,Rayonier Advanced Materials Inc,United States,0.0,0.0,0.0,0.0
+E100001014437,Ithaca Energy PLC,United Kingdom,0.0,0.0,0.0,0.0
+E100001014651,Enquest PLC,United Kingdom,0.0,0.0,0.0,0.0
+E100002016726,Graphic Packaging Holding Co,United States,0.0,0.0,0.0,0.0
+E100000000770,Norske Skog ASA,Norway,0.0,0.0,0.0,0.0
+E100000001119,Rio Tinto PLC,United Kingdom,678.0,678.0,380.0,380.0
+E100000188948,AXA SA,France,0.0,0.0,129.18,129.18
+E100001014645,National Fuel Gas Co,United States,0.0,0.0,0.0,0.0
+E100000000836,Galp Energia SGPS SA,Portugal,28.3,28.3,54.19,54.19
+E100001014626,Kinetik Holdings Inc,United States,0.0,0.0,0.0,0.0
+E100000001885,K+S AG,Germany,379.0,379.0,379.0,379.0
+E100000003769,Pacific Gas and Electric Co,United States,0.0,0.0,1499.0,1499.0
+E100001015015,HF Sinclair Corp,United States,0.0,0.0,0.0,0.0
+E100000152286,Norsk Hydro ASA,Norway,0.0,0.0,0.0,0.0
+E100002003582,Intesa Sanpaolo SpA,Italy,286.97,286.97,286.7,286.7
+E100002007932,Otter Tail Corp,United States,798.18,798.18,798.18,798.18
+E100000001315,UGI Corp,United States,146.0,146.0,146.0,146.0
+E100001011055,Crédit Agricole SA,France,0.0,0.0,0.0,0.0
+E100001014758,Fluxys Belgium NV/SA,Belgium,0.0,0.0,0.0,0.0
+E100000001275,PBF Energy Inc,United States,284.0,284.0,284.0,284.0
+E100002011849,Gascogne SA,France,0.0,0.0,0.0,0.0
+E100000150598,Acciona SA,Spain,0.0,0.0,0.0,0.0
+E100000130743,Acerinox SA,Spain,0.0,0.0,0.0,0.0
+E100000000031,Voestalpine AG,Austria,153.0,153.0,153.0,153.0
+E100000000774,Yara International ASA,Norway,68.0,68.0,68.0,68.0
+E100001012563,Vår Energi AS,Norway,0.0,0.0,0.0,0.0
+E100001011522,Oberbank AG,Austria,22.12,22.12,22.2,22.2
+E100000131005,Viohalco SA,Belgium,0.0,0.0,0.0,0.0
+E100000130696,Outokumpu Oyj,Finland,0.0,0.0,0.0,0.0
+E100001016035,Western Midstream Partners LP,United States,0.0,0.0,0.0,0.0
+E100001000407,Anglo American PLC,United Kingdom,0.0,0.0,0.0,0.0
+E100001000663,EVRAZ PLC,United Kingdom,600.0,600.0,0.0,0.0
+E100002004041,Ferrexpo PLC,United Kingdom,0.0,0.0,0.0,0.0
+E100001011243,Essity AB,Sweden,29.0,29.0,29.0,29.0
+E100000132348,Warrior Met Coal Inc,United States,0.0,0.0,0.0,0.0
+E100000000735,Akzo Nobel NV,Netherlands,573.0,573.0,573.0,573.0
+E100000001586,Motor Oil Hellas SA,Greece,0.0,0.0,591.31,591.31
+E100000001597,Newmont Corp,United States,228.45,228.45,228.45,228.45
+E100001014433,Chesapeake Utilities Corp,United States,0.0,0.0,0.0,0.0
+E100000000025,Lenzing AG,Austria,0.0,0.0,99.97,99.97
+E100001000174,Schroders PLC,United Kingdom,0.0,0.0,0.0,0.0
+E100001014874,NGL Energy Partners LP,United States,0.0,0.0,0.0,0.0
+E100001015850,Plains GP Holdings LP,United States,0.0,0.0,0.0,0.0
+E100000001137,Alphabet Inc,United States,0.0,130.67,129.75,129.75
+E100002002945,abrdn PLC,United Kingdom,0.0,0.0,0.0,0.0
+E100000001303,TexGen Power LLC,United States,0.0,0.0,853.0,853.0
+E100000000353,Seaboard Corp,United States,261.0,261.0,261.0,261.0
+E100001014582,Diamondback Energy Inc,United States,0.0,0.0,0.0,0.0
+E100000001265,New Fortress Energy Inc,United States,270.0,270.0,120.0,120.0
+E100000001307,The Procter & Gamble Co,United States,168.0,168.0,168.0,168.0
+E100000001905,Wacker Chemie AG,Germany,238.0,238.0,238.0,238.0
+E100002016647,Mohawk Industries Inc,United States,0.0,0.0,0.0,0.0
+E100002016630,KBC Groep NV,Belgium,0.0,0.0,0.0,0.0
+E100002005176,Breedon Group PLC,United Kingdom,0.0,0.0,0.0,0.0
+E100002006768,Hoffman Green Cement Technologies SA,France,0.0,0.0,0.0,0.0
+E100001014363,Delek Logistics Partners LP,United States,0.0,0.0,0.0,0.0
+E100000000991,BKW AG,Switzerland,0.0,0.0,263.65,263.65
+E100002016305,BKV Corp,United States,0.0,0.0,401.5,401.5
+E100000149640,Savannah Energy PLC,United Kingdom,0.0,0.0,0.0,0.0
+E100001015543,New Jersey Resources Corp,United States,0.0,0.0,0.0,0.0
+E100000001260,Morgan Stanley ,United States,825.95,825.95,837.99,837.99
+E100000131604,Ferroglobe PLC,United Kingdom,0.0,0.0,0.0,0.0
+E100000000741,LyondellBasell Industries NV,United Kingdom,54.12,54.12,56.41,56.41
+E100001012038,Par Pacific Holdings Inc,United States,44.2,44.2,44.2,44.2
+E100001014347,CHS Inc,United States,0.0,0.0,0.0,0.0
+E100000000747,Stellantis NV,Netherlands,144.0,144.0,144.0,144.0
+E100002016955,DigitalBridge Group Inc,United States,0.0,0.0,292.0,292.0
+E100001014694,Equitrans Midstream Corp,United States,0.0,0.0,0.0,0.0
+E100001015325,Spire Inc,United States,0.0,0.0,0.0,0.0
+E100001015290,MasTec Inc,United States,0.0,0.0,0.0,0.0
+E100001016091,EQT Corp,United States,0.0,0.0,0.0,0.0
+E100001000937,Microsoft Corp,United States,0.0,0.0,197.3,197.3
+E100001016206,Apollo Global Management Inc,United States,0.0,0.0,0.0,0.0
+E100000132496,Altri SGPS SA,Portugal,0.0,0.0,0.0,0.0
+E100001010234,Goldman Sachs Group Inc,United States,0.0,0.0,0.0,0.0
+E100002002980,Holmen AB,Sweden,0.0,0.0,0.0,0.0
+E100000000424,Linde PLC,United Kingdom,362.6,362.6,362.6,362.6
+E100000001271,Olin Corp,United States,0.0,0.0,678.0,678.0
+E100001014067,Aker BP ASA,Norway,0.0,0.0,0.0,0.0
+E100000001895,Siemens Energy AG,Germany,1338.0,1338.0,3010.0,3010.0
+E100000000368,Neste Oyj,Finland,60.8,60.8,60.8,60.8
+E100000001873,Mercedes-Benz Group AG,Germany,130.0,130.0,130.0,130.0
+E100001016841,Sylvamo Corp,United States,0.0,0.0,0.0,0.0
+E100000001122,SDCL Energy Efficiency Income Trust PLC,United Kingdom,0.0,0.0,145.0,145.0
+E100000002326,SunCoke Energy Inc,United States,134.0,134.0,134.0,134.0
+E100000001379,Antin Infrastructure Partners SAS,France,345.0,345.0,132.0,132.0
+E100001015606,OKEA ASA,Norway,0.0,0.0,0.0,0.0
+E100001014677,Energean PLC,United Kingdom,0.0,0.0,0.0,0.0
+E100002019782,DNB Bank ASA,Norway,0.0,0.0,0.0,0.0
+E100001014954,EOG Resources Inc,United States,0.0,0.0,0.0,0.0
+E100002007205,Martin Marietta Materials Inc,United States,0.0,0.0,0.0,0.0
+E100001015137,FTAI Infrastructure Inc,United States,0.0,0.0,0.0,0.0
+E100001014154,Etablissements Maurel & Prom SA,France,0.0,0.0,0.0,0.0
+E100002006269,Peab AB,Sweden,0.0,0.0,0.0,0.0
+E100000155483,Atmos Energy Corp,United States,0.0,0.0,0.0,0.0
+E100001014568,BlueNord ASA,Norway,0.0,0.0,0.0,0.0
+E100001014572,Delek US Holdings Inc,United States,0.0,0.0,0.0,0.0
+E100001014952,HitecVision AS,Norway,0.0,0.0,0.0,0.0
+E100002007792,Compagnie De Saint-Gobain SA,France,0.0,0.0,0.0,0.0
+E100001014793,Gas Plus SpA,Italy,0.0,0.0,0.0,0.0
+E100002005151,DNO ASA,Norway,0.0,0.0,0.0,0.0
+E100000001212,Exelon Corp,United States,1925.0,1925.0,105.0,105.0
+E100002017760,Summit Midstream Corp,United States,0.0,0.0,0.0,0.0
+E100002017821,Banco Santander SA,Spain,0.0,0.0,266.0,266.0
+E100001011690,Eversource Energy ,United States,18.97,18.97,18.97,18.97
+E100000001126,Tate & Lyle PLC,United Kingdom,65.0,65.0,65.0,65.0
+E100001011003,Caterpillar Inc,United States,0.0,69.3,34.65,34.65
+E100002018551,GE Vernova Inc,United States,0.0,0.0,135.0,135.0
+E100000003609,NET Power Inc,United States,50.0,50.0,50.0,50.0
+E100002007946,Excelerate Energy Inc,United States,0.0,0.0,150.0,150.0
+E100000000773,Wärtsilä Oyj,Finland,0.0,114.76,28.69,28.69
+E100002005662,Eastman Chemical Co,United States,0.0,468.0,468.0,468.0
+E100000120426,Eramet SA,France,230.18,230.18,198.0,198.0
+E100002016367,Greenidge Generation Holdings Inc,United States,0.0,0.0,112.0,112.0
+E100000000051,Tessenderlo Group ,Belgium,0.0,0.0,422.0,422.0
+E100000152186,Heineken NV,Netherlands,0.0,0.0,0.0,0.0
+E100000001975,Avio SpA,Italy,17.6,17.6,17.6,17.6
+E100000001977,ERG SpA,Italy,99.0,99.0,99.0,99.0
+E100000002474,AstraZeneca PLC,United Kingdom,23.0,23.0,23.0,23.0
+E100002000725,Starwood Real Estate Income Trust Inc,United States,0.0,0.0,30.0,30.0
+E100000000397,Bertelsmann SE & Co KGaA,Germany,0.0,0.0,25.0,25.0
+E100000001880,Henkel AG & Co. KGaA,Germany,84.0,84.0,84.0,84.0
+E100000001195,Dupont Inc,United States,143.8,143.8,5.77,5.77
+E100002004703,DCC PLC,Ireland,24.0,24.0,24.0,24.0
+E100000001215,FMC Corp,United States,0.0,0.0,25.0,25.0
+E100002001024,Porsche Automobil Holding SE,Germany,45.93,45.93,22.95,22.95
+E100001015007,Ferrovial SE,Netherlands,0.0,0.0,0.0,0.0
+E100002016943,Maire SpA,Italy,0.0,0.0,0.0,0.0
+E100000131654,Hallador Energy Co,United States,0.0,0.0,0.0,0.0
+E100002009022,Sonoco Products Co,United States,0.0,0.0,0.0,0.0
+E100002009177,HMS Bergbau AG,Germany,0.0,0.0,0.0,0.0
+E100001016504,Synthesis Energy Systems Inc,United States,0.0,0.0,0.0,0.0
+E100000131392,Bisichi PLC,United Kingdom,0.0,0.0,0.0,0.0
+E100002003989,Rana Gruber ASA,Norway,0.0,0.0,0.0,0.0
+E100000131012,Metallus Inc,United States,0.0,0.0,0.0,0.0
+E100000130755,Leggett & Platt Inc,United States,0.0,0.0,0.0,0.0
+E100000130706,Danieli & C Officine Meccaniche SpA,Italy,0.0,0.0,0.0,0.0
+E100000000837,Mota-Engil SGPS SA,Portugal,0.0,0.0,0.0,0.0
+E100002009511,Rottneros AB,Sweden,0.0,0.0,0.0,0.0
+E100002016964,Société Financière Des Sucres SA,Belgium,0.0,0.0,0.0,0.0
+E100000133586,Voltalia SA,France,0.0,0.0,0.0,0.0
+E100002016804,CropEnergies AG,Germany,0.0,0.0,0.0,0.0
+E100002016829,LEG Immobilien SE,Germany,0.0,0.0,0.0,0.0
+E100002010547,Séché Environnement SA,France,0.0,0.0,0.0,0.0
+E100000135814,Ameresco Inc,United States,0.0,0.0,0.0,0.0
+E100000152701,Romande Energie Holding SA,Switzerland,0.0,0.0,0.0,0.0
+E100002016729,Webuild SpA,Italy,0.0,0.0,0.0,0.0
+E100000132909,Svenska Cellulosa SCA AB,Sweden,0.0,0.0,0.0,0.0
+E100002016863,Global Dominion Access SA,Spain,0.0,0.0,0.0,0.0
+E100000120754,LANXESS AG,Germany,0.0,0.0,0.0,0.0
+E100002017187,OPAL Fuels Inc,United States,0.0,0.0,0.0,0.0
+E100002016809,Danone SA,France,0.0,0.0,0.0,0.0
+E100002007354,Monarch Cement Co,United States,0.0,0.0,0.0,0.0

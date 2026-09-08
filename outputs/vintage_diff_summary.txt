@@ -1,0 +1,52 @@
+GEM VINTAGE DIFF
+  old: Global-Energy-Ownership-Tracker-March-2025.xlsx
+  new: Global-Energy-Ownership-Tracker-August-2026-V1.xlsx
+
+ENTITY UNIVERSE
+  old release              19,412
+  new release              26,943
+  present in both          18,261
+  gone from new release     1,151   <- breaks a panel if these were merged, not deleted
+  new in new release        8,682   <- this is what moves top-level parents
+
+PUBLICLY-LISTED FLAG, on entities present in both
+  True  -> False               69   these firms leave the cross-section
+  False -> True                56   these firms enter it
+
+ASSET ATTRIBUTION: immediate owner against top-level parent
+  sector                 assets       top parent    immediate owner
+  Coal Plant             13,170     4,554 (34.6%)        386 ( 2.9%)
+  Gas Plant              11,736     6,346 (54.1%)        555 ( 4.7%)
+  Bioenergy Power         1,265       537 (42.5%)         81 ( 6.4%)
+  Coal Mine               1,513     1,013 (67.0%)        149 ( 9.8%)
+  Iron Mine                 528       218 (41.3%)          4 ( 0.8%)
+  Gas Pipeline            2,850     1,887 (66.2%)        474 (16.6%)
+  Oil & NGL Pipeline   SKIPPED, sheet absent from one of the releases
+  Steel Plant             1,072       356 (33.2%)         19 ( 1.8%)
+  TOTAL                  32,134    14,911 (46.4%)      1,668 ( 5.2%)
+
+  ratio of the two rates: 8.9 to 1
+
+  VERDICT: vintages are NOT a clean time dimension.
+  The immediate-owner rate is a believable M&A rate. The top-parent rate
+  is not, and the two describe the same period of real-world activity.
+  The excess is GEM's ownership graph deepening, so roughly
+  89% of apparent ownership change is research, not events.
+
+  of 14,911 assets whose top parent moved, 13,382 (89.7%) had NO change
+  in their immediate owner, so nothing about the asset itself changed.
+
+OBJECTION TEST: are the shares moving on their own, or because the
+chain got longer? (conditioning on Ownership Path depth)
+  mean ownership-chain depth: 3.02 steps -> 4.12 steps
+
+  chain between vintages    share moved >1pt    stable   moved %
+  lengthened                          14,121    16,869     45.6%
+  same                                 6,127    89,218      6.4%
+  shortened                              407     1,376     22.8%
+
+  VERDICT: where GEM's structural picture is unchanged, only 6.4% of shares
+  moved materially, which is a believable rate of real stake changes.
+  Where the chain lengthened, 45.6% moved. So the share moves are
+  mostly a CONSEQUENCE of GEM adding intermediate companies, not an
+  independent cause. The objection is answered: it is still research depth.

@@ -1,0 +1,13 @@
+{
+  "script": "05_power_comparison",
+  "generated_utc": "2026-09-07T14:18:45Z",
+  "release_pin": {
+    "March 2025": "Global-Energy-Ownership-Tracker-March-2025.xlsx",
+    "August 2026": "Global-Energy-Ownership-Tracker-August-2026-V1.xlsx",
+    "August 2026 V2": "Global-Energy-Ownership-Tracker-August-2026-V2_External.xlsx"
+  },
+  "inputs": {},
+  "data_inputs": "none",
+  "kind": "closed-form power calculation, no dataset read",
+  "note": "Figures from this script are design decisions computed from stated assumptions, not measurements of any GEM or FMP release. Cite it as such."
+}

@@ -1,0 +1,43 @@
+{
+  "script": "12_decimal_truncation",
+  "generated_utc": "2026-09-05T20:40:35Z",
+  "release_pin": {
+    "March 2025": "Global-Energy-Ownership-Tracker-March-2025.xlsx",
+    "August 2026": "Global-Energy-Ownership-Tracker-August-2026-V1.xlsx",
+    "August 2026 V2": "Global-Energy-Ownership-Tracker-August-2026-V2_External.xlsx"
+  },
+  "inputs": {
+    "old": {
+      "filename": "Global-Energy-Ownership-Tracker-March-2025.xlsx",
+      "bytes": 21332621,
+      "sha256": "395d2080038cb06153aa53344fb72dc8d85271d53b5b920d2792cda98bb0e056"
+    },
+    "new_pinned": {
+      "filename": "Global-Energy-Ownership-Tracker-August-2026-V1.xlsx",
+      "bytes": 51937718,
+      "sha256": "1494cd6aed8220bd15f355f72329da940e621ad4c66e60f3775e776d40c488d2"
+    },
+    "also_reported": {
+      "filename": "Global-Energy-Ownership-Tracker-August-2026-V2_External.xlsx",
+      "bytes": 53390038,
+      "sha256": "91110394b52a44226ce7223d5b2d60667effde2270ac2806d2ca5f2a6fe8a582"
+    }
+  },
+  "results_pinned": {
+    "matched_edges": 14904,
+    "changed": 4454,
+    "strict_rounding_only": 3561,
+    "broad_rounding_only": 3561,
+    "suppressed_by_threshold": 3567,
+    "survives_as_restatement": 887
+  },
+  "results_v2": {
+    "matched_edges": 14790,
+    "changed": 4453,
+    "strict_rounding_only": 3496,
+    "broad_rounding_only": 3496,
+    "suppressed_by_threshold": 3502,
+    "survives_as_restatement": 951
+  },
+  "threshold": 0.06
+}

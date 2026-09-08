@@ -1,0 +1,33 @@
+{
+  "script": "11_vintage_return_spread",
+  "generated_utc": "2026-09-07T14:21:22Z",
+  "release_pin": {
+    "March 2025": "Global-Energy-Ownership-Tracker-March-2025.xlsx",
+    "August 2026": "Global-Energy-Ownership-Tracker-August-2026-V1.xlsx",
+    "August 2026 V2": "Global-Energy-Ownership-Tracker-August-2026-V2_External.xlsx"
+  },
+  "inputs": {
+    "panel": {
+      "filename": "panel_exposure.csv",
+      "bytes": 21408,
+      "sha256": "7f83ee380e15106a2f47fe88a2e775e678f09e95521ce89811134a302e7d8a2d"
+    },
+    "tickers": {
+      "filename": "tickers_primary.csv",
+      "bytes": 39276,
+      "sha256": "75a1bf8541f0438e54c7405da6b4578989652b9587f62624b2aeb89802ef5487"
+    },
+    "prices": {
+      "filename": "panel_b_prices_daily.csv",
+      "bytes": 90742812,
+      "sha256": "ace57cc81d9413ec9881e6b8f6d61939d657f0b2bf1b321bfdf97399d3daec2a"
+    },
+    "upstream_provenance_10": {
+      "filename": "RUN_PROVENANCE_10_panel_join.json",
+      "bytes": 993,
+      "sha256": "14240c8a0d7a8d2457a0e2079bd1724319d08eefd52f85ce26fc076b3a81053e"
+    }
+  },
+  "price_convention": "adjClose from FMP historical-price-eod/dividend-adjusted, pulled 2026-08-21. Vendor back-adjustment for dividends AND splits. No unadjusted close is archived alongside.",
+  "release_reaches_this_script_via": "10_panel_join, then 09_exposure_proxy"
+}

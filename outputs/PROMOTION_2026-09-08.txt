@@ -1,0 +1,50 @@
+PROMOTION OF THE DETERMINISTIC OUTPUTS TO OUTPUTS OF RECORD
+  executed 2026-09-08, under the research design chat's ruling of 2026-09-07, option (a)
+  mode: APPLY
+
+  The ruling named this record PROMOTION_2026-09-07.txt after the date of the
+  ruling. It is named for the date it was actually executed instead, because a
+  file dated earlier than the act it records is the first thing an auditor
+  should not have to reconcile.
+
+==============================================================================
+VERIFIED BEFORE ANY FILE WAS TOUCHED
+
+  change_decomposition_edges.csv
+    rows                 12,717   unchanged
+    header               unchanged
+    content, order removed  5b257e72f38602958304a909bfe37625fba6b972ae02b8a0f5c757be232245f5
+    superseded (23 Aug)  d5ada996cb5de18b2624f20da8eb1613d210278a9cffdf3f206446fcb990669d
+    output of record     8a6f5749f42da23f6b76427c74c9c7ad66039d0bcf29828617a808b41b8448fa
+    deterministic since  06_change_decomposition.py: sort_values([bucket, subject, party], kind=mergesort) before to_csv
+    retained beside as   change_decomposition_edges_SUPERSEDED_2026-08-23.csv
+
+  vintage_asset_parent_changes.csv
+    rows                 14,911   unchanged
+    header               unchanged
+    content, order removed  624128717748abf10802610f5e4cd233c36b9dd4b545e05d133e004d3ab59226
+    superseded (23 Aug)  05eb0f2b824f4157f4415f8bb38bb84d4d4464dcb770842d1702dcadaa9969b5
+    output of record     db856db9bd63cb845d0075a298f4c4746eed8818076b98171c2cb5735ef42919
+    deterministic since  04_vintage_diff.py: sort_values([subject_id, party_id], kind=mergesort) before to_csv
+    retained beside as   vintage_asset_parent_changes_SUPERSEDED_2026-08-23.csv
+
+  panel_join_summary.txt
+    output of record     83aa69a3d195bdcad4db6f6b262fcffeed99eb4c5e090d5403c42ddc7e6ec0fc
+    deterministic since  10_panel_join.py: sorted name list built from the set difference before writing
+    superseded copy      NONE RETAINED
+      The pre-sort copy was NOT retained.
+      It was overwritten in place during the script 10 provenance rerun of 7 September, before this ruling existed.
+      The pre-sort and post-sort content were verified identical at the time of the fix: same names, same values, order only.
+      No reconstruction is attempted here, because a manufactured file is worse than an honest gap in the record.
+
+==============================================================================
+THE RULE, FROM HERE
+  Every output is deterministic: sorted before writing, so that its published
+  checksum is reproducible by a reader who reruns the script against the pinned
+  V1 files. Any output that cannot meet that states so in its own provenance
+  record. This is written into code/README.md so it is not carried in prose.
+
+  The diff that discharged the preserve-beside guard: outputs/PROVENANCE_RERUN_DIFF_2026-09-07.txt
+  No value moved and no reported figure moved in any of this. R = 36.0%.
+
+  APPLIED. 2 file(s) promoted, 2 superseded copy(ies) retained.

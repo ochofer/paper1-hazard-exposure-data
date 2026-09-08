@@ -1,0 +1,52 @@
+TASK 1.1 SUPPLEMENT  RESTRICTED R, RESIDUALS OUT OF BOTH SIDES
+  ruled by the research design chat, 7 September 2026
+  reported beside the published 36.0% with the same prominence, as pre-committed
+
+NAME JOIN, from both releases
+  March 2025     entities  19,412  id column 'Entity ID'  name column 'Name'
+  August 2026    entities  26,943  id column 'Entity ID'  name column 'Name'
+  union of the two name maps: 28,094 entity ids
+  changed edges loaded: 12,717
+
+==========================================================================
+RESIDUAL COUNTERPARTIES, BY BUCKET, ACROSS ALL CHANGED EDGES
+  a party is residual if its name contains any of: small shareholder, natural person, other shareholder, unknown, various
+  build-out        8,135 edges   residual 1,917  ( 23.6%)
+  restatement      2,543 edges   residual   360  ( 14.2%)
+  methodology      2,039 edges   residual   299  ( 14.7%)
+  TOTAL           12,717 edges   residual 2,576  ( 20.3%)
+
+CONTROL: does the restatement bucket reproduce the figure already reported?
+  expected 360 residual edges of 2,543 (script 08 frame, same rule)
+  found    360 residual edges of 2543
+  MATCHES. The identification is the same one that produced the 360.
+
+==========================================================================
+R, PUBLISHED AND RESTRICTED
+                                           numerator   denominator        R
+  as published                                 4,582        12,717    36.0%
+  residuals out of both sides                  3,923        10,141    38.7%
+
+  change in R: +2.7 percentage points
+  pre-committed GO threshold: 25%
+  as published  clears
+  restricted    clears
+
+  WHY IT MOVES THIS WAY, which is the opposite of what was assumed.
+  Residual counterparties are NOT concentrated in the restatement bucket.
+  They are most concentrated in BUILD-OUT, at 23.6% against 14.2% for
+  restatement and 14.7% for methodology. Build-out sits in the denominator
+  only. So removing residuals from both sides strips proportionally more
+  from the denominator than from the numerator, and R RISES.
+
+  The working assumption throughout was that excluding residuals would
+  deflate R and put the pre-committed 25% bar at risk. It does the
+  reverse. The restricted measure is the more conservative construction
+  and it makes the go decision safer, not thinner.
+
+  A finding in its own right: nearly a quarter of the edges counted as
+  the database growing are new links to a residual bucket, which is not
+  new ownership information either. Growth in residual buckets is not
+  growth in coverage.
+
+  written to /root/fp/outputs

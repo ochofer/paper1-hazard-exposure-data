@@ -1,0 +1,10 @@
+sector,unit,units,capacity,listed_by_count,listed_by_capacity,region_by_count,region_by_capacity,region_capacity_shareweighted
+Gas Pipeline,BOEd,1510,205825860.0,60.7,67.7,24.6,29.5,21.7
+Gas Plant,MW,9309,2131846.0,53.9,59.7,24.2,26.3,22.4
+Oil & NGL Pipeline,BOEd,937,264650463.3,65.3,61.5,28.1,26.1,19.3
+Bioenergy Power,MW,2460,85619.5,40.0,47.0,13.9,21.0,18.0
+Cement and Concrete,Mt cement,1778,3209.3,64.9,71.5,20.7,15.1,13.8
+Coal Plant,MW,6457,2200171.5,50.7,58.8,5.4,7.6,6.4
+Coal Mine,Mtpa coal,813,3993.6,59.2,60.4,4.2,7.5,6.6
+Iron Mine,ttpa ore,355,3172955.0,53.0,81.9,3.1,6.7,6.3
+Steel Plant,ttpa steel,835,2205531.0,40.4,43.9,8.6,6.0,5.6

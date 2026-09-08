@@ -1,0 +1,5 @@
+reading,V,R_V1,R_V2,verdict_V1,verdict_V2
+"as published, V not applied",0.0,0.360305,0.353944,clears,clears
+in-window V = 0.105,0.1053,0.339256,0.332254,clears,clears
+strict V = 0.316,0.3158,0.297157,0.288874,clears,clears
+"worst case, strict V at its 95% upper bound 0.540",0.5399,0.252342,0.242694,clears,FAILS

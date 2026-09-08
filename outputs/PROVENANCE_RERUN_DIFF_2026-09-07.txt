@@ -1,0 +1,61 @@
+PROVENANCE RERUN AND DETERMINISM FIX, 7 September 2026
+
+WHY. Scripts 04, 06 and 07 were rerun UNCHANGED against the pinned V1 files
+solely to emit RUN_PROVENANCE records. Their outputs on disk were written on
+23 August 2026, before the provenance code existed, so gate 5 of the ruling of
+6 September could not be met for any figure resting on them. The design chat
+instructed on 7 September that the rerun be written beside the 23 August
+outputs, never over them, diffed digit for digit, and the comparison recorded.
+
+FIRST PASS, unchanged code.
+  vintage_diff_summary.txt               IDENTICAL
+  vintage_entity_churn.csv               IDENTICAL
+  change_decomposition.txt               IDENTICAL
+  decay_curves.csv                       IDENTICAL
+  decay_curves.txt                       IDENTICAL
+  schema_drift.csv                       IDENTICAL
+  change_decomposition_edges.csv         DIFFERED
+  vintage_asset_parent_changes.csv       DIFFERED
+
+DIAGNOSIS. Order, not content. Both differing files had the same row count, the
+same header, and an identical SHA-256 once sorted. No value in either file
+changed and no reported figure moved: every summary output, including
+R = 36.0%, was byte-identical.
+
+  The cause is the trap already recorded in this project. Both files are built
+  by iterating Python sets, and string hashing is randomised per process, so
+  the row order varies between runs while the content does not.
+
+FIX, in code rather than in a note. Both scripts now sort before writing:
+  06_change_decomposition.py   sort_values([bucket, subject, party], mergesort)
+  04_vintage_diff.py           sort_values(all columns, mergesort)
+
+VERIFICATION AFTER THE FIX.
+  06 run twice in succession, byte-identical output both times
+     sha256 8a6f5749f42da23f
+  change_decomposition_edges.csv    sorted content matches 23 August set  YES
+  vintage_asset_parent_changes.csv  sorted content matches 23 August set  YES
+  vintage_diff_summary.txt          still byte-identical                  YES
+  vintage_entity_churn.csv          still byte-identical                  YES
+  R after the fix                   36.0%, unchanged
+
+CONCLUSION. No figure in the note is affected. The 23 August summary outputs
+stand as the figures of record. The two row-level CSVs are now byte-reproducible,
+which they were not before, so a checksum on them is finally worth recording.
+This was a self-inflicted instance of the note's own subject: an output whose
+fingerprint moved between runs while its content did not.
+
+PROVENANCE RECORDS EMITTED, each carrying the resolved filename and its SHA-256:
+  RUN_PROVENANCE_04_vintage_diff.json
+  RUN_PROVENANCE_06_change_decomposition.json
+  RUN_PROVENANCE_07_decay_curves.json
+
+CHECKSUMS OF THE POST-FIX OUTPUTS
+  vintage_diff_summary.txt               491b735f08db956e25d3528729eadb4b3e1c9f69659ac360ce42d2e8ce3eb972
+  vintage_entity_churn.csv               da2de0aaa4c13fc5faf1bb9027134fb4080b73c30e99502f4536f53f5e0ee412
+  vintage_asset_parent_changes.csv       db856db9bd63cb845d0075a298f4c4746eed8818076b98171c2cb5735ef42919
+  change_decomposition.txt               aa8597ad13e0817b79bb950b44beb83f682a42b04687470be68f45823b3ed4df
+  change_decomposition_edges.csv         8a6f5749f42da23f6b76427c74c9c7ad66039d0bcf29828617a808b41b8448fa
+  decay_curves.csv                       d20b2858cec5a0f4e0fa8173151af74bfb09705ee99a5c7ca3e41ae792d760cb
+  decay_curves.txt                       485203221e829ea0db45951beaf4e88cc7adfb77f1895f87eade867e561447b6
+  schema_drift.csv                       d73167309dc2817ed52f607927a4b983ce69b6513e0f5a3d4cda49f10e58f24a

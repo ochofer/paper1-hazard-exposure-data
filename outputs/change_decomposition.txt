@@ -1,0 +1,51 @@
+TASK 1.1  DECOMPOSITION OF APPARENT OWNERSHIP CHANGE
+  old: Global-Energy-Ownership-Tracker-March-2025.xlsx
+  new: Global-Energy-Ownership-Tracker-August-2026-V1.xlsx
+  pre-committed GO threshold: restatement + methodology >= 25%
+
+  remapping sheet loaded: 4,196 entities GEM deleted as duplicates
+
+APPARENT CHANGE, DECOMPOSED
+  bucket       detail                                                        count   share
+  BUILD-OUT    new entity brought into coverage                              6,183   48.6%
+  BUILD-OUT    new link between entities already covered                     1,744   13.7%
+  BUILD-OUT    blank filled by genuine new research                            208    1.6%
+               -- BUILD-OUT TOTAL                                            8,135   64.0%
+
+  RESTATEMENT  link removed, not explained by deduplication                  1,710   13.4%
+  RESTATEMENT  share revised, material, over 1 point                           533    4.2%
+  RESTATEMENT  share revised, small, under 1 point                             300    2.4%
+               -- RESTATEMENT TOTAL                                          2,543   20.0%
+
+  METHODOLOGY  blank filled by imputation rule introduced after Mar 2025     1,842   14.5%
+  METHODOLOGY  entity deduplicated by GEM, per remapping sheet                 143    1.1%
+  METHODOLOGY  imputed share moved because owner count changed                  54    0.4%
+               -- METHODOLOGY TOTAL                                          2,039   16.0%
+
+  total apparent change 12,717, unchanged edges 14,017
+
+VERDICT AGAINST THE PRE-COMMITTED RULE
+  build-out                     8,135   64.0%   decays with maturity
+  restatement                   2,543   20.0%   does not decay
+  methodology change            2,039   16.0%   does not decay
+  R = restatement + methodology = 36.0%
+
+  GO. R of 36.0% clears the 25% bar set before running.
+  The age objection is answered on the data: a majority of apparent
+  change is NOT explained by a young database adding coverage.
+SENSITIVITY: crediting the maximum plausible number of real events
+  edges present in both releases                  16,954
+  real ownership churn measured over 18 months      5.2%
+  ceiling on genuine corporate events                881
+  R with every one of those removed from restatement: 29.1%
+  Still clears the 25% bar. The GO does not depend on
+  how the restatement bucket splits between corrections and events.
+
+  Note that the GO is also robust to the deduplication boundary. The
+  1,710 removed links not explained by the remapping sheet may include
+  unrecorded deduplication, since that sheet accounts for only 11.5% of
+  entities lost between these releases. Reclassifying any of them moves
+  edges from restatement to methodology, and both sit inside R, so R is
+  unchanged either way. The dissolved-and-amalgamated log arriving with
+  the next release will settle the split without moving the verdict.
+

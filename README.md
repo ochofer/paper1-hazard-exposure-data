@@ -230,6 +230,21 @@ redistributable. The manifest also records what it lacks: the pull of 21 August 
 not capture per-file fetch timestamps, and I have not back-filled them from filesystem
 timestamps, which change whenever a file is copied and would therefore be fiction.
 
+**The outputs and the evidence.** `outputs/` carries every file the vintage and measurement
+scripts produce, and `evidence/` carries the hand-collected input behind the recording-lag
+table: transaction dates read from exchange filings, company statements and EDINET, with a
+source for each. Two files are withheld, `vintage_return_spread.csv` and
+`vintage_return_spread.txt`, because they are computed from the licensed price series;
+they are named in the note's figure register with their checksums, and rerunning
+`code/11_vintage_return_spread.py` against your own pull reproduces them. Everything else
+is here in full, which is 53 of the 55 files.
+
+Every output is sorted before it is written, so rerunning a script against the pinned
+release reproduces its checksum exactly. Files carrying a `_SUPERSEDED_` marker are earlier
+copies of two outputs whose row order varied between runs before that rule was enforced.
+They are kept rather than deleted, and `outputs/PROMOTION_2026-09-08.txt` records the
+checksums on both sides and shows the row count and header unchanged. No value moved.
+
 **The hazard exposure variable.** Not built, and not started. The ownership dataset
 carries no asset coordinates, so it needs the separate sector datasets plus a hazard
 dataset. None of that requires a subscription. There are no exposure results anywhere in

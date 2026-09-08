@@ -1,0 +1,70 @@
+{
+  "script": "17_release_ladder",
+  "generated_utc": "2026-09-07T14:24:58Z",
+  "release_pin": {
+    "March 2025": "Global-Energy-Ownership-Tracker-March-2025.xlsx",
+    "August 2026": "Global-Energy-Ownership-Tracker-August-2026-V1.xlsx",
+    "August 2026 V2": "Global-Energy-Ownership-Tracker-August-2026-V2_External.xlsx"
+  },
+  "inputs": {
+    "old": {
+      "filename": "Global-Energy-Ownership-Tracker-March-2025.xlsx",
+      "bytes": 21332621,
+      "sha256": "395d2080038cb06153aa53344fb72dc8d85271d53b5b920d2792cda98bb0e056"
+    },
+    "new_pinned": {
+      "filename": "Global-Energy-Ownership-Tracker-August-2026-V1.xlsx",
+      "bytes": 51937718,
+      "sha256": "1494cd6aed8220bd15f355f72329da940e621ad4c66e60f3775e776d40c488d2"
+    },
+    "also_reported": {
+      "filename": "Global-Energy-Ownership-Tracker-August-2026-V2_External.xlsx",
+      "bytes": 53390038,
+      "sha256": "91110394b52a44226ce7223d5b2d60667effde2270ac2806d2ca5f2a6fe8a582"
+    },
+    "verdicts": {
+      "filename": "event_validation_sample.csv",
+      "bytes": 14283,
+      "sha256": "fe42ccc95364887cf1f707859c4f2a213968f9daa9876b4d5676045cabb8816d"
+    }
+  },
+  "n_sample": 19,
+  "v_in_window": 2,
+  "v_strict": 6,
+  "wilson_z": 1.96,
+  "go_threshold": 0.25,
+  "ladder": [
+    {
+      "reading": "as published, V not applied",
+      "V": 0.0,
+      "R_V1": 0.360305,
+      "R_V2": 0.353944,
+      "verdict_V1": "clears",
+      "verdict_V2": "clears"
+    },
+    {
+      "reading": "in-window V = 0.105",
+      "V": 0.1053,
+      "R_V1": 0.339256,
+      "R_V2": 0.332254,
+      "verdict_V1": "clears",
+      "verdict_V2": "clears"
+    },
+    {
+      "reading": "strict V = 0.316",
+      "V": 0.3158,
+      "R_V1": 0.297157,
+      "R_V2": 0.288874,
+      "verdict_V1": "clears",
+      "verdict_V2": "clears"
+    },
+    {
+      "reading": "worst case, strict V at its 95% upper bound 0.540",
+      "V": 0.5399,
+      "R_V1": 0.252342,
+      "R_V2": 0.242694,
+      "verdict_V1": "clears",
+      "verdict_V2": "FAILS"
+    }
+  ]
+}

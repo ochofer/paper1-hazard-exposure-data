@@ -1,0 +1,87 @@
+TASK 1.5 SUPPLEMENT  BIOENERGY CHECK, VARIANTS (a) AND (c)
+  ruled by the research design chat, 7 September 2026
+  the originally specified check could not be run; see the docstring
+  pre-committed cut: Spearman 0.95
+
+WHY THE ORIGINAL SPECIFICATION WAS REPLACED, counted rather than argued
+  firms present in both vintages                                  679
+  with NO bioenergy in either and fossil > 0 in both              457
+  their fossil share, March 2025: min 1.000 max 1.000 distinct values 1, standard deviation 0.000000
+  A rank correlation on a constant is undefined, not reassuring.
+
+  with bioenergy present in BOTH vintages, which is variant (a)    133
+  of those, also in the 328 panel                                  34
+
+==============================================================================
+(a) THE CHECK. Fossil share on firms whose denominator exists in both vintages
+    fossil share, bioenergy in both, worldwide   blank=zero    n= 133  Spearman 0.9643  top-quintile overlap  96.3% (26 of 27)
+      like-for-like, RAW fossil MW, same firms                 n= 133  Spearman 0.9747  top-quintile overlap  92.6% (25 of 27)
+    fossil share, bioenergy in both, worldwide   blank=impute  n= 133  Spearman 0.9656  top-quintile overlap 100.0% (27 of 27)
+      like-for-like, RAW fossil MW, same firms                 n= 133  Spearman 0.9766  top-quintile overlap  96.3% (26 of 27)
+
+    fossil share, bioenergy in both, the 328 panel blank=zero    n=  34  Spearman 0.9949  top-quintile overlap  85.7% (6 of 7)
+      like-for-like, RAW fossil MW, same firms                 n=  34  Spearman 0.9973  top-quintile overlap 100.0% (7 of 7)
+    fossil share, bioenergy in both, the 328 panel blank=impute  n=  34  Spearman 0.9980  top-quintile overlap  85.7% (6 of 7)
+      like-for-like, RAW fossil MW, same firms                 n=  34  Spearman 0.9966  top-quintile overlap 100.0% (7 of 7)
+
+  For reference, the unrestricted figures from script 13, panel firms:
+    fossil share, blank=zero    Spearman 0.8107   top-quintile overlap 75.0%
+    fossil share, blank=impute  Spearman 0.8509   top-quintile overlap 79.4%
+
+==============================================================================
+U2, THE 604 MATCHED FIRMS WORLDWIDE. Does the convention flip generalise?
+  Asked by the research design chat on 7 September, interpretation fixed
+  BEFORE this ran: if U2 also straddles the 0.95 cut the flip is general;
+  if U2 clears under both conventions the flip is a result about the listed
+  US and European universe a portfolio manager would actually sort.
+
+  U2 IS TAKEN FROM SCRIPT 09'S OWN FRAME, exposure_proxy_by_firm.csv, which
+  is where U2 is defined and where the +9.8% / +5.0% growth pair is measured.
+  A first attempt filtered U2 to firms with POSITIVE capacity in both
+  vintages, giving 576 firms and the OPPOSITE branch. The filter was mine,
+  not the project's definition, and it decided a pre-committed branch. Both
+  are reported below so the difference is visible rather than a choice.
+    U2, as defined      blank=zero    n= 604  Spearman 0.9076  top-quintile overlap  90.1% (109 of 121)
+    positive in both    blank=zero    n= 576  Spearman 0.9603  top-quintile overlap  88.7% (102 of 115)
+    U2, as defined      blank=impute  n= 604  Spearman 0.9625  top-quintile overlap  91.7% (111 of 121)
+    positive in both    blank=impute  n= 604  Spearman 0.9625  top-quintile overlap  91.7% (111 of 121)
+
+  WHY THE TWO DIFFER, and it is the conventions section's own point.
+  Under blank=zero, 33 of the March 2025 firms carry attributable
+  capacity of exactly zero, because every ownership edge they have has a
+  blank share and a blank multiplied by zero is nothing. Under blank=impute
+  that count is 0. So the convention does not only change the values, it
+  decides whether a firm registers as having exposure at all. Those tied
+  zeros are what drag the blank=zero rank correlation down. Filtering them
+  out removes the convention's effect, which is the thing being measured.
+
+  THE THREE UNIVERSES, raw fossil MW between vintages:
+    universe                                      blank=zero  blank=impute
+    U3, 171 panel firms                               0.9146        0.9761
+    U2, 604 matched firms worldwide                   0.9076        0.9625
+    133 firms with bioenergy in both                  0.9747        0.9766
+    the pre-committed cut                               0.95          0.95
+
+  U2 STRADDLES THE CUT. The convention flip is GENERAL, not an artefact
+  of the regional panel, and the note says so. It reproduces on 604
+  firms worldwide and on 171 panel firms, in the same direction.
+
+==============================================================================
+(c) IMMUNE BY CONSTRUCTION. Coal share of coal plus gas, no bioenergy in it
+    coal share, the 328 panel                    blank=zero    n= 143  Spearman 0.9652  top-quintile overlap  82.8% (24 of 29)
+      like-for-like, RAW fossil MW, same firms                 n= 143  Spearman 0.9571  top-quintile overlap  93.1% (27 of 29)
+    coal share, the 328 panel                    blank=impute  n= 152  Spearman 0.9610  top-quintile overlap  80.0% (24 of 30)
+      like-for-like, RAW fossil MW, same firms                 n= 152  Spearman 0.9661  top-quintile overlap  93.3% (28 of 30)
+
+==============================================================================
+WHICH BRANCH FIRED, per the interpretation fixed before this ran
+  (a) blank=zero    Spearman 0.9643  ABOVE the 0.95 cut
+  (a) blank=impute  Spearman 0.9656  ABOVE the 0.95 cut
+
+  BRANCH 1. (a) clears 0.95 under both conventions.
+  The convention-flip result is attributed to the denominator's coverage
+  change. The note demotes scaling to a coverage finding, which still
+  illustrates the thesis: an analyst's choice of denominator moves the
+  verdict. Both numbers appear with the cut beside them.
+
+  written to /root/fp/outputs

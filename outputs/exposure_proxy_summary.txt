@@ -1,0 +1,116 @@
+TASK 1.4  TRANSITION EXPOSURE PROXY ON TWO VINTAGES
+  sectors: coal and gas power plants | status: operating only
+  attribution: nearest listed parent, depth cap 12, cycle-safe
+  blank shares: reported under BOTH conventions, see the docstring
+
+--------------------------------------------------------------------------
+loading March 2025   (Global-Energy-Ownership-Tracker-March-2025.xlsx)
+  sheets present: 10
+  NOT in this vintage: Oil & NGL Pipeline Ownership, Cement and Concrete Ownership, Asset Ownership
+  entities 19,412 | listed 1,567 | listed and identified 1,336
+  entity ownership edges 18,807 | BLANK share 2,492 (13.3%)
+  Coal Plant Ownership     operating rows   30,993  units  6,429  DROPPED 63 (unknown share or capacity)
+  Gas Plant Ownership      operating rows   40,394  units  9,123  DROPPED 184 (unknown share or capacity)
+
+--------------------------------------------------------------------------
+loading August 2026   (Global-Energy-Ownership-Tracker-August-2026-V1.xlsx)
+  sheets present: 13
+  entities 26,943 | listed 2,150 | listed and identified 1,896
+  entity ownership edges 24,881 | BLANK share 0 (0.0%)
+  flagged `imputed value` by GEM: 4,392 (17.7%)
+  Coal Plant Ownership     operating rows   75,774  units  6,457
+  Gas Plant Ownership      operating rows  129,550  units  9,309  DROPPED 251 (unknown share or capacity)
+
+==========================================================================
+GEM'S OWN Share COLUMN, SUMMED NAIVELY OVER ALL PARENTS
+  what a user who takes the sector sheet at face value would get
+  March 2025      6,502.6 GW  vs actual fleet  4,191.3 GW  = 1.55x
+  August 2026     7,611.9 GW  vs actual fleet  4,324.5 GW  = 1.76x
+
+==========================================================================
+THE MEASURE
+
+  [March 2025 | blank=zero]
+    fleet 4,191.3 GW  (coal 2,115.6, gas 2,075.7)
+    attributed to listed firms    1,884.6 GW  (45.0% of fleet)
+    listed firms with exposure        666
+
+  [August 2026 | blank=zero]
+    fleet 4,324.5 GW  (coal 2,200.2, gas 2,124.4)
+    attributed to listed firms    2,148.9 GW  (49.7% of fleet)
+    listed firms with exposure        762
+
+  [March 2025 | blank=impute]
+    fleet 4,191.3 GW  (coal 2,115.6, gas 2,075.7)
+    attributed to listed firms    1,971.3 GW  (47.0% of fleet)
+    listed firms with exposure        666
+
+  [August 2026 | blank=impute]
+    fleet 4,324.5 GW  (coal 2,200.2, gas 2,124.4)
+    attributed to listed firms    2,148.9 GW  (49.7% of fleet)
+    listed firms with exposure        762
+
+==========================================================================
+CROSS-VINTAGE COMPARISON
+
+  --- blank=zero ---
+    firms in March 2025      666      only here    62
+    firms in August 2026     762      only here   158
+    in both          604
+    Spearman rank correlation   0.9076
+    Pearson correlation         0.9806
+    total March 2025    1,824.4 GW
+    total August 2026    2,003.6 GW  (+9.8%)
+    unchanged to within 1 kW    265 (43.9%)
+    changed                     339 (56.1%)
+
+    largest 12 absolute moves (MW):
+      firm                                March 2025 August 2026      change
+      Constellation Energy                     5,500      33,534     +28,034
+      Entergy                                 22,462       8,721     -13,742
+      China Hongqiao Group                         0      10,670     +10,670
+      DTE Energy                                   0       7,719      +7,719
+      RWE                                     15,172      22,754      +7,582
+      Berkshire Hathaway                      14,429      21,471      +7,042
+      China Shenhua Energy                    51,715      58,492      +6,777
+      China Resources Power Holdings          36,839      43,167      +6,328
+      Duke Energy                             33,366      39,407      +6,041
+      NTPC                                    63,261      69,115      +5,854
+      Vedanta                                  1,325       7,005      +5,680
+      CLP Holdings                             5,868      11,212      +5,345
+
+  --- blank=impute ---
+    firms in March 2025      666      only here    62
+    firms in August 2026     762      only here   158
+    in both          604
+    Spearman rank correlation   0.9625
+    Pearson correlation         0.9825
+    total March 2025    1,907.3 GW
+    total August 2026    2,003.6 GW  (+5.0%)
+    unchanged to within 1 kW    291 (48.2%)
+    changed                     313 (51.8%)
+
+    largest 12 absolute moves (MW):
+      firm                                March 2025 August 2026      change
+      Constellation Energy                     6,053      33,534     +27,481
+      Entergy                                 22,462       8,721     -13,742
+      China Hongqiao Group                       110      10,670     +10,560
+      RWE                                     15,172      22,754      +7,582
+      Berkshire Hathaway                      14,429      21,471      +7,042
+      China Shenhua Energy                    51,925      58,492      +6,567
+      China Resources Power Holdings          36,839      43,167      +6,328
+      NTPC                                    63,261      69,115      +5,854
+      Carlyle Group                            9,094       3,269      -5,826
+      Vedanta                                  1,325       7,005      +5,680
+      YTL Corporation                          4,824         231      -4,592
+      Adani Power                             13,528      17,886      +4,358
+
+==========================================================================
+HOW MUCH THE BLANK-SHARE CONVENTION MOVES THE ANSWER
+  March 2025    zero  1,884.6 GW   impute  1,971.3 GW   gap    +86.7 GW (+4.6%)
+  August 2026   zero  2,148.9 GW   impute  2,148.9 GW   gap     +0.0 GW (+0.0%)
+
+  APPARENT GROWTH March 2025 -> August 2026, matched firms only:
+    under blank=zero    +9.8%
+    under blank=impute  +5.0%
+  The difference between those two is not exposure. It is a convention.

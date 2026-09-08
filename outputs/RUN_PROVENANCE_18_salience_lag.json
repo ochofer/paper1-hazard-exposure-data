@@ -1,0 +1,34 @@
+{
+  "script": "18_salience_lag",
+  "generated_utc": "2026-09-07T14:28:00Z",
+  "release_pin": {
+    "March 2025": "Global-Energy-Ownership-Tracker-March-2025.xlsx",
+    "August 2026": "Global-Energy-Ownership-Tracker-August-2026-V1.xlsx",
+    "August 2026 V2": "Global-Energy-Ownership-Tracker-August-2026-V2_External.xlsx"
+  },
+  "inputs": {
+    "evidence": {
+      "filename": "salience_lag_cases.csv",
+      "bytes": 3909,
+      "sha256": "bd2da0d6ea09a73c96f50b5272307117e53dff1d4694e0da4c1d20988911dca4"
+    },
+    "verdicts": {
+      "filename": "event_validation_sample.csv",
+      "bytes": 14283,
+      "sha256": "fe42ccc95364887cf1f707859c4f2a213968f9daa9876b4d5676045cabb8816d"
+    }
+  },
+  "rule": "lag = transaction date to first day of the month of the first GEM release carrying the change",
+  "n_cases": 6,
+  "fast_threshold_days": 120,
+  "n_fast": 2,
+  "n_slow": 4,
+  "lag_days": {
+    "19": 12,
+    "11": 71,
+    "1": 670,
+    "7": 1164,
+    "17": 1172,
+    "10": 1674
+  }
+}

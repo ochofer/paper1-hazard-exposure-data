@@ -1,0 +1,481 @@
+GEM AUGUST 2026 V1 vs V2_External: side by side script outputs
+Produced 2 September 2026 by Project A main.
+
+METHOD
+  Scripts 04, 06, 07 and 08 were run unmodified against two scratch trees that
+  differ only in whether Global-Energy-Ownership-Tracker-August-2026-V2_External.xlsx
+  was visible. No script was edited and nothing in outputs/ was touched.
+  04, 06 and 07 ran in the cloud container with pandas pinned to 2.3.3 to match
+  the local environment. 08 ran locally.
+
+CONTROLS THAT PASSED
+  1. The V1 rerun of 04 reproduces outputs/vintage_diff_summary.txt from 23 August
+     digit for digit.
+  2. The V1 rerun of 06 reproduces outputs/change_decomposition.txt from 23 August
+     digit for digit.
+  3. 06 was run both locally and in the cloud and returned identical numbers,
+     so the cloud results are not an environment artefact.
+
+SCRIPT 08 FRAME SIZES (run locally)
+  against V1:           2,543 rows   link removed 1,710 | material 533 | small 300
+  against V2_External:  2,756 rows   link removed 1,861 | material 572 | small 323
+  These match script 06's restatement bucket exactly for the same release, so the
+  2,756 versus 2,543 gap is entirely the release and not an exclusion-rule difference.
+  newest_update populated: 832 of 2,543 on V1, 0 of 2,756 on V2_External, because
+  V2 renamed the column to Last Review Date and 08 falls back to blank.
+  All 19 hand-verified cases are present in BOTH frames with identical
+  share_mar2025, share_aug2026, delta and subtype.
+
+HEADLINE
+  R = 36.0 percent on V1, 35.4 percent on V2_External.
+  Worst-case reading, V at its 95 percent upper bound 0.540:
+    V1           25.2 percent   clears the pre-committed 25 percent threshold
+    V2_External  24.3 percent   FAILS
+
+################################################################
+### change_decomposition  ::  v1
+################################################################
+TASK 1.1  DECOMPOSITION OF APPARENT OWNERSHIP CHANGE
+  old: Global-Energy-Ownership-Tracker-March-2025.xlsx
+  new: Global-Energy-Ownership-Tracker-August-2026-V1.xlsx
+  pre-committed GO threshold: restatement + methodology >= 25%
+
+  remapping sheet loaded: 4,196 entities GEM deleted as duplicates
+
+APPARENT CHANGE, DECOMPOSED
+  bucket       detail                                                        count   share
+  BUILD-OUT    new entity brought into coverage                              6,183   48.6%
+  BUILD-OUT    new link between entities already covered                     1,744   13.7%
+  BUILD-OUT    blank filled by genuine new research                            208    1.6%
+               -- BUILD-OUT TOTAL                                            8,135   64.0%
+
+  RESTATEMENT  link removed, not explained by deduplication                  1,710   13.4%
+  RESTATEMENT  share revised, material, over 1 point                           533    4.2%
+  RESTATEMENT  share revised, small, under 1 point                             300    2.4%
+               -- RESTATEMENT TOTAL                                          2,543   20.0%
+
+  METHODOLOGY  blank filled by imputation rule introduced after Mar 2025     1,842   14.5%
+  METHODOLOGY  entity deduplicated by GEM, per remapping sheet                 143    1.1%
+  METHODOLOGY  imputed share moved because owner count changed                  54    0.4%
+               -- METHODOLOGY TOTAL                                          2,039   16.0%
+
+  total apparent change 12,717, unchanged edges 14,017
+
+VERDICT AGAINST THE PRE-COMMITTED RULE
+  build-out                     8,135   64.0%   decays with maturity
+  restatement                   2,543   20.0%   does not decay
+  methodology change            2,039   16.0%   does not decay
+  R = restatement + methodology = 36.0%
+
+  GO. R of 36.0% clears the 25% bar set before running.
+  The age objection is answered on the data: a majority of apparent
+  change is NOT explained by a young database adding coverage.
+SENSITIVITY: crediting the maximum plausible number of real events
+  edges present in both releases                  16,954
+  real ownership churn measured over 18 months      5.2%
+  ceiling on genuine corporate events                881
+  R with every one of those removed from restatement: 29.1%
+  Still clears the 25% bar. The GO does not depend on
+  how the restatement bucket splits between corrections and events.
+
+  Note that the GO is also robust to the deduplication boundary. The
+  1,710 removed links not explained by the remapping sheet may include
+  unrecorded deduplication, since that sheet accounts for only 11.5% of
+  entities lost between these releases. Reclassifying any of them moves
+  edges from restatement to methodology, and both sit inside R, so R is
+  unchanged either way. The dissolved-and-amalgamated log arriving with
+  the next release will settle the split without moving the verdict.
+
+
+################################################################
+### change_decomposition  ::  v2
+################################################################
+TASK 1.1  DECOMPOSITION OF APPARENT OWNERSHIP CHANGE
+  old: Global-Energy-Ownership-Tracker-March-2025.xlsx
+  new: Global-Energy-Ownership-Tracker-August-2026-V2_External.xlsx
+  pre-committed GO threshold: restatement + methodology >= 25%
+
+  remapping sheet loaded: 4,196 entities GEM deleted as duplicates
+
+APPARENT CHANGE, DECOMPOSED
+  bucket       detail                                                        count   share
+  BUILD-OUT    new entity brought into coverage                              6,562   49.1%
+  BUILD-OUT    new link between entities already covered                     1,845   13.8%
+  BUILD-OUT    blank filled by genuine new research                            234    1.7%
+               -- BUILD-OUT TOTAL                                            8,641   64.6%
+
+  RESTATEMENT  link removed, not explained by deduplication                  1,861   13.9%
+  RESTATEMENT  share revised, material, over 1 point                           572    4.3%
+  RESTATEMENT  share revised, small, under 1 point                             323    2.4%
+               -- RESTATEMENT TOTAL                                          2,756   20.6%
+
+  METHODOLOGY  blank filled by imputation rule introduced after Mar 2025     1,775   13.3%
+  METHODOLOGY  entity deduplicated by GEM, per remapping sheet                 147    1.1%
+  METHODOLOGY  imputed share moved because owner count changed                  56    0.4%
+               -- METHODOLOGY TOTAL                                          1,978   14.8%
+
+  total apparent change 13,375, unchanged edges 13,839
+
+VERDICT AGAINST THE PRE-COMMITTED RULE
+  build-out                     8,641   64.6%   decays with maturity
+  restatement                   2,756   20.6%   does not decay
+  methodology change            1,978   14.8%   does not decay
+  R = restatement + methodology = 35.4%
+
+  GO. R of 35.4% clears the 25% bar set before running.
+  The age objection is answered on the data: a majority of apparent
+  change is NOT explained by a young database adding coverage.
+SENSITIVITY: crediting the maximum plausible number of real events
+  edges present in both releases                  16,799
+  real ownership churn measured over 18 months      5.2%
+  ceiling on genuine corporate events                873
+  R with every one of those removed from restatement: 28.9%
+  Still clears the 25% bar. The GO does not depend on
+  how the restatement bucket splits between corrections and events.
+
+  Note that the GO is also robust to the deduplication boundary. The
+  1,710 removed links not explained by the remapping sheet may include
+  unrecorded deduplication, since that sheet accounts for only 11.5% of
+  entities lost between these releases. Reclassifying any of them moves
+  edges from restatement to methodology, and both sit inside R, so R is
+  unchanged either way. The dissolved-and-amalgamated log arriving with
+  the next release will settle the split without moving the verdict.
+
+
+################################################################
+### vintage_diff_summary  ::  v1
+################################################################
+GEM VINTAGE DIFF
+  old: Global-Energy-Ownership-Tracker-March-2025.xlsx
+  new: Global-Energy-Ownership-Tracker-August-2026-V1.xlsx
+
+ENTITY UNIVERSE
+  old release              19,412
+  new release              26,943
+  present in both          18,261
+  gone from new release     1,151   <- breaks a panel if these were merged, not deleted
+  new in new release        8,682   <- this is what moves top-level parents
+
+PUBLICLY-LISTED FLAG, on entities present in both
+  True  -> False               69   these firms leave the cross-section
+  False -> True                56   these firms enter it
+
+ASSET ATTRIBUTION: immediate owner against top-level parent
+  sector                 assets       top parent    immediate owner
+  Coal Plant             13,170     4,554 (34.6%)        386 ( 2.9%)
+  Gas Plant              11,736     6,346 (54.1%)        555 ( 4.7%)
+  Bioenergy Power         1,265       537 (42.5%)         81 ( 6.4%)
+  Coal Mine               1,513     1,013 (67.0%)        149 ( 9.8%)
+  Iron Mine                 528       218 (41.3%)          4 ( 0.8%)
+  Gas Pipeline            2,850     1,887 (66.2%)        474 (16.6%)
+  Oil & NGL Pipeline   SKIPPED, sheet absent from one of the releases
+  Steel Plant             1,072       356 (33.2%)         19 ( 1.8%)
+  TOTAL                  32,134    14,911 (46.4%)      1,668 ( 5.2%)
+
+  ratio of the two rates: 8.9 to 1
+
+  VERDICT: vintages are NOT a clean time dimension.
+  The immediate-owner rate is a believable M&A rate. The top-parent rate
+  is not, and the two describe the same period of real-world activity.
+  The excess is GEM's ownership graph deepening, so roughly
+  89% of apparent ownership change is research, not events.
+
+  of 14,911 assets whose top parent moved, 13,382 (89.7%) had NO change
+  in their immediate owner, so nothing about the asset itself changed.
+
+OBJECTION TEST: are the shares moving on their own, or because the
+chain got longer? (conditioning on Ownership Path depth)
+  mean ownership-chain depth: 3.02 steps -> 4.12 steps
+
+  chain between vintages    share moved >1pt    stable   moved %
+  lengthened                          14,121    16,869     45.6%
+  same                                 6,127    89,218      6.4%
+  shortened                              407     1,376     22.8%
+
+  VERDICT: where GEM's structural picture is unchanged, only 6.4% of shares
+  moved materially, which is a believable rate of real stake changes.
+  Where the chain lengthened, 45.6% moved. So the share moves are
+  mostly a CONSEQUENCE of GEM adding intermediate companies, not an
+  independent cause. The objection is answered: it is still research depth.
+
+################################################################
+### vintage_diff_summary  ::  v2
+################################################################
+GEM VINTAGE DIFF
+  old: Global-Energy-Ownership-Tracker-March-2025.xlsx
+  new: Global-Energy-Ownership-Tracker-August-2026-V2_External.xlsx
+
+ENTITY UNIVERSE
+  old release              19,412
+  new release              27,198
+  present in both          18,168
+  gone from new release     1,244   <- breaks a panel if these were merged, not deleted
+  new in new release        9,030   <- this is what moves top-level parents
+
+PUBLICLY-LISTED FLAG, on entities present in both
+  True  -> False               67   these firms leave the cross-section
+  False -> True                57   these firms enter it
+
+ASSET ATTRIBUTION: immediate owner against top-level parent
+  sector                 assets       top parent    immediate owner
+  Coal Plant             13,168     4,617 (35.1%)        386 ( 2.9%)
+  Gas Plant              11,634     6,430 (55.3%)        651 ( 5.6%)
+  Bioenergy Power         1,265       537 (42.5%)         81 ( 6.4%)
+  Coal Mine               1,513     1,016 (67.2%)        149 ( 9.8%)
+  Iron Mine                 528       218 (41.3%)          4 ( 0.8%)
+  Gas Pipeline            2,848     1,921 (67.5%)        474 (16.6%)
+  Oil & NGL Pipeline   SKIPPED, sheet absent from one of the releases
+  Steel Plant             1,072       373 (34.8%)         19 ( 1.8%)
+  TOTAL                  32,028    15,112 (47.2%)      1,764 ( 5.5%)
+
+  ratio of the two rates: 8.6 to 1
+
+  VERDICT: vintages are NOT a clean time dimension.
+  The immediate-owner rate is a believable M&A rate. The top-parent rate
+  is not, and the two describe the same period of real-world activity.
+  The excess is GEM's ownership graph deepening, so roughly
+  88% of apparent ownership change is research, not events.
+
+  of 15,112 assets whose top parent moved, 13,486 (89.2%) had NO change
+  in their immediate owner, so nothing about the asset itself changed.
+
+OBJECTION TEST: are the shares moving on their own, or because the
+chain got longer? (conditioning on Ownership Path depth)
+  mean ownership-chain depth: 3.02 steps -> 4.14 steps
+
+  chain between vintages    share moved >1pt    stable   moved %
+  lengthened                          14,095    16,899     45.5%
+  same                                 6,280    88,110      6.7%
+  shortened                              429     1,473     22.6%
+
+  VERDICT: where GEM's structural picture is unchanged, only 6.7% of shares
+  moved materially, which is a believable rate of real stake changes.
+  Where the chain lengthened, 45.5% moved. So the share moves are
+  mostly a CONSEQUENCE of GEM adding intermediate companies, not an
+  independent cause. The objection is answered: it is still research depth.
+
+################################################################
+### decay_curves  ::  v1
+################################################################
+TASK 1.2  DECAY CURVES ACROSS CONSECUTIVE GEM RELEASES
+  pre-committed prediction: build-out declining, restatement flat,
+  methodology spiking at specific releases rather than trending
+
+  15 releases found:
+    2024-06  Global_Energy_Ownership_Tracker_June_2024.xlsx
+    2025-03  Global-Energy-Ownership-Tracker-March-2025.xlsx
+    2025-05  Global-Energy-Ownership-Tracker-May-2025-V1.xlsx
+    2025-07  Global-Energy-Ownership-Tracker-July-2025-V2.xlsx
+    2025-08  Global-Energy-Ownership-Tracker-August-2025-V1.xlsx
+    2025-09  Global-Energy-Ownership-Tracker-September-2025-V1.xlsx
+    2025-10  Global-Energy-Ownership-Tracker-October-2025-V1.xlsx
+    2025-11  Global-Energy-Ownership-Tracker-November-2025-V1.xlsx
+    2025-12  Global-Energy-Ownership-Tracker-December-2025.xlsx
+    2026-01  Global-Energy-Ownership-Tracker-January-2026-V1.xlsx
+    2026-02  Global-Energy-Ownership-Tracker-February-2026-V1.xlsx
+    2026-03  Global-Energy-Ownership-Tracker-March-2026-V1.xlsx
+    2026-05  Global-Energy-Ownership-Tracker-May-2026-V2.xlsx
+    2026-07  Global-Energy-Ownership-Tracker-July-2026-V1.xlsx
+    2026-08  Global-Energy-Ownership-Tracker-August-2026-V1.xlsx
+
+  deduplication ground truth: 4,196 entity IDs (cumulative, so it over-attributes in early pairs)
+
+  2024-06: no Entity Ownership sheet, skipped (this is the June 2024 entity-only release)
+  2026-03 to 2026-05: ZERO ownership change, releases are identical on this layer
+PER-PAIR DECOMPOSITION, FLAG-BLIND, one classification rule throughout
+  This is the series the trend verdict uses. The flag-aware series is
+  richer but is not comparable across December 2025, so it is reported
+  separately below.
+  pair               mth   edges   build  restate  method  unattr
+  2025-03 to 2025-05   2     940   87.3%    11.6%    0.9%    0.2%
+  2025-05 to 2025-07   2   6,145   84.8%    12.6%    1.1%    1.6%
+  2025-07 to 2025-08   1     473   67.4%    28.1%    1.9%    2.5%
+  2025-08 to 2025-09   1   1,955   75.1%    21.3%    1.5%    2.1%
+  2025-09 to 2025-10   1     379   47.5%    46.7%    1.8%    4.0%
+  2025-10 to 2025-11   1     452   56.4%    39.2%    0.7%    3.8%
+  2025-11 to 2025-12   1   4,006    2.8%     0.8%    0.0%   96.4%
+  2025-12 to 2026-01   1     330   50.3%    43.3%    6.4%    0.0%
+  2026-01 to 2026-02   1      52   36.5%    63.5%    0.0%    0.0%
+  2026-02 to 2026-03   1   4,365   27.5%    71.9%    0.6%    0.0%
+  2026-05 to 2026-07   2     856   59.5%    39.7%    0.8%    0.0%
+  2026-07 to 2026-08   1     510   77.5%    21.2%    1.4%    0.0%
+
+PER-MONTH RATES, because the gaps are uneven
+  pair                build/mth  restate/mth
+  2025-03 to 2025-05        410           55
+  2025-05 to 2025-07      2,605          387
+  2025-07 to 2025-08        319          133
+  2025-08 to 2025-09      1,468          416
+  2025-09 to 2025-10        180          177
+  2025-10 to 2025-11        255          177
+  2025-11 to 2025-12        112           32
+  2025-12 to 2026-01        166          143
+  2026-01 to 2026-02         19           33
+  2026-02 to 2026-03      1,200        3,138
+  2026-05 to 2026-07        255          170
+  2026-07 to 2026-08        395          108
+
+VERDICT AGAINST THE PRE-COMMITTED PREDICTION
+  FLAG-BLIND, comparable across the whole series:
+    build-out share:   first half 69.8%  second half 42.4%
+    restatement share: first half 26.6%  second half 40.1%
+    methodology share: first half 1.3%  second half 1.5%
+
+  flag-aware, for contrast only. NOT a valid trend test, because the
+  flag arrives in Dec 2025 and the split lands on that boundary:
+    build-out share:   first half 69.8%  second half 42.4%
+    methodology share: first half 1.3%  second half 18.9%
+
+
+  Build-out share DECLINED as predicted.
+  Restatement share is flat or rising (+13.5 points), as predicted.
+
+  SENSITIVITY, flag-blind throughout
+    excluding the Nov-Dec 2025 pair: build 72.4% to 51.3%
+    one-month pairs only, n=9: build 61.6% to 38.9%
+    one-month pairs, Nov-Dec excluded, n=8: build 61.6% to 48.0%
+    correlation of build-out share with gap length: +0.51
+    Report whichever of these the note quotes, and say which it is.
+
+METHODOLOGY SPIKES, the datable rule changes
+  2025-11 to 2025-12: methodology 96.2% of change (3,853 edges)
+  2025-12 to 2026-01: methodology 12.4% of change (40 edges)
+  2025-07 to 2025-08: methodology 1.9% of change (8 edges)
+
+  The imputation flag first appears in the December 2025 release, so a
+  spike on the pair ending 2025-12 is the introduction of the 100/n
+  rule, dated to a single release and announced nowhere.
+
+SCHEMA DRIFT ACROSS RELEASES
+  release     sheets  own cols  entity key     extras
+  2025-03         10         6  Entity ID      LastReviewDate=False
+  2025-05         11         6  Entity ID      LastReviewDate=False
+  2025-07         12         6  GEM Entity ID  LastReviewDate=False
+  2025-08         12         6  Entity ID      LastReviewDate=False
+  2025-09         12         6  Entity ID      LastReviewDate=False
+  2025-10         13         6  Entity ID      LastReviewDate=False
+  2025-11         13         6  Entity ID      LastReviewDate=False
+  2025-12         13         8  Entity ID      LastReviewDate=True
+  2026-01         13         7  Entity ID      LastReviewDate=False
+  2026-02         13         7  Entity ID      LastReviewDate=False
+  2026-03         12         8  Entity ID      LastReviewDate=True
+  2026-05         12         8  Entity ID      LastReviewDate=True
+  2026-07         13         7  Entity ID      LastReviewDate=False
+  2026-08         13         8  Entity ID      LastReviewDate=False
+
+  distinct sheet counts   : [np.int64(10), np.int64(11), np.int64(12), np.int64(13)]
+  distinct entity keys    : ['Entity ID', 'GEM Entity ID']
+  distinct ownership widths: [np.int64(6), np.int64(7), np.int64(8)]
+
+################################################################
+### decay_curves  ::  v2
+################################################################
+TASK 1.2  DECAY CURVES ACROSS CONSECUTIVE GEM RELEASES
+  pre-committed prediction: build-out declining, restatement flat,
+  methodology spiking at specific releases rather than trending
+
+  15 releases found:
+    2024-06  Global_Energy_Ownership_Tracker_June_2024.xlsx
+    2025-03  Global-Energy-Ownership-Tracker-March-2025.xlsx
+    2025-05  Global-Energy-Ownership-Tracker-May-2025-V1.xlsx
+    2025-07  Global-Energy-Ownership-Tracker-July-2025-V2.xlsx
+    2025-08  Global-Energy-Ownership-Tracker-August-2025-V1.xlsx
+    2025-09  Global-Energy-Ownership-Tracker-September-2025-V1.xlsx
+    2025-10  Global-Energy-Ownership-Tracker-October-2025-V1.xlsx
+    2025-11  Global-Energy-Ownership-Tracker-November-2025-V1.xlsx
+    2025-12  Global-Energy-Ownership-Tracker-December-2025.xlsx
+    2026-01  Global-Energy-Ownership-Tracker-January-2026-V1.xlsx
+    2026-02  Global-Energy-Ownership-Tracker-February-2026-V1.xlsx
+    2026-03  Global-Energy-Ownership-Tracker-March-2026-V1.xlsx
+    2026-05  Global-Energy-Ownership-Tracker-May-2026-V2.xlsx
+    2026-07  Global-Energy-Ownership-Tracker-July-2026-V1.xlsx
+    2026-08  Global-Energy-Ownership-Tracker-August-2026-V2_External.xl
+
+  deduplication ground truth: 4,196 entity IDs (cumulative, so it over-attributes in early pairs)
+
+  2024-06: no Entity Ownership sheet, skipped (this is the June 2024 entity-only release)
+  2026-03 to 2026-05: ZERO ownership change, releases are identical on this layer
+PER-PAIR DECOMPOSITION, FLAG-BLIND, one classification rule throughout
+  This is the series the trend verdict uses. The flag-aware series is
+  richer but is not comparable across December 2025, so it is reported
+  separately below.
+  pair               mth   edges   build  restate  method  unattr
+  2025-03 to 2025-05   2     940   87.3%    11.6%    0.9%    0.2%
+  2025-05 to 2025-07   2   6,145   84.8%    12.6%    1.1%    1.6%
+  2025-07 to 2025-08   1     473   67.4%    28.1%    1.9%    2.5%
+  2025-08 to 2025-09   1   1,955   75.1%    21.3%    1.5%    2.1%
+  2025-09 to 2025-10   1     379   47.5%    46.7%    1.8%    4.0%
+  2025-10 to 2025-11   1     452   56.4%    39.2%    0.7%    3.8%
+  2025-11 to 2025-12   1   4,006    2.8%     0.8%    0.0%   96.4%
+  2025-12 to 2026-01   1     330   50.3%    43.3%    6.4%    0.0%
+  2026-01 to 2026-02   1      52   36.5%    63.5%    0.0%    0.0%
+  2026-02 to 2026-03   1   4,365   27.5%    71.9%    0.6%    0.0%
+  2026-05 to 2026-07   2     856   59.5%    39.7%    0.8%    0.0%
+  2026-07 to 2026-08   1   1,357   67.7%    31.3%    1.0%    0.0%
+
+PER-MONTH RATES, because the gaps are uneven
+  pair                build/mth  restate/mth
+  2025-03 to 2025-05        410           55
+  2025-05 to 2025-07      2,605          387
+  2025-07 to 2025-08        319          133
+  2025-08 to 2025-09      1,468          416
+  2025-09 to 2025-10        180          177
+  2025-10 to 2025-11        255          177
+  2025-11 to 2025-12        112           32
+  2025-12 to 2026-01        166          143
+  2026-01 to 2026-02         19           33
+  2026-02 to 2026-03      1,200        3,138
+  2026-05 to 2026-07        255          170
+  2026-07 to 2026-08        919          425
+
+VERDICT AGAINST THE PRE-COMMITTED PREDICTION
+  FLAG-BLIND, comparable across the whole series:
+    build-out share:   first half 69.8%  second half 40.7%
+    restatement share: first half 26.6%  second half 41.8%
+    methodology share: first half 1.3%  second half 1.5%
+
+  flag-aware, for contrast only. NOT a valid trend test, because the
+  flag arrives in Dec 2025 and the split lands on that boundary:
+    build-out share:   first half 69.8%  second half 40.8%
+    methodology share: first half 1.3%  second half 18.9%
+
+
+  Build-out share DECLINED as predicted.
+  Restatement share is flat or rising (+15.2 points), as predicted.
+
+  SENSITIVITY, flag-blind throughout
+    excluding the Nov-Dec 2025 pair: build 72.4% to 49.6%
+    one-month pairs only, n=9: build 61.6% to 37.0%
+    one-month pairs, Nov-Dec excluded, n=8: build 61.6% to 45.5%
+    correlation of build-out share with gap length: +0.54
+    Report whichever of these the note quotes, and say which it is.
+
+METHODOLOGY SPIKES, the datable rule changes
+  2025-11 to 2025-12: methodology 96.2% of change (3,853 edges)
+  2025-12 to 2026-01: methodology 12.4% of change (40 edges)
+  2025-07 to 2025-08: methodology 1.9% of change (8 edges)
+
+  The imputation flag first appears in the December 2025 release, so a
+  spike on the pair ending 2025-12 is the introduction of the 100/n
+  rule, dated to a single release and announced nowhere.
+
+SCHEMA DRIFT ACROSS RELEASES
+  release     sheets  own cols  entity key     extras
+  2025-03         10         6  Entity ID      LastReviewDate=False
+  2025-05         11         6  Entity ID      LastReviewDate=False
+  2025-07         12         6  GEM Entity ID  LastReviewDate=False
+  2025-08         12         6  Entity ID      LastReviewDate=False
+  2025-09         12         6  Entity ID      LastReviewDate=False
+  2025-10         13         6  Entity ID      LastReviewDate=False
+  2025-11         13         6  Entity ID      LastReviewDate=False
+  2025-12         13         8  Entity ID      LastReviewDate=True
+  2026-01         13         7  Entity ID      LastReviewDate=False
+  2026-02         13         7  Entity ID      LastReviewDate=False
+  2026-03         12         8  Entity ID      LastReviewDate=True
+  2026-05         12         8  Entity ID      LastReviewDate=True
+  2026-07         13         7  Entity ID      LastReviewDate=False
+  2026-08         13         8  Entity ID      LastReviewDate=True
+
+  distinct sheet counts   : [np.int64(10), np.int64(11), np.int64(12), np.int64(13)]
+  distinct entity keys    : ['Entity ID', 'GEM Entity ID']
+  distinct ownership widths: [np.int64(6), np.int64(7), np.int64(8)]

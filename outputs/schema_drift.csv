@@ -1,0 +1,15 @@
+release,sheets,entity_key,ownership_cols,has_last_review_date
+2025-03,10,Entity ID,6,False
+2025-05,11,Entity ID,6,False
+2025-07,12,GEM Entity ID,6,False
+2025-08,12,Entity ID,6,False
+2025-09,12,Entity ID,6,False
+2025-10,13,Entity ID,6,False
+2025-11,13,Entity ID,6,False
+2025-12,13,Entity ID,8,True
+2026-01,13,Entity ID,7,False
+2026-02,13,Entity ID,7,False
+2026-03,12,Entity ID,8,True
+2026-05,12,Entity ID,8,True
+2026-07,13,Entity ID,7,False
+2026-08,13,Entity ID,8,False
