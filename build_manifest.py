@@ -393,6 +393,13 @@ def main():
         "schema": "paper1-data-manifest/2",
         "generated_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "generated_by": "build_manifest.py",
+        "owner": {
+            "name": "Carlo Hofer",
+            "repository": "github.com/ochofer/paper1-hazard-exposure-data",
+            "note": "Whose pull this manifest describes. A checksum record with no "
+                    "owner cannot be challenged by anyone, because there is nobody to "
+                    "ask what was pulled or when.",
+        },
         "pull": {
             "id": PULL_ID,
             "source": "Financial Modeling Prep",

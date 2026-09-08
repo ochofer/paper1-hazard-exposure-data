@@ -194,6 +194,12 @@ counts for every file the findings were computed on, plus per-symbol date covera
 304 symbols in the price panel. Anyone with their own FMP access can use it to prove their
 panel matches mine rather than assuming it.
 
+The manifest describes one person's pull, and that person is Carlo Hofer, at this
+repository. A checksum record with no owner cannot be challenged by anyone, because there
+is nobody to ask what was pulled or when. `build_manifest.py` writes an `owner` field for
+this reason; the manifest committed here predates the field and will carry it the next
+time it is regenerated.
+
 Running the notebook writes the same kind of record for your own pull, as
 `data/raw/manifest_run.json`. It is gitignored and deliberately carries a different name,
 so a run cannot overwrite the published record. Comparing the two is the point: matching
