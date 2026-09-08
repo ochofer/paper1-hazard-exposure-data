@@ -22,11 +22,13 @@ WHAT EACH SCRIPT CONSUMED, AND THE VERDICT ON THE SCRIPT
   15_bioenergy_check                 free inputs only
   17_release_ladder                  free inputs only
   18_salience_lag                    free inputs only
+  23_presigned_source_urls           free inputs only
 
 ==============================================================================
 CLASSIFICATION, FILE BY FILE
 
-  GEM-only  (56 file(s))
+  GEM-only  (60 file(s))
+    outputs/.presigned_scan_cache.json                         provenance record, carries no data values
     outputs/PROMOTION_2026-09-08.txt                           classified by hand: the promotion record: checksums and row counts, no data values
     outputs/PROVENANCE_RERUN_DIFF_2026-09-07.txt               classified by hand: hand-written record of a GEM-only rerun: checksums, row counts and filenames, no data values and nothing from the price series
     outputs/PUBLICATION_CLASSIFICATION_2026-09-08.txt          classified by hand: this report: names files and their provenance, carries no data values
@@ -45,6 +47,7 @@ CLASSIFICATION, FILE BY FILE
     outputs/RUN_PROVENANCE_15_bioenergy_check.json             provenance record, carries no data values
     outputs/RUN_PROVENANCE_17_release_ladder.json              provenance record, carries no data values
     outputs/RUN_PROVENANCE_18_salience_lag.json                provenance record, carries no data values
+    outputs/RUN_PROVENANCE_23_presigned_source_urls.json       provenance record, carries no data values
     outputs/bioenergy_check.txt                                written by 15, free inputs only
     outputs/change_decomposition.txt                           written by 06, free inputs only
     outputs/change_decomposition_edges.csv                     written by 06, free inputs only
@@ -59,16 +62,18 @@ CLASSIFICATION, FILE BY FILE
     outputs/event_validation_sample.csv                        written by 08, free inputs only (from its Out: block; write path is computed)
     outputs/exposure_proxy_by_firm.csv                         written by 09, free inputs only
     outputs/exposure_proxy_summary.txt                         written by 09, free inputs only
+    outputs/figure_register.csv                                written by 16, free inputs only
     outputs/figure_register.txt                                written by 16, free inputs only
     outputs/firms_without_lei.csv                              written by 00, free inputs only
     outputs/gleif_consolidation_flags.csv                      written by 03, free inputs only
     outputs/identifier_survival_by_country.csv                 written by 00, free inputs only
     outputs/isin_candidates.csv                                written by 00, free inputs only
-    outputs/isin_screen.csv                                    classified by hand: GEM entity ids and names joined to GLEIF LEIs and ISIN counts. Both sources free. NO NUMBERED SCRIPT PRODUCES IT and it carries no provenance record, which matters because this file is where the 328 comes from
+    outputs/isin_screen.csv                                    classified by hand: GEM entity ids and names joined to GLEIF LEIs and ISIN counts. Both sources free. KNOWN PROVENANCE GAP, recorded 8 September 2026 under the design chat's ruling: no numbered script produces this file and it carries no provenance record, and it is where the 328 comes from. It publishes as it stands, and the gap closes before the paper rather than before the note. A recorded gap is not the same species as an unrecorded one, and that distinction is this note's own
     outputs/lei_not_in_anna.csv                                written by 00, free inputs only
     outputs/panel_exposure.csv                                 written by 10, free inputs only
     outputs/panel_join_summary.txt                             written by 10, free inputs only
     outputs/power_comparison.txt                               written by 05, free inputs only (from its Out: block; write path is computed)
+    outputs/presigned_source_urls.txt                          written by 23, free inputs only
     outputs/release_ladder.csv                                 written by 17, free inputs only
     outputs/release_ladder.txt                                 written by 17, free inputs only
     outputs/restricted_r.txt                                   written by 14, free inputs only
@@ -94,12 +99,12 @@ CLASSIFICATION, FILE BY FILE
 
 ==============================================================================
 COUNTS, for the closing handover-back as the ruling requires
-  GEM-only         56
+  GEM-only         60
   mixed             0
   FMP-derived       2
   UNKNOWN           0
-  total            58
-  share reproducible from free data alone: 96.6%
+  total            62
+  share reproducible from free data alone: 96.8%
 
 DOCSTRING DRIFT, advisory. This does NOT affect the classification above,
 because every file resolved to exactly one writer. It is recorded because a
@@ -113,6 +118,7 @@ problem, and it is cheaper to see it than to rediscover it.
   12_decimal_truncation.py: docstring declares files no write call produces: decimal_truncation.txt
   13_scaling_second_column.py: docstring declares files no write call produces: scaling_second_column.txt
   14_restricted_r.py: writes files its docstring does not declare: restricted_r_edges.csv
+  16_figure_register.py: writes files its docstring does not declare: figure_register.csv
   17_release_ladder.py: writes files its docstring does not declare: release_ladder.csv
   19_build_note.py: docstring declares files no write call produces: Measurement_Note_draft_<date>.html
   21_fmp_verify.py: docstring declares files no write call produces: manifest.json

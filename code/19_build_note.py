@@ -189,6 +189,44 @@ def withheld_rows():
         f'<td class="n"><code>{_sha(fn)[:16]}</code></td></tr>'
         for fn, sc in WITHHELD)
 
+# --- the presigned-source-URL finding -------------------------------------
+# Admitted to the note on 8 September 2026 under six conditions. The two numbers
+# the ruling allows come from 23_presigned_source_urls.py, which by construction
+# cannot emit a key, a token, a signature or a whole URL.
+F["presigned_n"] = P("presigned_source_urls.txt",
+                     r"RELEASES CARRYING PRESIGNED SOURCE URLS: (\d+) of \d+")
+F["presigned_total"] = P("presigned_source_urls.txt",
+                         r"RELEASES CARRYING PRESIGNED SOURCE URLS: \d+ of (\d+)")
+F["presigned_expiry"] = P("presigned_source_urls.txt",
+                          r"The shortest declared expiry is (\d+) seconds")
+F["panel_2026"] = P("panel_join_summary.txt",
+                    r"August 2026   firms with any exposure  (\d+) of 328")
+
+# Condition 6: drafted now, HELD until Global Energy Monitor has had the draft
+# and either replies or ten working days pass. Put the date they were sent it
+# here to release the subsection. None means held, and the note ships without it.
+GEM_DRAFT_SENT = None
+
+PRESIGNED_BLOCK = "" if GEM_DRAFT_SENT is None else f"""
+<h3>A source citation that expires before it can be read</h3>
+<p>The mechanisms above all move a number. This one moves none and belongs here anyway, because it
+goes to whether a reader can check anything at all.</p>
+<p>{F['presigned_n']} of the {F['presigned_total']} release files held here carry source citations
+written as presigned links: a document path followed by an authorisation the link carries in itself and
+that lapses on a timer. The shortest timer declared in these files is {F['presigned_expiry']} seconds.
+A reader who follows such a citation, at any point after the minute it was made, receives an
+authentication failure rather than the document.</p>
+<p><strong>Nothing is exposed, and this is not a security finding.</strong> The authorisations in the
+files examined lapsed on issue, the earliest observed here in 2024, and none is quoted. What is
+reported is the shape and the count, on the releases in hand, checked on the date in the figure
+register. No claim is made about releases not held.</p>
+<p>The consequence is the one this note has been making throughout, reached from a direction I was not
+looking in. A citation is a promise that a reader can go and check. A citation that cannot resolve is
+not a weaker promise but a different kind of object, and it sits in a dataset published under a licence
+whose purpose is that others can verify the work. I found it because a machine scanned a file of mine
+and told me what was in it, which is not a method I can take credit for.</p>
+"""
+
 # structured sources
 ladder = pd.read_csv(os.path.join(OUT, "release_ladder.csv"))
 sal = pd.read_csv(os.path.join(OUT, "salience_lag.csv"), dtype=str)
@@ -391,10 +429,13 @@ depending only on the reading.</p>
 <tr><td>133 firms with bioenergy in both releases</td><td class="n">{F['bio_zero']}</td><td class="n">{F['bio_imp']}</td></tr>
 <tr class="rule"><td>threshold set before the test</td><td class="n">0.95</td><td class="n">0.95</td></tr>
 </table>
-<p><strong>The flip is general rather than a property of the regional panel.</strong> It reproduces on 604
-firms worldwide and on 191 regional firms in the same direction, and it does not appear on the 133 firms
-with bioenergy in both releases. Those universes are not nested, which is stated here rather than left
-for a reader to find.</p>
+<p><strong>The flip is general rather than a property of the regional panel.</strong> It reproduces on
+604 matched firms worldwide, at {F['u2_zero']} and {F['u2_imp']}, straddling the same cut as the 191
+regional firms and in the same direction. The reading that makes a straddle general rather than a sample
+artefact was fixed in writing before the test ran, which is the only reason it counts for anything: a
+result that would have been explained either way explains nothing. On the 133 firms with bioenergy in
+both releases raw capacity does not flip, and that is the stated limit of the claim. Those universes are
+not nested, which is said here rather than left for a reader to find.</p>
 <p><strong>Why the convention carries that much force.</strong> Under the naive reading, {F['n_zerocap']}
 firms carry attributable capacity of exactly zero in March 2025, because every ownership edge they have
 has a blank share and a blank multiplied by zero is nothing; under imputation none do. The convention
@@ -499,8 +540,9 @@ share the instability and differ in maturity, and the youngest is the one measur
 
 <h2>6. Limitations</h2>
 <p><strong>The return test detects nothing, and it corroborates nothing.</strong> A pre-registered
-quintile-spread test on {F['panel_eff']} firms, equal-weighted, in local currency, monthly over 191
-months to December 2025, returns every t-statistic below {F['t_max']}, with a Newey-West standard error of
+quintile-spread test on {F['panel_eff']} firms, equal-weighted, in local currency, run monthly to
+December 2025 over a window whose length in months happens to equal the panel's size in firms, returns
+every t-statistic below {F['t_max']}, with a Newey-West standard error of
 {F['se_lo']}% to {F['se_hi']}% a year and a minimum detectable effect of about {F['mde_lo']}% a year at
 the Harvey, Liu and Zhu hurdle. No plausible transition premium is that large, so the design could not
 have detected the effect it was built to look for; I report the minimum detectable effect beside the null
@@ -626,6 +668,7 @@ the data will support.</p>
 edges, {F['imp_flag_p']}% of them, as imputed values, so a reader of that flag can tell an imputed share
 from an observed one without any of the work in this note. March 2025 carries no such flag, which is why
 the imputation row above is a methodology change rather than something a user could have seen coming.</p>
+{PRESIGNED_BLOCK}
 <p class="src">Sources: <code>outputs/change_decomposition.txt</code>, <code>outputs/exposure_proxy_summary.txt</code>,
 <code>outputs/decimal_truncation.txt</code>, <code>outputs/bioenergy_check.txt</code></p>
 

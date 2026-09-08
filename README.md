@@ -239,6 +239,13 @@ they are named in the note's figure register with their checksums, and rerunning
 `code/11_vintage_return_spread.py` against your own pull reproduces them. Everything else
 is here in full, which is 53 of the 55 files.
 
+One known gap, recorded here rather than left silent. `outputs/isin_screen.csv` joins the
+ownership entities to GLEIF identifiers and ISIN counts, and it is where the 328 companies come
+from. Both of its inputs are free and openly licensed, but no script in `code/` produces it and
+it carries no provenance record: it was built by hand. It is published as it stands, and closing
+that gap is a task for the paper rather than for this note. Everything else in `outputs/`
+resolves to a numbered script with a provenance record naming the release and its checksum.
+
 Every output is sorted before it is written, so rerunning a script against the pinned
 release reproduces its checksum exactly. Files carrying a `_SUPERSEDED_` marker are earlier
 copies of two outputs whose row order varied between runs before that rule was enforced.

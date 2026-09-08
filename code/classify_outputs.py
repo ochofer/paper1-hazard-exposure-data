@@ -81,8 +81,11 @@ HAND = {
         "under a superseded marker or not at all; it must not read as current"),
     "isin_screen.csv": (
         "GEM-only", "GEM entity ids and names joined to GLEIF LEIs and ISIN counts. Both "
-        "sources free. NO NUMBERED SCRIPT PRODUCES IT and it carries no provenance record, "
-        "which matters because this file is where the 328 comes from"),
+        "sources free. KNOWN PROVENANCE GAP, recorded 8 September 2026 under the design "
+        "chat's ruling: no numbered script produces this file and it carries no provenance "
+        "record, and it is where the 328 comes from. It publishes as it stands, and the gap "
+        "closes before the paper rather than before the note. A recorded gap is not the same "
+        "species as an unrecorded one, and that distinction is this note's own"),
     "salience_lag_cases.csv": (
         "GEM-only", "curated INPUT, not an output: transaction dates read by hand from "
         "exchange filings, company statements and EDINET. Free sources, already cited in "

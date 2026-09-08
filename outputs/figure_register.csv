@@ -1,0 +1,85 @@
+section,claim,value,output_file,status
+lead,restatement bucket the sample was drawn from,"2,543",restricted_r.txt,OK
+lead,R as published,36.0%,change_decomposition.txt,OK
+lead,pre-committed GO bar,25%,change_decomposition.txt,OK
+lead,generous bound on R,29.1%,change_decomposition.txt,OK
+lead,19 cases verified,19,event_validation_sample.csv,OK
+lead,"salience lag, fast cases",12 to 71 days,salience_lag.txt,OK
+lead,"salience lag, slow cases","670 to 1,674 days",salience_lag.txt,OK
+lead,"salience lag, six datable cases",cases in the evidence file 6,salience_lag.txt,OK
+conventions,"raw MW Spearman, blank=zero",0.9146,scaling_second_column.txt,OK
+conventions,"raw MW Spearman, blank=impute",0.9761,scaling_second_column.txt,OK
+conventions,"exposure growth U2, blank=zero",+9.8%,exposure_proxy_summary.txt,OK
+conventions,"exposure growth U2, blank=impute",+5.0%,exposure_proxy_summary.txt,OK
+conventions,"U2 convention flip, blank=zero",0.9076,bioenergy_check.txt,OK
+conventions,"U2 convention flip, blank=impute",0.9625,bioenergy_check.txt,OK
+conventions,U2 firms with zero March capacity,33 of the March 2025 firms,bioenergy_check.txt,OK
+conventions,"bioenergy control, blank=zero",0.9643,bioenergy_check.txt,OK
+conventions,"bioenergy control, blank=impute",0.9656,bioenergy_check.txt,OK
+conventions,"coal share, blank=zero",0.9652,bioenergy_check.txt,OK
+mechanisms,"ancestor over-count, March 2025",1.55x,exposure_proxy_summary.txt,OK
+mechanisms,"ancestor over-count, August 2026",1.76x,exposure_proxy_summary.txt,OK
+mechanisms,Ameren and Union Electric capacity,6991.2,exposure_proxy_by_firm.csv,OK
+mechanisms,"Entergy Corp, August 2026",8720.92,exposure_proxy_by_firm.csv,OK
+mechanisms,"Entergy Louisiana, August 2026",11121.4,exposure_proxy_by_firm.csv,OK
+portfolio,never exposed in either vintage,137 of 328,panel_join_summary.txt,OK
+portfolio,effective panel,191,panel_join_summary.txt,OK
+portfolio,"Spearman 191 active, blank=zero",0.7309,panel_join_summary.txt,OK
+portfolio,"Spearman 191 active, blank=impute",0.7749,panel_join_summary.txt,OK
+portfolio,"top-quintile overlap, blank=zero",86.8%,panel_join_summary.txt,OK
+portfolio,"top-quintile overlap, blank=impute",92.1%,panel_join_summary.txt,OK
+portfolio,"U3 exposure growth, blank=zero",+20.0%,panel_join_summary.txt,OK
+portfolio,"U3 exposure growth, blank=impute",+11.7%,panel_join_summary.txt,OK
+releases,R on V1,36.0%,change_decomposition.txt,OK
+releases,R on V2,35.4%,release_ladder.txt,OK
+releases,worst case on V1,25.2%,release_ladder.txt,OK
+releases,worst case on V2,24.3%,release_ladder.txt,OK
+releases,restricted R,38.7%,restricted_r.txt,OK
+releases,"decimal truncation, V1",80.0%,decimal_truncation.txt,OK
+releases,"decimal truncation, count","3,561",decimal_truncation.txt,OK
+releases,"decimal truncation, V2",78.5%,decimal_truncation.txt,OK
+releases,"decay, preferred cut n=8",61.6% to 48.0%,decay_curves.txt,OK
+releases,"decay, gap-length correlation",+0.51,decay_curves.txt,OK
+age,December 2025 methodology share,96.2,decay_curves.txt,OK
+age,number of adjacent release pairs,13,decay_curves.txt,OK
+limitations,priceable firms in the 2026 arm,173,vintage_return_spread.txt,OK
+limitations,largest t statistic,0.60,vintage_return_spread.txt,OK
+limitations,"Newey-West SE, low",3.29%,vintage_return_spread.txt,OK
+limitations,"Newey-West SE, high",3.44%,vintage_return_spread.txt,OK
+limitations,MDE at t=3.0,9.87%,vintage_return_spread.txt,OK
+limitations,Fama-MacBeth requirement,"1,296",power_comparison.txt,OK
+appendix B,"build-out, new entity brought into coverage","6,183",change_decomposition.txt,OK
+appendix B,"build-out, new entity, share",48.6%,change_decomposition.txt,OK
+appendix B,"build-out, new link between covered entities","1,744",change_decomposition.txt,OK
+appendix B,"build-out, new link, share",13.7%,change_decomposition.txt,OK
+appendix B,"build-out, blank filled by research",208,change_decomposition.txt,OK
+appendix B,"build-out, blank filled by research, share",1.6%,change_decomposition.txt,OK
+appendix B,build-out total,"8,135",change_decomposition.txt,OK
+appendix B,"build-out total, share",64.0%,change_decomposition.txt,OK
+appendix B,"restatement, link removed","1,710",change_decomposition.txt,OK
+appendix B,"restatement, link removed, share",13.4%,change_decomposition.txt,OK
+appendix B,"restatement, share revised material",533,change_decomposition.txt,OK
+appendix B,"restatement, share revised material, share",4.2%,change_decomposition.txt,OK
+appendix B,"restatement, share revised small",300,change_decomposition.txt,OK
+appendix B,"restatement, share revised small, share",2.4%,change_decomposition.txt,OK
+appendix B,"restatement total, share",20.0%,change_decomposition.txt,OK
+appendix B,"methodology, imputation rule introduced after Mar 2025","1,842",change_decomposition.txt,OK
+appendix B,"methodology, imputation rule, share",14.5%,change_decomposition.txt,OK
+appendix B,"methodology, entity deduplicated per remapping sheet",143,change_decomposition.txt,OK
+appendix B,"methodology, deduplicated, share",1.1%,change_decomposition.txt,OK
+appendix B,"methodology, imputed share moved, share",0.4%,change_decomposition.txt,OK
+appendix B,methodology total,"2,039",change_decomposition.txt,OK
+appendix B,"methodology total, share",16.0%,change_decomposition.txt,OK
+appendix B,total apparent change,"12,717",change_decomposition.txt,OK
+appendix B,unchanged edges,"14,017",change_decomposition.txt,OK
+appendix B,entities on the remapping sheet,"4,196",change_decomposition.txt,OK
+appendix B,share of lost entities the remapping sheet accounts for,11.5%,change_decomposition.txt,OK
+appendix B,edges present in both releases,"16,954",change_decomposition.txt,OK
+appendix B,real churn over eighteen months,5.2%,change_decomposition.txt,OK
+appendix B,ceiling on genuine corporate events,881,change_decomposition.txt,OK
+appendix B,"edges GEM flags as imputed, Aug 2026","4,392",exposure_proxy_summary.txt,OK
+appendix B,"edges GEM flags as imputed, share",17.7%,exposure_proxy_summary.txt,OK
+"appendix B, held",release files carrying presigned source citations,17 of 17,presigned_source_urls.txt,OK
+"appendix B, held","shortest declared expiry, seconds",60 seconds,presigned_source_urls.txt,OK
+"appendix B, held",release files checked for presigned citations,release files carrying ownership sheets: 17,presigned_source_urls.txt,OK
+portfolio,panel firms with exposure in August 2026,188 of 328,panel_join_summary.txt,OK

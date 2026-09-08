@@ -145,6 +145,15 @@ REGISTER = [
     ("appendix B", "ceiling on genuine corporate events", "881", "change_decomposition.txt"),
     ("appendix B", "edges GEM flags as imputed, Aug 2026", "4,392", "exposure_proxy_summary.txt"),
     ("appendix B", "edges GEM flags as imputed, share", "17.7%", "exposure_proxy_summary.txt"),
+    # ---- appendix B, the presigned-source-URL finding -----------------------
+    # Registered now although the subsection is HELD until GEM has had the draft.
+    # The numbers exist in an output file with a provenance record either way,
+    # and registering them now means the release of the subsection changes no
+    # gate. Section label says held so nobody reads this as shipped text.
+    ("appendix B, held", "release files carrying presigned source citations", "17 of 17", "presigned_source_urls.txt"),
+    ("appendix B, held", "shortest declared expiry, seconds", "60 seconds", "presigned_source_urls.txt"),
+    ("appendix B, held", "release files checked for presigned citations", "release files carrying ownership sheets: 17", "presigned_source_urls.txt"),
+    ("portfolio", "panel firms with exposure in August 2026", "188 of 328", "panel_join_summary.txt"),
 ]
 
 # which script's provenance record covers which output file
@@ -161,6 +170,7 @@ PROVENANCE_FOR = {
     "salience_lag.txt": "RUN_PROVENANCE_18_salience_lag.json",
     "release_ladder.txt": "RUN_PROVENANCE_17_release_ladder.json",
     "panel_join_summary.txt": "RUN_PROVENANCE_10_panel_join.json",
+    "presigned_source_urls.txt": "RUN_PROVENANCE_23_presigned_source_urls.json",
     "vintage_return_spread.txt": "RUN_PROVENANCE_11_vintage_return_spread.json",
     "power_comparison.txt": "RUN_PROVENANCE_05_power_comparison.json",
 }
@@ -199,12 +209,28 @@ def main():
             status = "UNTRACEABLE"
         rows.append((section, claim, needle, fn, status))
 
+    # Column widths are COMPUTED, never fixed. A fixed width silently truncated
+    # four labels on 8 September 2026 and spilled the remainder into the value
+    # column: the data resolved and the document lied. Nothing downstream should
+    # parse this rendering either, which is why the CSV below exists.
+    # The match is made against the raw string, which may carry the output file's
+    # own column padding. What is DISPLAYED collapses that whitespace, so a
+    # needle like "cases in the evidence file        6" reads as one value
+    # instead of looking like a broken row. The check is unweakened: matching
+    # still uses the raw needle.
+    def shown(v):
+        return " ".join(v.split())
+
+    w_claim = max(len(r[1]) for r in rows)
+    w_needle = max(len(shown(r[2])) for r in rows)
+    w_status = max(len(r[4]) for r in rows)
+
     cur = None
     for section, claim, needle, fn, status in rows:
         if section != cur:
             say(f"--- {section} ---")
             cur = section
-        say(f"  [{status:<11}] {claim:<44} {needle:<16} {fn}")
+        say(f"  [{status:<{w_status}}] {claim:<{w_claim}}  {shown(needle):<{w_needle}}  {fn}")
 
     say()
     say("=" * 78)
@@ -222,7 +248,7 @@ def main():
         say("  at a different file, by writing the computation into a numbered script,")
         say("  or by cutting the number from the note.")
         for section, claim, needle, fn, status in bad:
-            say(f"    {section:<12} {claim:<44} expected '{needle}' in {fn}")
+            say(f"    {section:<12} {claim:<{w_claim}}  expected '{shown(needle)}' in {fn}")
 
     noprov = [r for r in rows if r[4] == "NO-PROV"]
     if noprov:
@@ -230,7 +256,18 @@ def main():
         say("  IN A FILE BUT WITH NO PROVENANCE RECORD. The number is on disk but the")
         say("  release behind it is not recorded, so gate 5 is not met for it.")
         for section, claim, needle, fn, status in noprov:
-            say(f"    {section:<12} {claim:<44} {fn}")
+            say(f"    {section:<12} {claim:<{w_claim}}  {fn}")
+
+    # Structured output beside the text table. Anything downstream reads THIS.
+    # A fixed-width table is a document, not a data file, and parsing one is how
+    # four labels got cut in half.
+    import csv
+    with open(os.path.join(OUT, "figure_register.csv"), "w", newline="",
+              encoding="utf-8") as fh:
+        w = csv.writer(fh)
+        w.writerow(["section", "claim", "value", "output_file", "status"])
+        for section, claim, needle, fn, status in rows:
+            w.writerow([section, claim, shown(needle), fn, status])
 
     say()
     say("  PROVENANCE RECORDS PRESENT")
