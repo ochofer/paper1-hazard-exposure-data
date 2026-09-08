@@ -1,17 +1,28 @@
-# Does physical climate risk show up in share prices?
+# A data layer, built and audited, for a physical climate risk study
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ochofer/paper1-hazard-exposure-data/blob/main/notebooks/01_raw_panels.ipynb)
 
 Companies own physical things. Power stations, pipelines, mines, cement works. Those
 things sit in places, and places have weather.
 
-I am testing whether investors price the risk that weather damages those assets or
-interrupts what they produce. If they do, companies with more exposed assets should earn
-different returns from companies with less exposed ones, once I have controlled for
-everything else known to move share prices.
+The question that started this was whether investors price the risk that weather damages
+those assets or interrupts what they produce. If they do, companies with more exposed
+assets should earn different returns from companies with less exposed ones, once
+everything else known to move share prices is controlled for.
 
-**This repository is the data layer for that study.** It builds and audits the data. It
-does not test the hypothesis, and I explain below why I keep those two things apart.
+**This repository is the data layer, and only the data layer.** It builds and audits the
+data. It has never tested that hypothesis, and I explain below why I keep those two things
+apart.
+
+Two return tests are distinguished here. A cross-sectional Fama-MacBeth design was
+specified and then set aside before it ran, on a power calculation published in this
+repository. A separate quintile-spread comparison was pre-registered and run; its result,
+and the minimum detectable effect that makes that result readable, are reported in the
+data-quality note, in preparation.
+
+What ships next from this work is that note, on how the ownership tracker's releases
+disagree with each other. It is in preparation and carries no numbers here until it is
+out.
 
 ---
 
@@ -54,7 +65,8 @@ Both filters are switches at the top of
 [`code/00_coverage_and_crosswalk.py`](code/00_coverage_and_crosswalk.py), so you can rerun
 the audit either way and watch the counts move rather than take my word for it.
 
-The hazard measurement itself is separate work and is not in this repository.
+The hazard measurement itself is not built and not scheduled, and it is not in this
+repository.
 
 ## Why the data layer is a separate thing
 
@@ -68,8 +80,10 @@ own pipeline is broken, before I use it. I borrowed the term from software, wher
 blocking bug is one that stops release.
 
 There is a second benefit I did not plan. The data layer turned out to be
-design-agnostic. When the research design changed in August 2026, from a cross-sectional
-test to an event study, nothing in this repository needed to change.
+design-agnostic. The research design changed in August 2026 and was then stood down
+altogether, and nothing in this repository needed to change either time. A data layer that
+survives its own study being abandoned is a better demonstration of the separation than
+one that survives a change of method.
 
 ## Where to start reading
 
@@ -132,7 +146,10 @@ biases my returns downward rather than upward.
 
 **The honest statement is that survivorship bias is unmeasured at the company sizes that
 matter here.** I have ten observations in the relevant band, which is a direction and not
-a magnitude. CRSP's delisting file would settle it and I have applied for access.
+a magnitude. CRSP's delisting file would settle it. Access to CRSP and LSEG Workspace has been
+requested through Queen Mary's School of Economics and Finance. As at 9 September 2026 no
+decision has been made and follow-ups are in progress. Nothing in this repository depends
+on it.
 
 ### 2. Transaction costs
 
