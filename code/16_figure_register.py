@@ -55,7 +55,7 @@ REGISTER = [
     ("lead", "19 cases verified", "19", "event_validation_sample.csv"),
     ("lead", "salience lag, fast cases", "12 to 71 days", "salience_lag.txt"),
     ("lead", "salience lag, slow cases", "670 to 1,674 days", "salience_lag.txt"),
-    ("lead", "salience lag, six datable cases", "cases in the evidence file                6", "salience_lag.txt"),
+    ("lead", "salience lag, datable cases in the evidence file", "cases in the evidence file                6", "salience_lag.txt"),
 
     # ---- conventions (blocked on branch 1, numbers still registered) --------
     ("conventions", "raw MW Spearman, blank=zero", "0.9146", "scaling_second_column.txt"),
@@ -64,7 +64,7 @@ REGISTER = [
     ("conventions", "exposure growth U2, blank=impute", "+5.0%", "exposure_proxy_summary.txt"),
     ("conventions", "U2 convention flip, blank=zero", "0.9076", "bioenergy_check.txt"),
     ("conventions", "U2 convention flip, blank=impute", "0.9625", "bioenergy_check.txt"),
-    ("conventions", "U2 firms with zero March capacity", "33 of the March 2025 firms", "bioenergy_check.txt"),
+    ("conventions", "U2 firms with zero attributable capacity in March 2025", "33 of the March 2025 firms", "bioenergy_check.txt"),
     ("conventions", "bioenergy control, blank=zero", "0.9643", "bioenergy_check.txt"),
     ("conventions", "bioenergy control, blank=impute", "0.9656", "bioenergy_check.txt"),
     ("conventions", "coal share, blank=zero", "0.9652", "bioenergy_check.txt"),
@@ -77,7 +77,7 @@ REGISTER = [
     ("mechanisms", "Entergy Louisiana, August 2026", "11121.4", "exposure_proxy_by_firm.csv"),
 
     # ---- portfolio consequences --------------------------------------------
-    ("portfolio", "never exposed in either vintage", "137 of 328", "panel_join_summary.txt"),
+    ("portfolio", "never exposed in either release, of the 328-firm cross-section", "137 of 328", "panel_join_summary.txt"),
     ("portfolio", "effective panel", "191", "panel_join_summary.txt"),
     ("portfolio", "Spearman 191 active, blank=zero", "0.7309", "panel_join_summary.txt"),
     ("portfolio", "Spearman 191 active, blank=impute", "0.7749", "panel_join_summary.txt"),
@@ -150,13 +150,51 @@ REGISTER = [
     # The numbers exist in an output file with a provenance record either way,
     # and registering them now means the release of the subsection changes no
     # gate. Section label says held so nobody reads this as shipped text.
-    ("appendix B, held", "release files carrying presigned source citations", "17 of 17", "presigned_source_urls.txt"),
+    ("appendix B, held", "release files carrying presigned source citations, of the 17 held", "17 of 17", "presigned_source_urls.txt"),
     ("appendix B, held", "shortest declared expiry, seconds", "60 seconds", "presigned_source_urls.txt"),
-    ("appendix B, held", "release files checked for presigned citations", "release files carrying ownership sheets: 17", "presigned_source_urls.txt"),
-    ("portfolio", "panel firms with exposure in August 2026", "188 of 328", "panel_join_summary.txt"),
+    ("portfolio", "panel firms with exposure in August 2026, of the 191-firm effective panel", "188 of 328", "panel_join_summary.txt"),
 ]
 
 # which script's provenance record covers which output file
+# ---------------------------------------------------------------------------
+# THE VALUE CELL HOLDS A VALUE.
+# A numeral, its separators, and a unit or a per cent sign. Nothing else. Every
+# qualifier made of words belongs in the label.
+#
+# The needle above is the string matched in the output file and it is NEVER
+# rewritten to read better: "6" and "33" appear in almost any file, so a prettier
+# needle is a weaker check. This map overrides only what is PRINTED, and
+# check_display then requires the printed value to be the needle's own number
+# reformatted. A display that invents a figure fails the build.
+# ---------------------------------------------------------------------------
+DISPLAY = {
+    "salience lag, datable cases in the evidence file": "6",
+    "U2 firms with zero attributable capacity in March 2025": "33",
+    "panel firms with exposure in August 2026, of the 191-firm effective panel": "188",
+    "December 2025 methodology share": "96.2%",
+    "never exposed in either release, of the 328-firm cross-section": "137",
+    "release files carrying presigned source citations, of the 17 held": "17",
+    "Ameren and Union Electric capacity": "6,991.2 MW",
+    "Entergy Corp, August 2026": "8,720.92 MW",
+    "Entergy Louisiana, August 2026": "11,121.4 MW",
+}
+
+_UNIT = r"(?:%|MW|GW|x|days|seconds|months|firms)"
+# A leading sign is part of a value: "+9.8%" is a growth figure, not prose.
+_NUM = r"[+-]?\d[\d,]*(?:\.\d+)?"
+_SHAPE = re.compile(rf"^{_NUM}(?:\s?{_UNIT})?(?:\s(?:to|and)\s{_NUM}(?:\s?{_UNIT})?)?"
+                    rf"(?:\s(?:clears|FAILS))?$")
+
+
+def _core(x):
+    return re.sub(r"[^0-9.]", "", x)
+
+
+def check_display(needle, display):
+    """A display value is the needle's number reformatted, never a new one."""
+    c = _core(display)
+    return bool(c) and c in _core(needle)
+
 PROVENANCE_FOR = {
     "change_decomposition.txt": "RUN_PROVENANCE_06_change_decomposition.json",
     "decay_curves.txt": "RUN_PROVENANCE_07_decay_curves.json",
@@ -207,7 +245,8 @@ def main():
             status = "OK" if fn in PROVENANCE_FOR else "NO-PROV"
         else:
             status = "UNTRACEABLE"
-        rows.append((section, claim, needle, fn, status))
+        rows.append((section, claim, needle, fn, status,
+                     DISPLAY.get(claim, " ".join(needle.split()))))
 
     # Column widths are COMPUTED, never fixed. A fixed width silently truncated
     # four labels on 8 September 2026 and spilled the remainder into the value
@@ -222,21 +261,21 @@ def main():
         return " ".join(v.split())
 
     w_claim = max(len(r[1]) for r in rows)
-    w_needle = max(len(shown(r[2])) for r in rows)
+    w_needle = max(len(r[5]) for r in rows)
     w_status = max(len(r[4]) for r in rows)
 
     cur = None
-    for section, claim, needle, fn, status in rows:
+    for section, claim, needle, fn, status, disp in rows:
         if section != cur:
             say(f"--- {section} ---")
             cur = section
-        say(f"  [{status:<{w_status}}] {claim:<{w_claim}}  {shown(needle):<{w_needle}}  {fn}")
+        say(f"  [{status:<{w_status}}] {claim:<{w_claim}}  {disp:<{w_needle}}  {fn}")
 
     say()
     say("=" * 78)
     counts = {}
-    for *_x, s in rows:
-        counts[s] = counts.get(s, 0) + 1
+    for r in rows:
+        counts[r[4]] = counts.get(r[4], 0) + 1
     for k in ("OK", "NO-PROV", "UNTRACEABLE", "NO FILE"):
         if counts.get(k):
             say(f"  {k:<12} {counts[k]:>3}")
@@ -247,15 +286,15 @@ def main():
         say("  NOT TRACEABLE. Each must be resolved before the note ships, by pointing")
         say("  at a different file, by writing the computation into a numbered script,")
         say("  or by cutting the number from the note.")
-        for section, claim, needle, fn, status in bad:
-            say(f"    {section:<12} {claim:<{w_claim}}  expected '{shown(needle)}' in {fn}")
+        for section, claim, needle, fn, status, disp in bad:
+            say(f"    {section:<12} {claim:<{w_claim}}  expected '{disp}' in {fn}")
 
     noprov = [r for r in rows if r[4] == "NO-PROV"]
     if noprov:
         say()
         say("  IN A FILE BUT WITH NO PROVENANCE RECORD. The number is on disk but the")
         say("  release behind it is not recorded, so gate 5 is not met for it.")
-        for section, claim, needle, fn, status in noprov:
+        for section, claim, needle, fn, status, disp in noprov:
             say(f"    {section:<12} {claim:<{w_claim}}  {fn}")
 
     # Structured output beside the text table. Anything downstream reads THIS.
@@ -266,8 +305,25 @@ def main():
               encoding="utf-8") as fh:
         w = csv.writer(fh)
         w.writerow(["section", "claim", "value", "output_file", "status"])
-        for section, claim, needle, fn, status in rows:
-            w.writerow([section, claim, shown(needle), fn, status])
+        for section, claim, needle, fn, status, disp in rows:
+            w.writerow([section, claim, disp, fn, status])
+
+    # Every value cell holds a value. Audited here rather than by a reader,
+    # because the last four defects in this file were all found by eye.
+    audit = []
+    for section, claim, needle, fn, status, disp in rows:
+        if not check_display(needle, disp):
+            audit.append(f"{claim}: display {disp!r} is not the needle's own number")
+        elif not _SHAPE.match(disp):
+            audit.append(f"{claim}: display {disp!r} is prose, not a value")
+    say()
+    if audit:
+        say("  VALUE-SHAPE AUDIT FAILED. Fix before shipping:")
+        for a in audit:
+            say(f"    {a}")
+    else:
+        say(f"  VALUE-SHAPE AUDIT: all {len(rows)} value cells hold a value and each is the")
+        say("  number its output file carries, reformatted rather than restated.")
 
     say()
     say("  PROVENANCE RECORDS PRESENT")
