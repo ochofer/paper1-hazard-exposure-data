@@ -394,8 +394,8 @@ ownership data is built and used; section 5 says which is which.</p>
 {F['restatement_n']} ownership edges in a way that is not the database simply adding coverage; I sampled
 {F['n_cases']} of them at random and tried to find the transaction behind each.</p>
 <p><strong>{F['n_noevent']} of the {F['n_cases']} had no corporate event behind them at all.</strong> The
-full case table, with sources and verdicts, is Appendix C. I treat this as the central result of the
-note, because it is the one finding that does not depend on any modelling choice I made downstream.</p>
+full case table, with sources and verdicts, is Appendix C. This is the central result, because it is the
+one finding that does not depend on any modelling choice made downstream.</p>
 <p>Six had a datable transaction and a datable record. The two the database caught within {F['fast']}
 days are a statutory disclosure by a listed Japanese issuer and a 1.9bn USD acquisition by a listed US
 utility; the four it missed by {F['slow_lo']} to {F['slow_hi']} days, which is {F['slow_yr_lo']} to
@@ -509,8 +509,7 @@ it.</strong> Removing edges whose counterparty is a residual bucket, a party lik
 whose value is 100 minus the named holders rather than an observed stake, takes proportionally more out
 of the denominator than the numerator, because those counterparties are concentrated in the build-out
 bucket at {F['resid_buildout']}% and build-out sits in the denominator only. I had assumed the
-restriction would deflate R and threaten the threshold. The assumption was backwards, and it is recorded
-here because a reader should be able to see which of my expectations the data overturned.</p>
+restriction would deflate R and threaten the threshold. The assumption was backwards.</p>
 <p>One thing follows from that and no more: nearly a quarter of the edges counted as the database growing
 are new links to a residual bucket, which is coverage of the unnamed rather than of the named.</p>
 <p>The two August 2026 columns are two files the vendor published under the same month, neither marked as
@@ -548,8 +547,8 @@ December 2025 over a window whose length in months happens to equal the panel's 
 every t-statistic below {F['t_max']}, with a Newey-West standard error of
 {F['se_lo']}% to {F['se_hi']}% a year and a minimum detectable effect of about {F['mde_lo']}% a year at
 the Harvey, Liu and Zhu hurdle. No plausible transition premium is that large, so the design could not
-have detected the effect it was built to look for; I report the minimum detectable effect beside the null
-for that reason, because a null quoted without one reads as evidence of absence. A cross-sectional
+have detected the effect it was built to look for. A null quoted without a minimum detectable effect
+reads as evidence of absence. A cross-sectional
 Fama-MacBeth design was set aside before it ran, on a power calculation requiring 1,296 monthly
 observations, published in the design document.</p>
 <p><strong>Both return arms contain look-ahead, deliberately and identically</strong>, so they are
@@ -558,14 +557,13 @@ comparable with each other and neither is a return prediction.</p>
 dividend-adjusted end-of-day series, pulled on 21 August 2026. The adjustment is the vendor's, covering
 splits as well as dividends, and no unadjusted close is archived beside it; the series is not
 redistributable, and its per-file checksums are published in the repository manifest.</p>
-<p><strong>Nineteen is a small sample</strong>, drawn once and not reproducible as a draw, and the note
-says so wherever the verification is quoted.</p>
+<p><strong>Nineteen is a small sample</strong>, drawn once and not reproducible as a draw.</p>
 <p><strong>Decay.</strong> Where a decay figure appears it is the one-month-pair cut with the November to
 December 2025 pair excluded, n = 8, build-out share falling {F['decay']}, alongside a correlation of
 +{F['decay_corr']} between build-out share and the gap between releases.</p>
 
 <h2>7. On the vendor</h2>
-<p>Stated as checkable facts and nothing else. Global Energy Monitor is a non-profit. The data is free
+<p>Global Energy Monitor is a non-profit. The data is free
 and published under CC BY 4.0, so every input to this note except the price series ships with it. Six
 detailed questions were answered within days. The past releases compared here were sent on request,
 and the vendor undertook in writing to document the imputation rule in future releases. Flags
@@ -575,8 +573,7 @@ to Global Energy Monitor before publication.</p>
 <p>As at the date checked, the vendor publishes no release list or changelog, its project page gives no
 launch date, and its download page still references an earlier release, so a reader cannot confirm the
 completeness of the release history either. That is a fact about what is published, not a
-criticism of the data, and it is the reason this note says the fourteen releases I hold rather than every
-release issued.</p>
+criticism of the data.</p>
 <p>These effects are therefore measured at the favourable end of the range. A commercial vendor with a
 revenue interest in its own history is not obviously better behaved, and I would expect the same exercise
 on a paid dataset to be harder to run and no more flattering.</p>
@@ -664,8 +661,7 @@ inside either identifies which is which; Appendix A gives the figures that diffe
 deleted as duplicates, which is {F['remap_pct']}% of the entities lost between these releases, so an
 unknown part of the {F['m4_n']} removed links is unrecorded deduplication rather than restatement.
 Reclassifying any of them moves edges from restatement to methodology, and both sit inside R, so the
-boundary does not move R; I report the split as the decomposition assigns it and flag that its internal
-line is soft.</p>
+boundary does not move R, though its internal line is soft.</p>
 <p><strong>Real churn.</strong> Of the {F['both_edges']} edges present in both releases, observed ownership
 churn over eighteen months puts a ceiling of {F['churn_ceiling']} genuine corporate events, or
 {F['churn_pct']}% of them. Crediting every one of those to the restatement bucket is what produces the
@@ -673,7 +669,7 @@ generous bound in section 4. It is a ceiling and not an estimate, and it is the 
 the data will support.</p>
 <p>One thing the vendor does here helps a user directly. August 2026 flags {F['imp_flag_n']} ownership
 edges, {F['imp_flag_p']}% of them, as imputed values, so a reader of that flag can tell an imputed share
-from an observed one without any of the work in this note. March 2025 carries no such flag, which is why
+from an observed one directly. March 2025 carries no such flag, which is why
 the imputation row above is a methodology change rather than something a user could have seen coming.</p>
 {PRESIGNED_BLOCK}
 <p class="src">Sources: <code>outputs/change_decomposition.txt</code>, <code>outputs/exposure_proxy_summary.txt</code>,
