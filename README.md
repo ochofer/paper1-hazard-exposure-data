@@ -21,9 +21,10 @@ and the minimum detectable effect that makes that result readable, are reported 
 data-quality note.
 
 That note is published: *What a vintage difference measures*, a hand verification of
-ownership changes in a public asset-level database. It is the tagged release of this
-repository, at https://github.com/ochofer/paper1-hazard-exposure-data/releases/latest,
-and every figure in it resolves to a named output file under `outputs/`.
+ownership changes in a public asset-level database. It is the tagged release
+`note-v1.0`, at
+https://github.com/ochofer/paper1-hazard-exposure-data/releases/tag/note-v1.0, and
+every figure in it resolves to a named output file under `outputs/`.
 
 ---
 
