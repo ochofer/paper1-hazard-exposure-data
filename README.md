@@ -18,11 +18,12 @@ Two return tests are distinguished here. A cross-sectional Fama-MacBeth design w
 specified and then set aside before it ran, on a power calculation published in this
 repository. A separate quintile-spread comparison was pre-registered and run; its result,
 and the minimum detectable effect that makes that result readable, are reported in the
-data-quality note, in preparation.
+data-quality note.
 
-What ships next from this work is that note, on how the ownership tracker's releases
-disagree with each other. It is in preparation and carries no numbers here until it is
-out.
+That note is published: *What a vintage difference measures*, a hand verification of
+ownership changes in a public asset-level database. It is the tagged release of this
+repository, at https://github.com/ochofer/paper1-hazard-exposure-data/releases/latest,
+and every figure in it resolves to a named output file under `outputs/`.
 
 ---
 
@@ -41,15 +42,16 @@ legal identifiers. The price data is organised entirely by stock ticker. Neither
 the other, so most of the work in this repository is building that bridge and then trying
 to prove it wrong.
 
-**Current state of the sample:** 302 of 328 ownership entities resolve to a tradeable
-listing, covering 4,900 of 5,115 tracked assets, or 95.8%. The price panel holds
+**Current state of the sample:** 328 ownership entities resolve to the US and
+developed-Europe listed universe, 302 of them to a tradeable listing, and all 328
+together hold 5,115 tracked assets. The price panel holds
 1,122,798 daily rows across 304 symbols, being those 302 companies plus two benchmarks,
 on a single total-return convention, and passes 16 of 16 integrity checks.
 
 ### Three counts, and why they differ
 
-Three company counts appear in this project and they measure different things, so it is
-worth separating them here rather than letting a reader assume one is a subset of another.
+Three company counts appear in this project. They measure different things and they are
+not nested.
 
 | Count | What it is |
 |---|---|
