@@ -6,10 +6,10 @@ WHY THIS EXISTS
 Until 2 September 2026 the scripts located a GEM workbook by matching a
 filename hint such as "August-2026" against whatever happened to be in
 Data/GEM Data/, then preferred any match containing "V2". That rule was
-correct when it was written: July 2025 and May 2026 were each reissued, and V2
+correct when it was written: July 2025 and May 2026 each carry two files, and V2
 is the corrected file for those months.
 
-On 26 August 2026 GEM reissued August 2026 as
+On 26 August 2026 GEM sent a second August 2026 file,
 Global-Energy-Ownership-Tracker-August-2026-V2_External.xlsx. The hint
 "August-2026" then matched two files and silently resolved to the new one.
 Nothing failed. The pipeline simply split: scripts 00, 04, 06 and 07 had
@@ -178,7 +178,7 @@ def require_col(df, names, where):
     GEM has renamed a column three times: Owner GEM Entity ID to Parent GEM
     Entity ID, an inserted Last Review Date that shifted every later column in
     December 2025, and newest_update to Last Review Date in the August 2026 V2
-    reissue. A guard of the form
+    file. A guard of the form
 
         has_x = "x" in df.columns
         value = row["x"] if has_x else ""

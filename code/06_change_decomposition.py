@@ -93,8 +93,8 @@ def find(key):
     """Resolve a PINNED release key to one workbook.
 
     This used to take a filename hint and prefer any match containing "V2".
-    That rule silently switched the August 2026 endpoint when GEM reissued the
-    month on 26 August 2026. It now takes a key from _release.RELEASES and
+    That rule silently switched the August 2026 endpoint when the second August
+    2026 file arrived on 26 August 2026. It now takes a key from _release.RELEASES and
     resolves to one exact filename, or fails.
     """
     return _release.resolve(key, DATA)

@@ -143,8 +143,8 @@ def main():
         print(s)
         lines.append(s)
 
-    # -- pick one file per release month, preferring V2 where a month was
-    # reissued, since V2 is the corrected version of that month.
+    # -- pick one file per release month, preferring V2 where a month carries
+    # two files, since V2 is the corrected version of that month.
     #
     # As of 22 August 2026 there is exactly ONE file per release month except
     # July 2025 and May 2026, which shipped V1 and V2. The three duplicate
@@ -157,8 +157,8 @@ def main():
         if d is None:
             continue
         # "Prefer V2" is CORRECT for July 2025 and May 2026, the two months
-        # GEM reissued with a corrected file, and WRONG for August 2026,
-        # whose V2_External reissue is not the pinned endpoint. So the
+        # that carry a corrected second file, and WRONG for August 2026,
+        # whose V2_External file is not the pinned endpoint. So the
         # exception is named rather than the rule rewritten.
         pin = _release.MONTH_PIN.get((d.year, d.month))
         if pin is not None:
@@ -272,7 +272,7 @@ def main():
         tot = row["changed_edges"]
         if tot == 0:
             # Two consecutive releases with identical ownership edges. Worth
-            # reporting rather than swallowing: it means GEM reissued a file
+            # reporting rather than swallowing: it means a later file arrived
             # without changing the ownership layer.
             say(f"  {prev_d.strftime('%Y-%m')} to {d.strftime('%Y-%m')}: "
                 "ZERO ownership change, releases are identical on this layer")

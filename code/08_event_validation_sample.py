@@ -142,8 +142,8 @@ def find(key):
     """Resolve a PINNED release key to one workbook.
 
     This used to take a filename hint and prefer any match containing "V2".
-    That rule silently switched the August 2026 endpoint when GEM reissued the
-    month on 26 August 2026. It now takes a key from _release.RELEASES and
+    That rule silently switched the August 2026 endpoint when the second August
+    2026 file arrived on 26 August 2026. It now takes a key from _release.RELEASES and
     resolves to one exact filename, or fails.
     """
     return _release.resolve(key, DATA)
@@ -167,7 +167,7 @@ def main():
     def frame(df, need_nu):
         out = {}
         has_imp = "Share Imputed?" in df.columns
-        # GEM renamed this field in the August 2026 V2 reissue, and the old
+        # GEM renamed this field in the August 2026 V2 file, and the old
         # guard blanked it on all 2,756 rows without a word. It is REQUIRED on
         # the later vintage, where absence means that bug. It is legitimately
         # ABSENT from March 2025, which predates the field, so requiring it

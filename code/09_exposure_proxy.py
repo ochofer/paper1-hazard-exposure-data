@@ -115,7 +115,7 @@ March 2025 names the column "Owner GEM Entity ID"; August 2026 names it
 "Parent GEM Entity ID". Resolved by name, never by position. Third schema
 change found in this dataset, after the December 2025 "Last Review Date"
 insertion and the disappearance of "newest_update" in the August 2026 V2
-reissue.
+file.
 
 RUN
     python 09_exposure_proxy.py
@@ -141,7 +141,7 @@ OUT = os.path.join(HERE, "..", "outputs")
 os.makedirs(OUT, exist_ok=True)
 
 # PINNED 3 September 2026. This dict previously named the V2_External
-# reissue while scripts 00, 04, 06 and 07 were on V1, which is how task
+# file while scripts 00, 04, 06 and 07 were on V1, which is how task
 # 1.5 came to join a V1 cross-section to a V2 exposure measure. The
 # filenames now come from the single pin in _release.py.
 VINTAGES = {

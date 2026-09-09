@@ -21,7 +21,7 @@ STRUCTURE, per decision B of 7 September
 ----------------------------------------
 Main text, two to four pages, executive summary first. A reader who stops at the
 end of the main text has every finding and every qualifier.
-Appendix A  the release ladder, the unversioned reissue, the truncation trap
+Appendix A  the release ladder, the two files called August 2026, the truncation trap
 Appendix B  the mechanism catalogue
 Appendix C  the nineteen verified cases with sources and lags
 Appendix D  the figure register
@@ -431,15 +431,15 @@ depending only on the reading.</p>
 </table>
 <p><strong>The flip is general rather than a property of the regional panel.</strong> It reproduces on
 604 matched firms worldwide, at {F['u2_zero']} and {F['u2_imp']}, straddling the same cut as the 191
-regional firms and in the same direction. The reading that makes a straddle general rather than a sample
-artefact was fixed in writing before the test ran, which is the only reason it counts for anything: a
+regional firms and in the same direction. The reading that a straddle is general was fixed in
+writing before the test ran, which is the only reason it counts for anything: a
 result that would have been explained either way explains nothing. On the 133 firms with bioenergy in
 both releases raw capacity does not flip, and that is the stated limit of the claim. Those universes are
-not nested, which is said here rather than left for a reader to find.</p>
+not nested.</p>
 <p><strong>Why the convention carries that much force.</strong> Under the naive reading, {F['n_zerocap']}
 firms carry attributable capacity of exactly zero in March 2025, because every ownership edge they have
 has a blank share and a blank multiplied by zero is nothing; under imputation none do. The convention
-does not only change the values, then. It decides whether a firm registers as having any exposure at all,
+does not only change the values. It decides whether a firm registers as having any exposure at all,
 which is a membership decision rather than a measurement one.</p>
 <p>The same choice roughly halves measured growth: on the 604 firms present in both releases,
 attributable capacity grows {F['growth_zero']}% reading blanks as zero and {F['growth_imp']}% imputing
@@ -496,7 +496,7 @@ vendor releases, that turnover is a cost paid for revisions to the record rather
 underlying fleet, and it is paid every release.</p>
 <h3>R, every construction</h3>
 <p>R is the share of apparent ownership change that is not the database growing. I report every
-construction of it in one table rather than quoting the one that suits the argument.</p>
+construction of it in one table.</p>
 <table>
 <tr><th>Construction</th><th class="n">August 2026 V1</th><th class="n">August 2026 V2</th></tr>
 {ladder_rows()}
@@ -526,6 +526,9 @@ and mines. The vendor confirms it has no release before March 2025, and the earl
 June 2024, carries entity-to-entity relationships only and no asset-level ownership; the tracker as a
 product is older than the layer. The window here is the layer's first eighteen months, across the
 fourteen releases I hold and the thirteen adjacent pairs between them.</p>
+<p>Those releases were supplied by the vendor on request. No public archive of past releases exists, so this
+comparison is auditable from the files and cannot be reproduced by a reader who starts from the vendor's
+site.</p>
 <p><strong>Findings that depend on that maturity:</strong> the level of R, the decay curves, and the share
 of one release's change that is methodology.</p>
 <p><strong>Findings that do not:</strong> the ancestor over-count, the convention that flips a
@@ -564,12 +567,14 @@ December 2025 pair excluded, n = 8, build-out share falling {F['decay']}, alongs
 <h2>7. On the vendor</h2>
 <p>Stated as checkable facts and nothing else. Global Energy Monitor is a non-profit. The data is free
 and published under CC BY 4.0, so every input to this note except the price series ships with it. Six
-detailed questions were answered within days. Flags marking a large share of ownership edges as no longer
+detailed questions were answered within days. The past releases compared here were sent on request,
+and the vendor undertook in writing to document the imputation rule in future releases. Flags
+marking a large share of ownership edges as no longer
 maintained were shipped unprompted and were not mentioned in the covering note. A draft of this note went
 to Global Energy Monitor before publication.</p>
 <p>As at the date checked, the vendor publishes no release list or changelog, its project page gives no
 launch date, and its download page still references an earlier release, so a reader cannot confirm the
-completeness of the release history either. That is a fact about what is published rather than a
+completeness of the release history either. That is a fact about what is published, not a
 criticism of the data, and it is the reason this note says the fourteen releases I hold rather than every
 release issued.</p>
 <p>These effects are therefore measured at the favourable end of the range. A commercial vendor with a
@@ -578,9 +583,11 @@ on a paid dataset to be harder to run and no more flattering.</p>
 
 <div class="appendix">
 <h2>Appendix A. Two files called August 2026</h2>
-<p>The vendor reissued the August 2026 release. Two files exist and nothing inside either marks it as a
-version, so scripts that resolve a release by filename silently switched to the second one; mine did, and
-the release pin in <code>code/_release.py</code> exists because of it.</p>
+<p>Two files in my archive carry August 2026. The second was sent later than the first and holds columns
+the public release does not, including one the vendor describes as internal, so it is a variant supplied to
+me and not a public reissue. Nothing inside either file identifies which is which, so scripts that resolve a
+release by filename silently switched to the second one; mine did, and the release pin in
+<code>code/_release.py</code> exists because of it.</p>
 <table>
 <tr><th>Construction</th><th class="n">V1</th><th class="n">V2_External</th></tr>
 {ladder_rows()}
@@ -590,14 +597,14 @@ the release pin in <code>code/_release.py</code> exists because of it.</p>
 other.</strong> V is derived from the verified case verdicts and its Wilson interval computed rather than
 assumed, and the worst case applies the upper bound of that interval.</p>
 <p><strong>The endpoint is pinned to V1</strong> because the 328-firm cross-section is itself a V1
-artefact, having been built from that file before the reissue existed; it is not pinned because V1 clears
-the threshold. Had the cross-section been built on V2, the pin would have gone to V2 and the worst-case
+artefact, having been built from that file before the second one arrived; it is not pinned because
+V1 clears the threshold. Had the cross-section been built on V2, the pin would have gone to V2 and the worst-case
 reading would have failed a threshold written before any script ran.</p>
 <h3>The truncation trap</h3>
 <p>Between the two releases the vendor truncated ownership shares to one decimal place: {F['dp_mar']}% of
 March 2025 values need two decimals and none of the August values do.
 <strong>{F['trunc']}% of all share-value changes between the pinned releases are that and nothing
-else</strong> ({F['trunc_v2']}% against the reissue). R is unaffected, because the 0.06 threshold used to
+else</strong> ({F['trunc_v2']}% against the second file). R is unaffected, because the 0.06 threshold used to
 build the sample had already excluded them; anyone rerunning this comparison with a tighter threshold will
 manufacture roughly three and a half thousand changes that are formatting.</p>
 
@@ -648,8 +655,8 @@ rather than imputing them moves measured growth from {F['growth_imp']}% to {F['g
 {F['n_zerocap']} firms at exactly zero attributable capacity in March 2025.</li>
 <li><strong>Coverage moving inside a denominator.</strong> Any measure scaled by fleet share inherits the
 coverage change in its denominator, which is what dissolved the scaling result in section 2.</li>
-<li><strong>A release reissued under the same name.</strong> Two files are called August 2026 and nothing
-inside either marks it as a version; Appendix A gives the figures that differ between them.</li>
+<li><strong>Two files carrying the same month.</strong> Two files are called August 2026 and nothing
+inside either identifies which is which; Appendix A gives the figures that differ between them.</li>
 </ol>
 
 <h3>Two boundaries this catalogue does not settle</h3>
