@@ -2,35 +2,34 @@
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ochofer/paper1-hazard-exposure-data/blob/main/notebooks/01_raw_panels.ipynb)
 
-Companies own physical things. Power stations, pipelines, mines, cement works. Those
-things sit in places, and places have weather.
-
-The question that started this was whether investors price the risk that weather damages
-those assets or interrupts what they produce. If they do, companies with more exposed
-assets should earn different returns from companies with less exposed ones, once
-everything else known to move share prices is controlled for.
+Companies own physical assets, among them power stations, pipelines, mines and cement
+works, and those assets sit in particular places whose weather varies. The question that
+started this project is whether investors price the risk that weather damages those assets
+or interrupts what they produce. If they do, then companies holding more exposed assets
+should earn different returns from companies holding less exposed ones, once everything
+else known to move share prices is controlled for.
 
 **This repository is the data layer, and only the data layer.** It builds and audits the
-data. It has never tested that hypothesis, and I explain below why I keep those two things
-apart.
+data, and it has never tested that hypothesis; the section below sets out why the two are
+kept apart.
 
 Two return tests are distinguished here. A cross-sectional Fama-MacBeth design was
 specified and then set aside before it ran, on a power calculation published in this
-repository. A separate quintile-spread comparison was pre-registered and run; its result,
-and the minimum detectable effect that makes that result readable, are reported in the
-data-quality note.
+repository. A separate quintile-spread comparison was pre-registered and run, and its
+result, together with the minimum detectable effect that makes that result readable, is
+reported in the data-quality note.
 
-That note is published: *What a vintage difference measures*, a hand verification of
+That note is published as *What a vintage difference measures*, a hand verification of
 ownership changes in a public asset-level database. It is the tagged release
-`note-v1.0`, at
-https://github.com/ochofer/paper1-hazard-exposure-data/releases/tag/note-v1.0, and
+`note-v1.1`, at
+https://github.com/ochofer/paper1-hazard-exposure-data/releases/tag/note-v1.1, and
 every figure in it resolves to a named output file under `outputs/`.
 
 ---
 
 ## What is here
 
-I need three ingredients, and they do not naturally connect to one another.
+The study needs three ingredients, and they do not naturally connect to one another.
 
 | Ingredient | What it gives me | Source | Cost |
 |---|---|---|---|
@@ -38,10 +37,10 @@ I need three ingredients, and they do not naturally connect to one another.
 | Share prices | What each company's shares actually did, daily | Financial Modeling Prep | Paid |
 | Risk factors | The known drivers of returns, used as controls | Kenneth French Data Library | Free |
 
-The awkward part is the join. The ownership data identifies companies by name and by
-legal identifiers. The price data is organised entirely by stock ticker. Neither contains
-the other, so most of the work in this repository is building that bridge and then trying
-to prove it wrong.
+The difficulty lies in the join. The ownership data identifies companies by name and by
+legal identifiers, whereas the price data is organised entirely by stock ticker, and
+neither source contains the other's key. Most of the work in this repository therefore goes
+into building that bridge and then attempting to prove it wrong.
 
 **Current state of the sample:** 328 ownership entities resolve to the US and
 developed-Europe listed universe, 302 of them to a tradeable listing, and all 328
@@ -51,8 +50,8 @@ on a single total-return convention, and passes 16 of 16 integrity checks.
 
 ### Three counts, and why they differ
 
-Three company counts appear in this project. They measure different things and they are
-not nested.
+Three company counts appear in this project. Because they measure different things and are
+not nested, a reader who meets them in isolation will read one for another.
 
 | Count | What it is |
 |---|---|
@@ -61,32 +60,33 @@ not nested.
 | 302 | The subset of those 328 that resolves to a tradeable listing. This is the price panel |
 
 The step from 372 to 328 is the operating-asset filter and nothing else. The step from 328
-to 302 is identifier coverage: whether I can find a company's shares, not whether it owns
-anything.
+to 302 is identifier coverage, that is, whether a company's shares can be found, and not
+whether it owns anything.
 
 Both filters are switches at the top of
-[`code/00_coverage_and_crosswalk.py`](code/00_coverage_and_crosswalk.py), so you can rerun
-the audit either way and watch the counts move rather than take my word for it.
+[`code/00_coverage_and_crosswalk.py`](code/00_coverage_and_crosswalk.py), so a reader can
+rerun the audit either way and watch the counts move rather than take the figures on trust.
 
 The hazard measurement itself is not built and not scheduled, and it is not in this
 repository.
 
 ## Why the data layer is a separate thing
 
-A data layer I can only check by looking at the final result is one I cannot really
-check. If the answer looks interesting I will not go back and question the download; if
-it looks boring I will. That asymmetry is how bad data survives.
+A data layer that can only be checked by looking at the final result is one that cannot
+really be checked, because the incentive to go back and question the download depends on
+how the answer looks: an interesting result invites no second look, while a boring one
+does. That asymmetry is plausibly how bad data survives.
 
-So I audit the raw layer on its own, before anything depends on the answer. The two
-**blocking tests** in the notebook take the same idea further: in each I try to prove my
-own pipeline is broken, before I use it. I borrowed the term from software, where a
-blocking bug is one that stops release.
+The raw layer is therefore audited on its own, before anything depends on the answer. The
+two **blocking tests** in the notebook take the same idea further, in that each attempts to
+prove the pipeline broken before the pipeline is used; the term is borrowed from software,
+where a blocking bug is one that stops release.
 
-There is a second benefit I did not plan. The data layer turned out to be
-design-agnostic. The research design changed in August 2026 and was then stood down
-altogether, and nothing in this repository needed to change either time. A data layer that
-survives its own study being abandoned is a better demonstration of the separation than
-one that survives a change of method.
+A second benefit followed that was not planned for. The research design changed in August
+2026 and was then stood down altogether, and nothing in this repository needed to change
+either time, which indicates that the data layer is design-agnostic in practice and not
+only in intention. A data layer that survives its own study being abandoned is a stronger
+demonstration of the separation than one that survives a change of method.
 
 ## Where to start reading
 
@@ -96,31 +96,32 @@ one that survives a change of method.
 | What I found, with numbers | [`FINDINGS_2026-08-21.md`](FINDINGS_2026-08-21.md) |
 | To run it yourself | [`EXECUTION_CHECKLIST.html`](EXECUTION_CHECKLIST.html) |
 
-The notebook is written for someone who has not seen the project and may be new to either
-quantitative finance or Python. If you are a quantitative researcher it will occasionally
-be slower than you need, and I would rather that than the alternative.
+The notebook is written for a reader who has not seen the project and may be new to either
+quantitative finance or Python, so a quantitative researcher will find it slower in places
+than it needs to be. That is a deliberate trade against the alternative.
 
-Sections 5 and 6 are the ones I would point a sceptical reader at first. Section 6 in
-particular takes the finished price panel and tries to prove it is broken, and that
-argument stands whether or not you trust anything else here.
+Sections 5 and 6 are the ones a sceptical reader should take first. Section 6 in particular
+takes the finished price panel and attempts to prove it broken, and that argument stands
+whether or not the rest of the repository is trusted.
 
 ---
 
 ## Two commitments made before any result exists
 
-I wrote both of these down before I had a hazard variable to test, so that I cannot
-quietly relax them once results start appearing. That is the entire point of writing them
-in a public repository.
+Both commitments were written down before there was a hazard variable to test, so that
+neither can be quietly relaxed once results start appearing. Recording them in a public
+repository is what makes the constraint binding.
 
 ### 1. Survivorship bias
 
-My list of companies comes from an ownership dataset published in 2026, so every company
-in it still existed in 2026. A company that owned power stations in 2010 and was then
-taken over or wound up is absent, and it is absent because of what happened to it.
+The list of companies comes from an ownership dataset published in 2026, so every company
+in it still existed in 2026. A company that owned power stations in 2010 and was then taken
+over or wound up is therefore absent, and it is absent because of what happened to it.
 
-If companies with exposed assets failed more often, my sample would systematically drop
-the worst outcomes among exactly the group I am studying. That mechanism manufactures the
-result I am looking for, so it needs measuring rather than mentioning.
+If companies with exposed assets failed more often, the sample would systematically drop
+the worst outcomes among exactly the group under study, which is a mechanism that
+manufactures the result the design is looking for. A bias of that kind needs measuring
+rather than mentioning.
 
 **What I committed to:**
 
@@ -133,36 +134,38 @@ result I am looking for, so it needs measuring rather than mentioning.
 - **Measure the size of the problem before assuming it is small**, with thresholds fixed
   before the number appears.
 
-**What I found.** Section 5 of the notebook runs that measurement. Two results, and the
-second surprised me.
+**What I found.** Section 5 of the notebook runs that measurement, and it returns two
+results, the second of which was not the one expected.
 
-The price provider **cannot** measure delisting over my sample window. Its records show
-seven delistings in 2010 and 2,353 in 2025, a thirty-fold rise. Delisting rates do not
-behave like that, so I read this as coverage rather than history, and I discarded the
-resulting rate rather than quoting it with a caveat.
+First, the price provider **cannot** measure delisting over this sample window. Its records
+show seven delistings in 2010 and 2,353 in 2025, a thirty-fold rise, and delisting rates do
+not behave like that, so the series is better read as coverage than as history. The
+resulting rate was accordingly discarded rather than quoted with a caveat.
 
-Splitting delisted companies by how heavily they traded, the smallest underperform badly
-before delisting while the largest **outperform**. That fits: small companies delist
-because they fail, and companies the size of mine mostly delist because they are
-acquired, which is announced at a premium. If that holds, excluding delisted companies
-biases my returns downward rather than upward.
+Second, splitting delisted companies by how heavily they traded, the smallest underperform
+badly before delisting while the largest **outperform**. That pattern is consistent with
+the usual account, in which small companies delist because they fail while companies of the
+size studied here mostly delist because they are acquired, which is announced at a premium.
+If it holds, then excluding delisted companies biases returns downward rather than upward,
+which is the opposite of the direction that would flatter the hypothesis.
 
 **The honest statement is that survivorship bias is unmeasured at the company sizes that
-matter here.** I have ten observations in the relevant band, which is a direction and not
-a magnitude. CRSP's delisting file would settle it. Access to CRSP and LSEG Workspace has been
-requested through Queen Mary's School of Economics and Finance. As at 9 September 2026 no
-decision has been made and follow-ups are in progress. Nothing in this repository depends
-on it.
+matter here.** Ten observations fall in the relevant band, which gives a direction and not
+a magnitude, and the question cannot be settled from this provider's records, since those
+records do not measure delisting over the window. CRSP's delisting file would settle it.
+Access to CRSP and LSEG Workspace has been requested through Queen Mary's School of
+Economics and Finance; as at 9 September 2026 no decision has been made and follow-ups are
+in progress. Nothing in this repository depends on it.
 
 ### 2. Transaction costs
 
-Nothing in this repository nets transaction costs, deliberately. The panels are gross.
-Costs belong at the portfolio layer, applied once, visibly, and to turnover rather than
-to holdings.
+Nothing in this repository nets transaction costs, and the omission is deliberate. The
+panels are gross, because costs belong at the portfolio layer, where they are applied once,
+visibly, and to turnover rather than to holdings.
 
 **What I have committed to, for when a portfolio layer exists.** There is no portfolio
-layer yet, so these are rules written in advance rather than descriptions of something
-already done.
+layer yet, so what follows is a set of rules written in advance rather than a description of
+something already done.
 
 - **Gross and net will be reported together**, in the same table. A net figure alone hides
   the cost assumption. A gross figure alone is not a claim about anything achievable.
@@ -177,17 +180,18 @@ already done.
   assumption-free and lets a reader apply their own beliefs. If break-even sits below
   plausible real costs, that is the finding.
 
-Complications specific to this universe, recorded now so I do not discover them late: the
-European leg incurs currency conversion costs the US leg does not; `^GSPC` is an index and
-cannot be traded, which is why I also download `SPY`; and partnership structures have tax
-treatment that makes net-of-cost comparison with ordinary companies non-trivial.
+Three complications specific to this universe are recorded now rather than discovered late.
+The European leg incurs currency conversion costs that the US leg does not; `^GSPC` is an
+index and cannot be traded, which is why `SPY` is downloaded alongside it; and partnership
+structures carry tax treatment that makes net-of-cost comparison with ordinary companies
+non-trivial.
 
 ---
 
 ## Data notes that cause silent errors
 
-Each of these produces a plausible-looking number rather than an error, which is what
-makes them worth writing down.
+Each of the following produces a plausible-looking number rather than an error, and it is
+that property, rather than their difficulty, that makes them worth writing down.
 
 - **The French factors are in percent, not decimals.** `Mkt-RF = 0.55` means 0.55%. I
   store them as published, so the division by 100 belongs downstream.
@@ -207,24 +211,24 @@ makes them worth writing down.
 agreement to redistribute their data, so `data/raw/` is excluded from version control and
 the panel itself lives outside this repository.
 
-What I publish instead is the fetch code, the resolved company list, the hand corrections
-with a written reason for each, and
-[`data/raw/manifest.json`](data/raw/manifest.json): SHA-256 checksums, byte sizes and row
-counts for every file the findings were computed on, plus per-symbol date coverage for all
-304 symbols in the price panel. Anyone with their own FMP access can use it to prove their
-panel matches mine rather than assuming it.
+What is published instead is the fetch code, the resolved company list, the hand
+corrections with a written reason for each, and
+[`data/raw/manifest.json`](data/raw/manifest.json), which carries SHA-256 checksums, byte
+sizes and row counts for every file the findings were computed on, together with per-symbol
+date coverage for all 304 symbols in the price panel. A reader with their own FMP access
+can therefore establish that their panel matches this one rather than assuming it.
 
 The manifest describes one person's pull, and that person is Carlo Hofer, at this
-repository. A checksum record with no owner cannot be challenged by anyone, because there
-is nobody to ask what was pulled or when. `build_manifest.py` writes an `owner` field for
-this reason; the manifest committed here predates the field and will carry it the next
-time it is regenerated.
+repository. A checksum record with no owner cannot be challenged by anyone, since there is
+nobody to ask what was pulled or when; `build_manifest.py` writes an `owner` field for that
+reason, and the manifest committed here predates the field and will carry it the next time
+it is regenerated.
 
-Running the notebook writes the same kind of record for your own pull, as
-`data/raw/manifest_run.json`. It is gitignored and deliberately carries a different name,
-so a run cannot overwrite the published record. Comparing the two is the point: matching
-checksums prove you are holding the same bytes, and if they differ, the per-symbol
-coverage shows you which symbols diverge.
+Running the notebook writes the same kind of record for the reader's own pull, as
+`data/raw/manifest_run.json`. It is gitignored and deliberately carries a different name, so
+that a run cannot overwrite the published record. Comparing the two is what the record is
+for: matching checksums establish that the same bytes are held, and where they differ, the
+per-symbol coverage identifies which symbols diverge.
 
 **What the price series actually is.** Every return in this project is computed from a
 single field, `adjClose`, taken from Financial Modeling Prep's
@@ -236,19 +240,19 @@ at 37.14 on 4 January 2010 against a nominal close near 69. **No unadjusted clos
 stored beside it in the archive**, so the adjustment cannot be undone or independently
 checked from what this repository describes.
 
-That matters more than it first appears, and it cuts in the same direction as the rest of
-this work. A vendor's adjusted price history is itself a restated, vintage-dependent
-object: every historical adjusted price moves whenever a new dividend or split is applied.
-The panel pulled on 21 August 2026 is therefore a snapshot of FMP's back-adjustment as it
-stood that day, and could not be reproduced later even with a live subscription. That
-supports the manifest rather than undermining it, and it is the reason the claim below is
-worded the way it is.
+That property matters more than it first appears, and it runs in the same direction as the
+rest of this work. A vendor's adjusted price history is itself a restated, vintage-dependent
+object, since every historical adjusted price moves whenever a new dividend or split is
+applied. It follows that the panel pulled on 21 August 2026 is a snapshot of FMP's
+back-adjustment as it stood that day, and could not be reproduced later even with a live
+subscription. That conclusion supports the manifest rather than undermining it, and it is
+the reason the claim below is worded as it is.
 
-**The claim is that my pull is auditable, not that it is repeatable.** Rebuilding the
-price layer requires a paid FMP subscription. Every other input here is free and
-redistributable. The manifest also records what it lacks: the pull of 21 August 2026 did
-not capture per-file fetch timestamps, and I have not back-filled them from filesystem
-timestamps, which change whenever a file is copied and would therefore be fiction.
+**The claim is that this pull is auditable, not that it is repeatable.** Rebuilding the
+price layer requires a paid FMP subscription, whereas every other input here is free and
+redistributable. The manifest also records what it lacks: the pull of 21 August 2026 did not
+capture per-file fetch timestamps, and these have not been back-filled from filesystem
+timestamps, since those change whenever a file is copied and would therefore be fiction.
 
 **The outputs and the evidence.** `outputs/` carries every file the vintage and measurement
 scripts produce, and `evidence/` carries the hand-collected input behind the recording-lag
@@ -259,23 +263,24 @@ they are named in the note's figure register with their checksums, and rerunning
 `code/11_vintage_return_spread.py` against your own pull reproduces them. Everything else
 is here in full, which is 53 of the 55 files.
 
-One known gap, recorded here rather than left silent. `outputs/isin_screen.csv` joins the
-ownership entities to GLEIF identifiers and ISIN counts, and it is where the 328 companies come
-from. Both of its inputs are free and openly licensed, but no script in `code/` produces it and
-it carries no provenance record: it was built by hand. It is published as it stands, and closing
-that gap is a task for the paper rather than for this note. Everything else in `outputs/`
-resolves to a numbered script with a provenance record naming the release and its checksum.
+One known gap is recorded here rather than left silent. `outputs/isin_screen.csv` joins the
+ownership entities to GLEIF identifiers and ISIN counts, and it is the file the 328 companies
+come from. Both of its inputs are free and openly licensed, but no script in `code/` produces
+it and it carries no provenance record, because it was built by hand. It is published as it
+stands, and closing that gap is a task for the paper rather than for this repository.
+Everything else in `outputs/` resolves to a numbered script with a provenance record naming
+the release and its checksum.
 
-Every output is sorted before it is written, so rerunning a script against the pinned
+Every output is sorted before it is written, so that rerunning a script against the pinned
 release reproduces its checksum exactly. Files carrying a `_SUPERSEDED_` marker are earlier
-copies of two outputs whose row order varied between runs before that rule was enforced.
-They are kept rather than deleted, and `outputs/PROMOTION_2026-09-08.txt` records the
-checksums on both sides and shows the row count and header unchanged. No value moved.
+copies of two outputs whose row order varied between runs before that rule was enforced, and
+they are kept rather than deleted; `outputs/PROMOTION_2026-09-08.txt` records the checksums
+on both sides and shows the row count and header unchanged. No value moved.
 
-**The hazard exposure variable.** Not built, and not started. The ownership dataset
-carries no asset coordinates, so it needs the separate sector datasets plus a hazard
-dataset. None of that requires a subscription. There are no exposure results anywhere in
-this repository, because there is no exposure variable yet.
+**The hazard exposure variable.** This is not built and not started. The ownership dataset
+carries no asset coordinates, so building it would require the separate sector datasets
+together with a hazard dataset, none of which needs a subscription. There are no exposure
+results anywhere in this repository, because there is no exposure variable yet.
 
 ## Layout
 
@@ -295,23 +300,23 @@ data/raw/manifest.json          checksums and coverage for that panel. Committed
 data/raw/manifest_run.json      the same for your own run. Gitignored, compare it to mine
 ```
 
-`config/tickers_primary.csv`, the resolved one-listing-per-company file, is generated by
-the notebook rather than committed, because it is an output rather than an input.
+`config/tickers_primary.csv`, the resolved one-listing-per-company file, is generated by the
+notebook rather than committed, since it is an output rather than an input.
 
 ## Reproducing it
 
-Open the notebook with the Colab badge above and choose Runtime, Run all. Add
-`FMP_API_KEY` and `OPENFIGI_API_KEY` to Colab's Secrets panel first, and do not paste
-either into a cell, because notebook outputs are committed to git.
+Open the notebook with the Colab badge above and choose Runtime, Run all. Add `FMP_API_KEY`
+and `OPENFIGI_API_KEY` to Colab's Secrets panel first, and do not paste either into a cell,
+because notebook outputs are committed to git.
 
-Roughly two thirds of this runs on free data. Full details, including what each step
+Roughly two thirds of the pipeline runs on free data. Full details, including what each step
 should print and what to do when it does not, are in
 [`EXECUTION_CHECKLIST.html`](EXECUTION_CHECKLIST.html).
 
 ## References
 
-The methods here are standard and I have used the published implementations rather than
-writing my own.
+The methods used here are standard, and the published implementations have been used rather
+than substitutes written for this project.
 
 > Blume, M. E. and Stambaugh, R. F. (1983). "Biases in computed returns: An application to the size effect." *Journal of Financial Economics* 12(3), 387-404.
 >

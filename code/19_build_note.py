@@ -77,7 +77,8 @@ F["R"] = P("restricted_r.txt", r"as published\s+4,582\s+12,717\s+([\d.]+)%")
 F["R_restricted"] = P("restricted_r.txt", r"residuals out of both sides\s+3,923\s+10,141\s+([\d.]+)%")
 F["resid_buildout"] = P("restricted_r.txt", r"build-out\s+8,135 edges\s+residual 1,917\s+\(\s*([\d.]+)%\)")
 F["R_generous"] = P("change_decomposition.txt", r"removed from restatement: ([\d.]+)%")
-F["restatement_n"] = "2,543"
+F["restatement_n"] = P("change_decomposition.txt",
+                       r"-- RESTATEMENT TOTAL\s+([\d,]+)")
 # conventions
 F["u3_zero"] = P("bioenergy_check.txt", r"U3, 171 panel firms\s+([\d.]+)\s")
 F["u3_imp"] = P("bioenergy_check.txt", r"U3, 171 panel firms\s+[\d.]+\s+([\d.]+)")
@@ -111,10 +112,42 @@ F["p_ov_zero"], F["p_ov_imp"] = _ov
 F["u3g_zero"] = P("panel_join_summary.txt", r"2025   515\.1   2026   618\.2   \(\+([\d.]+)%\)")
 F["u3g_imp"] = P("panel_join_summary.txt", r"2025   553\.3   2026   618\.2   \(\+([\d.]+)%\)")
 # returns
-F["mde_lo"] = P("vintage_return_spread.txt", r"2026 blank=zero\s+3\.29%\s+6\.45%\s+([\d.]+)%")
-F["se_lo"] = "3.29"
-F["se_hi"] = "3.44"
-F["t_max"] = "0.60"
+# --- the four return figures, computed from the monthly series ---------------
+# These were typed as literals until 15 September 2026, and one was extracted
+# from vintage_return_spread.txt, a summary of the series rather than the series
+# itself. That summary drifted: its August 2026 rows stopped agreeing with the
+# .csv beside it while its March 2025 rows still did. The .csv is the file of
+# record, its checksum is unchanged since the first published version, and every
+# figure below is now derived from it at build time.
+def _return_figures(fn="vintage_return_spread.csv", lag=6):
+    p = os.path.join(OUT, fn)
+    if not os.path.exists(p):
+        sys.exit(f"BUILD ABORTED: missing output file {fn}")
+    d = pd.read_csv(p)
+    arms = [c for c in d.columns if c != "ym"]
+    if not arms:
+        sys.exit(f"BUILD ABORTED: {fn} carries no return arms")
+    ts, ses, mdes = [], [], []
+    for a in arms:
+        x = d[a].dropna().to_numpy(dtype=float)
+        n = len(x)
+        mean = x.mean()
+        e = x - mean
+        # Newey-West, Bartlett kernel, `lag` lags, as reported by script 11.
+        s = (e @ e) / n
+        for l in range(1, lag + 1):
+            s += 2 * (1 - l / (lag + 1)) * ((e[l:] @ e[:-l]) / n)
+        nw = (s / n) ** 0.5
+        ols = mean / (x.std(ddof=1) / (n ** 0.5))
+        ts += [abs(ols), abs(mean / nw)]
+        ses.append(nw * 12 * 100)
+        mdes.append(3.0 * nw * 12 * 100)   # Harvey, Liu and Zhu hurdle
+    return {"t_max": f"{max(ts):.2f}",
+            "se_lo": f"{min(ses):.2f}", "se_hi": f"{max(ses):.2f}",
+            "mde_lo": f"{min(mdes):.2f}"}
+
+
+F.update(_return_figures())
 # truncation and decay
 F["trunc"] = P("decimal_truncation.txt", r"STRICT: explained by 1dp rounding alone\s+3,561\s+\(([\d.]+)%")
 F["trunc_v2"] = P("decimal_truncation.txt", r"STRICT: explained by 1dp rounding alone\s+3,496\s+\(([\d.]+)%")
@@ -209,22 +242,22 @@ GEM_DRAFT_SENT = None
 
 PRESIGNED_BLOCK = "" if GEM_DRAFT_SENT is None else f"""
 <h3>A source citation that expires before it can be read</h3>
-<p>The mechanisms above all move a number. This one moves none and belongs here anyway, because it
-goes to whether a reader can check anything at all.</p>
-<p>{F['presigned_n']} of the {F['presigned_total']} release files held here carry source citations
-written as presigned links: a document path followed by an authorisation the link carries in itself and
-that lapses on a timer. The shortest timer declared in these files is {F['presigned_expiry']} seconds.
-A reader who follows such a citation, at any point after the minute it was made, receives an
+<p>The mechanisms above all move a number. This one moves none, and it belongs here nonetheless, because
+it goes to whether a reader can check anything at all.</p>
+<p>{F['presigned_n']} of the {F['presigned_total']} release files held here carry source citations written
+as presigned links, that is, a document path followed by an authorisation the link carries in itself and
+that lapses on a timer. Since the shortest timer declared in these files is {F['presigned_expiry']}
+seconds, a reader who follows such a citation at any point after the minute it was made receives an
 authentication failure rather than the document.</p>
-<p><strong>Nothing is exposed, and this is not a security finding.</strong> The authorisations in the
-files examined lapsed on issue, the earliest observed here in 2024, and none is quoted. What is
-reported is the shape and the count, on the releases in hand, checked on the date in the figure
-register. No claim is made about releases not held.</p>
+<p><strong>Nothing is exposed, and this is not a security finding.</strong> The authorisations in the files
+examined lapsed on issue, the earliest observed here in 2024, and none is quoted. What is reported is the
+shape and the count, on the releases in hand, checked on the date in the figure register; no claim is made
+about releases not held, since the archive here is the fourteen files the vendor supplied.</p>
 <p>The consequence is the one this note has been making throughout, reached from a direction I was not
-looking in. A citation is a promise that a reader can go and check. A citation that cannot resolve is
-not a weaker promise but a different kind of object, and it sits in a dataset published under a licence
-whose purpose is that others can verify the work. I found it because a machine scanned a file of mine
-and told me what was in it, which is not a method I can take credit for.</p>
+looking in. A citation is a promise that a reader can go and check, and a citation that cannot resolve is
+not a weaker promise but a different kind of object, sitting in a dataset published under a licence whose
+purpose is that others can verify the work. I found it because a machine scanned a file of mine and told
+me what was in it, which is not a method I can take credit for.</p>
 """
 
 # structured sources
@@ -274,6 +307,21 @@ for fn in sorted(os.listdir(OUT)):
 
 TODAY = date.today().isoformat()
 
+# Version of the published note. Bump this and add a line to CHANGELOG below
+# before tagging a new release. A note whose subject is undocumented revision
+# cannot itself be revised without a record of what moved.
+VERSION = "1.1"
+CHANGELOG = {
+    "1.0": "First published version, 9 September 2026.",
+    "1.1": "Prose revised throughout, and no figure changed: all 87 were checked against "
+           "version 1.0 and every one that the note prints is identical. The four return "
+           "figures are now computed from vintage_return_spread.csv rather than typed by "
+           "hand or read from vintage_return_spread.txt, a summary of that series whose "
+           "August 2026 rows had drifted from the series itself while its March 2025 rows "
+           "had not. The .csv is the file of record and its checksum is unchanged.",
+}
+CHANGELOG_LINE = " ".join(f"<strong>Version {k}.</strong> {v}" for k, v in sorted(CHANGELOG.items()))
+
 # ---------------------------------------------------------------------------
 # the note
 # ---------------------------------------------------------------------------
@@ -308,6 +356,28 @@ code{font:13px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;background:#f0ede
 footer{margin-top:48px;padding-top:16px;border-top:1px solid var(--line);color:var(--mid);font-size:13px;
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 .fail{color:var(--accent);font-weight:700}
+
+/* Print. The PDF is a build output, not a manual Ctrl-P, so its pagination is
+   fixed here rather than left to whoever prints it. Without this the page count
+   depends on the operator's scale and margin settings, which is an unrecorded
+   input to a published artefact. */
+@page{size:A4;margin:17mm 15mm}
+@media print{
+  body{background:#fff;font-size:10pt;line-height:1.42}
+  .wrap{max-width:none;margin:0;padding:0}
+  h1{font-size:21pt} h2{font-size:14pt;margin:20pt 0 6pt;padding-top:10pt}
+  h3{font-size:11.5pt;margin:13pt 0 5pt}
+  p{margin:0 0 7pt} li{margin:0 0 4pt}
+  table{font-size:8.5pt;margin:8pt 0 11pt} th,td{padding:4pt 6pt}
+  .summary{padding:11pt 13pt;margin:0 0 16pt} .summary h2{font-size:12.5pt}
+  .src{font-size:7.5pt} .meta{font-size:8.5pt;margin-bottom:18pt}
+  footer{margin-top:22pt;font-size:8.5pt}
+  h1,h2,h3{break-after:avoid;page-break-after:avoid}
+  tr{break-inside:avoid;page-break-inside:avoid}
+  thead{display:table-header-group}
+  .summary{break-inside:avoid;page-break-inside:avoid}
+  a{color:inherit;text-decoration:none}
+}
 """
 
 def ladder_rows():
@@ -363,65 +433,69 @@ code, outputs and provenance records: github.com/ochofer/paper1-hazard-exposure-
 <h2>Summary</h2>
 <p><strong>The question.</strong> A growing number of research designs date corporate ownership change by
 differencing two vintages of the same database, treating an edge that appears in the later file and not
-in the earlier one as an event with a date. I checked whether that difference behaves like a record of
-events.</p>
-<p><strong>What I did.</strong> I drew {F['n_cases']} apparent ownership changes at random from the
-{F['restatement_n']} that two releases of the same database disagree on, and I looked for the transaction
-behind each one in exchange filings, company statements and press releases.</p>
-<p><strong>What a practitioner takes from it.</strong> Three things. First, {F['n_noevent']} of the
-{F['n_cases']} had no corporate event behind them at all, so most of what a vintage difference records is
-the file being edited rather than the world changing. Second, the six that were real entered the data
-with lags of {F['fast']} days for the two recent and heavily covered deals and {F['slow_lo']} to
-{F['slow_hi']} days for the four that were older or less prominent, which makes the recording error
-selective rather than random; a constant offset cannot repair it. Third, two undocumented choices, one
-the vendor's and one the analyst's, each move a verdict I had committed to in writing before any script
-ran.</p>
+in the earlier one as an event with a date. This note asks whether that difference behaves like a record
+of events.</p>
+<p><strong>What I did.</strong> To answer it, I drew {F['n_cases']} apparent ownership changes at random
+from the {F['restatement_n']} that two releases of the same database disagree on, and I searched for the
+transaction behind each one in exchange filings, company statements and press releases.</p>
+<p><strong>What a practitioner takes from it.</strong> Three findings carry the note. First,
+{F['n_noevent']} of the {F['n_cases']} had no corporate event behind them at all, which indicates that
+most of what a vintage difference records is the file being edited rather than the world changing. Second,
+the six that were real entered the data with lags of {F['fast']} days for the two recent and heavily
+covered deals and {F['slow_lo']} to {F['slow_hi']} days for the four that were older or less prominent, so
+the recording error appears to be selective rather than random, and it follows that a constant offset
+cannot repair it. Third, two undocumented choices, one the vendor's and one the analyst's, each move a
+verdict I had committed to in writing before any script ran.</p>
 <p><strong>What it costs a book.</strong> On the {F['panel_eff']} firms in the cross-section with any coal
 or gas exposure, the rank correlation between the two releases is {F['p_sp_zero']} under one blank-share
-convention and {F['p_sp_imp']} under the other, so a signal built on this measure is substantially
-re-drawn by a release in which, on the evidence of the hand check, most of the movement is not an
-event.</p>
+convention and {F['p_sp_imp']} under the other. Taken with the hand verification, these figures suggest
+that a signal built on this measure is substantially re-drawn by a release in which most of the movement
+is not an event.</p>
 <p><strong>The return test detects nothing.</strong> Every t-statistic is below {F['t_max']} against a
 minimum detectable effect of about {F['mde_lo']}% a year, which is larger than any plausible transition
-premium; I report it because it was pre-registered, and it corroborates nothing in either direction.</p>
+premium; the test was pre-registered and is reported for that reason, and it corroborates nothing in
+either direction.</p>
 <p><strong>The caveat that bounds all of it.</strong> The asset-level layer measured here has existed for
-eighteen months, so some of what follows is a property of a young dataset and some is a property of how
-ownership data is built and used; section 5 says which is which.</p>
+eighteen months, so some of what follows is plausibly a property of a young dataset and some is a property
+of how ownership data is built and used; section 5 separates them.</p>
 </div>
 
 <h2>1. Nineteen changes, checked by hand</h2>
 <p>Two releases of the Global Energy Ownership Tracker, March 2025 and August 2026, disagree about
-{F['restatement_n']} ownership edges in a way that is not the database simply adding coverage; I sampled
-{F['n_cases']} of them at random and tried to find the transaction behind each.</p>
+{F['restatement_n']} ownership edges in a way that is not the database simply adding coverage. Because a
+difference of that kind is what a vintage design would read as a set of events, I sampled {F['n_cases']}
+of them at random and traced each one back to the transaction it would have to correspond to.</p>
 <p><strong>{F['n_noevent']} of the {F['n_cases']} had no corporate event behind them at all.</strong> The
 full case table, with sources and verdicts, is Appendix C. This is the central result, because it is the
 one finding that does not depend on any modelling choice made downstream.</p>
-<p>Six had a datable transaction and a datable record. The two the database caught within {F['fast']}
-days are a statutory disclosure by a listed Japanese issuer and a 1.9bn USD acquisition by a listed US
-utility; the four it missed by {F['slow_lo']} to {F['slow_hi']} days, which is {F['slow_yr_lo']} to
-{F['slow_yr_hi']} years, are older, or reach the affected entity only through the perimeter of a larger
-deal.</p>
+<p>Six of the {F['n_cases']} had a datable transaction and a datable record, and the lags between the two
+divide sharply. The two the database caught within {F['fast']} days are a statutory disclosure by a listed
+Japanese issuer and a 1.9bn USD acquisition by a listed US utility; the four it missed by {F['slow_lo']}
+to {F['slow_hi']} days, which is {F['slow_yr_lo']} to {F['slow_yr_hi']} years, are older, or reach the
+affected entity only through the perimeter of a larger deal.</p>
 <p><strong>The recording lag is therefore not a constant, and its variation lines up with how visible the
-event was.</strong> That matters more than the average delay, because a constant lag is corrected with an
-offset, while a lag that depends on salience means the events entering a vintage difference promptly are
-a biased subset, skewed toward the large and the recent, with the bias invisible in the data itself. Six
-cases cannot establish a correlation and I do not claim one; what they establish is that the lag is not
-constant, which one fast case and one slow case would do, and the direction in which it varies is what
-the six show.</p>
+event was.</strong> That property matters more than the average delay, because a constant lag is corrected
+with an offset, whereas a lag that depends on salience implies that the events entering a vintage
+difference promptly are a biased subset, skewed toward the large and the recent, with the bias invisible
+in the data itself. Six cases cannot establish a correlation and none is claimed here, since the sample
+was drawn to verify verdicts rather than to estimate a relationship. What the six do establish is that the
+lag is not constant, which one fast case and one slow case would do, together with the direction in which
+it varies.</p>
 <p>For scale, {F['R']}% of all apparent change between these two releases is restatement or methodology
 rather than the database growing, against a 25% threshold I wrote down before the script ran. Section 4
-carries every construction of that figure.</p>
+sets out every construction of that figure.</p>
 <p class="src">Sources: <code>outputs/salience_lag.txt</code>, <code>outputs/event_validation_sample.csv</code>,
 <code>evidence/salience_lag_cases.csv</code>, <code>outputs/restricted_r.txt</code></p>
 
 <h2>2. Two undocumented choices, one the vendor's and one the analyst's</h2>
-<p>Between the raw file and a portfolio sit two choices that nobody documents. One is the vendor's:
-which release you happen to hold. One is yours: what an empty ownership share is taken to mean.</p>
+<p>Between the raw file and a portfolio sit two choices that nobody documents. The first is the vendor's,
+namely which release you happen to hold; the second is the analyst's, namely what an empty ownership share
+is taken to mean. Neither is recorded anywhere in the data, and both move the answer.</p>
 <p><strong>The analyst's choice moves a pre-committed verdict.</strong> Ranking firms by attributable coal
-and gas capacity, the rank correlation between the two releases is {F['u3_zero']} if a blank share is
-read as zero and {F['u3_imp']} if blanks are imputed, against a threshold of 0.95 set before the test ran;
-the same measure, on the same firms, on the same two files, lands on opposite sides of that line
-depending only on the reading.</p>
+and gas capacity, the rank correlation between the two releases is {F['u3_zero']} if a blank share is read
+as zero and {F['u3_imp']} if blanks are imputed, against a threshold of 0.95 set before the test ran.
+Substantively, therefore, the same measure, on the same firms, on the same two files, lands on opposite
+sides of that line depending only on the reading.</p>
 <table>
 <tr><th>Universe, raw attributable MW between releases</th><th class="n">blank = zero</th><th class="n">blank = impute</th></tr>
 <tr><td>604 matched firms worldwide (U2)</td><td class="n">{F['u2_zero']}</td><td class="n">{F['u2_imp']}</td></tr>
@@ -429,74 +503,76 @@ depending only on the reading.</p>
 <tr><td>133 firms with bioenergy in both releases</td><td class="n">{F['bio_zero']}</td><td class="n">{F['bio_imp']}</td></tr>
 <tr class="rule"><td>threshold set before the test</td><td class="n">0.95</td><td class="n">0.95</td></tr>
 </table>
-<p><strong>The flip is general rather than a property of the regional panel.</strong> It reproduces on
-604 matched firms worldwide, at {F['u2_zero']} and {F['u2_imp']}, straddling the same cut as the 191
-regional firms and in the same direction. The reading that a straddle is general was fixed in
-writing before the test ran, which is the only reason it counts for anything: a
-result that would have been explained either way explains nothing. On the 133 firms with bioenergy in
-both releases raw capacity does not flip, and that is the stated limit of the claim. Those universes are
-not nested.</p>
+<p><strong>The flip is general rather than a property of the regional panel.</strong> It reproduces on 604
+matched firms worldwide, at {F['u2_zero']} and {F['u2_imp']}, straddling the same cut as the 191 regional
+firms and in the same direction. The reading that a straddle would count as general was fixed in writing
+before the test ran, which is the only reason it counts for anything, since a result that would have been
+explained either way explains nothing. On the 133 firms with bioenergy in both releases, by contrast, raw
+capacity does not flip, and that is the stated limit of the claim; those three universes are not
+nested.</p>
 <p><strong>Why the convention carries that much force.</strong> Under the naive reading, {F['n_zerocap']}
 firms carry attributable capacity of exactly zero in March 2025, because every ownership edge they have
 has a blank share and a blank multiplied by zero is nothing; under imputation none do. The convention
-does not only change the values. It decides whether a firm registers as having any exposure at all,
-which is a membership decision rather than a measurement one.</p>
-<p>The same choice roughly halves measured growth: on the 604 firms present in both releases,
-attributable capacity grows {F['growth_zero']}% reading blanks as zero and {F['growth_imp']}% imputing
-them. March 2025 carries {F['blank_mar']} blank shares, {F['blank_pct']}% of its ownership edges; August
-2026 carries none, because the vendor filled them in between releases.</p>
+therefore does more than change the values, since it decides whether a firm registers as having any
+exposure at all, which is a membership decision rather than a measurement one.</p>
+<p>The same choice roughly halves measured growth: on the 604 firms present in both releases, attributable
+capacity grows {F['growth_zero']}% reading blanks as zero and {F['growth_imp']}% imputing them. The reason
+the reading bites so hard is the distribution of blanks itself, since March 2025 carries {F['blank_mar']}
+blank shares, {F['blank_pct']}% of its ownership edges, while August 2026 carries none because the vendor
+filled them in between releases.</p>
 <h3>An apparent finding that dissolved under a pre-committed control</h3>
 <p>Scaling capacity by fleet share looked far less stable across releases than raw capacity:
 {F['fs_zero']} and {F['fs_imp']} against the same 0.95 threshold, with top-quintile overlap of
 {F['fs_ov_zero']}% and {F['fs_ov_imp']}%. Restricting to the 133 firms whose denominator exists in both
-releases, it is {F['bio_zero']} and {F['bio_imp']}, with overlap of {F['bio_ov_zero']}% and
-{F['bio_ov_imp']}%. <strong>The instability was mostly the denominator's own coverage moving between
-releases rather than anything about the firms</strong>, and the scaling result is reported as a coverage
-finding and not as a measurement one. The control that dissolved it was specified before it ran, which is
-the only reason the demotion is credible rather than convenient.</p>
+releases, however, it is {F['bio_zero']} and {F['bio_imp']}, with overlap of {F['bio_ov_zero']}% and
+{F['bio_ov_imp']}%. <strong>The instability was therefore mostly the denominator's own coverage moving
+between releases rather than anything about the firms</strong>, and the scaling result accordingly stands
+as a coverage finding and not as a measurement one. The control that dissolved it was specified before it
+ran, which is the only reason the demotion is credible rather than convenient.</p>
 <p class="src">Sources: <code>outputs/bioenergy_check.txt</code>, <code>outputs/scaling_second_column.txt</code>,
 <code>outputs/exposure_proxy_summary.txt</code></p>
 
 <h2>3. A boolean moved {F['ameren_mw']} MW between two companies</h2>
-<p>Attribution walks up the ownership graph to the nearest listed parent; whether an entity counts as
-listed is a flag in the data, and flags change.</p>
+<p>Attribution walks up the ownership graph to the nearest listed parent, so the attribution depends on
+where the walk stops. Whether an entity counts as listed is a flag in the data, and flags change.</p>
 <table>
 <tr><th>Firm</th><th class="n">March 2025</th><th class="n">August 2026</th></tr>
 <tr><td>Ameren</td><td class="n">{F['ameren_mw']} MW, {F['ameren_units']} units</td><td class="n">absent</td></tr>
 <tr><td>Union Electric</td><td class="n">absent</td><td class="n">{F['ameren_mw']} MW, {F['ameren_units']} units</td></tr>
 </table>
 <p>The two rows are identical to the decimal and identical in unit count, and not one generating unit was
-built, retired or sold between them. Union Electric's listed flag changed from false to true, so under a
-nearest-listed-parent rule it became the stopping point and kept the capacity its parent had been
-receiving.</p>
-<p><strong>Ameren was not delisted.</strong> It is flagged as publicly listed in both releases, and it
-lost the capacity because a subsidiary gained the flag. Because the cross-section here was built on the
-later release, Ameren is not in it at all: a boolean on a subsidiary decided which of two companies is in
-the study.</p>
-<p>One consequence follows for anyone using the file directly. Summing the vendor's own ownership share
-column over all parents over-counts the world's operating coal and gas fleet by a factor of
+built, retired or sold between them. What changed instead was Union Electric's listed flag, from false to
+true, so that under a nearest-listed-parent rule it became the stopping point and retained the capacity
+its parent had previously been receiving.</p>
+<p><strong>Ameren was not delisted.</strong> It is flagged as publicly listed in both releases, and it lost
+the capacity because a subsidiary gained the flag. Because the cross-section here was built on the later
+release, Ameren does not appear in it at all, and it follows that a boolean on a subsidiary decided which
+of two companies entered the study.</p>
+<p>A further consequence follows for anyone using the file directly. Summing the vendor's own ownership
+share column over all parents over-counts the world's operating coal and gas fleet by a factor of
 {F['over_mar']} in March 2025 and {F['over_aug']} in August 2026, because the file emits a row for every
 ancestor rather than the nearest listed one, and <strong>the over-count grew between releases</strong>.
-Appendix B works it through with the other mechanisms.</p>
+Appendix B works it through alongside the other mechanisms.</p>
 <p class="src">Sources: <code>outputs/exposure_proxy_by_firm.csv</code>, <code>outputs/exposure_proxy_summary.txt</code></p>
 
 <h2>4. What this does to a portfolio, and the full R table</h2>
 <p>Joining the measure to a cross-section of 328 listed firms in the US and developed Europe,
 {F['never']} of them have no coal or gas power exposure in either release, because the measure is
-power-only; the effective panel is {F['panel_eff']} firms.</p>
+power-only; the effective panel is therefore {F['panel_eff']} firms.</p>
 <table>
 <tr><th>On the {F['panel_eff']} active panel firms</th><th class="n">blank = zero</th><th class="n">blank = impute</th></tr>
 <tr><td>Rank correlation between releases</td><td class="n">{F['p_sp_zero']}</td><td class="n">{F['p_sp_imp']}</td></tr>
 <tr><td>Top-quintile overlap</td><td class="n">{F['p_ov_zero']}%</td><td class="n">{F['p_ov_imp']}%</td></tr>
 <tr><td>Growth in attributable capacity</td><td class="n">+{F['u3g_zero']}%</td><td class="n">+{F['u3g_imp']}%</td></tr>
 </table>
-<p>So the extreme portfolio turns over 8% to 13% of its names on a data release with no economic event
-behind it, and the continuous ranking moves considerably more than that. For a signal rebalanced on
-vendor releases, that turnover is a cost paid for revisions to the record rather than for changes in the
-underlying fleet, and it is paid every release.</p>
+<p>These figures indicate that the extreme portfolio turns over 8% to 13% of its names on a data release
+with no economic event behind it, and that the continuous ranking moves considerably more than that. For a
+signal rebalanced on vendor releases, it follows that the turnover is a cost paid for revisions to the
+record rather than for changes in the underlying fleet, and that it is paid every release.</p>
 <h3>R, every construction</h3>
-<p>R is the share of apparent ownership change that is not the database growing. I report every
-construction of it in one table.</p>
+<p>R is the share of apparent ownership change that is not the database growing. Because the construction
+of that share involves several defensible choices, every construction is set out in one table rather than
+one preferred figure.</p>
 <table>
 <tr><th>Construction</th><th class="n">August 2026 V1</th><th class="n">August 2026 V2</th></tr>
 {ladder_rows()}
@@ -506,111 +582,123 @@ construction of it in one table.</p>
 </table>
 <p><strong>The restricted construction is the more conservative one, and it raises R rather than lowering
 it.</strong> Removing edges whose counterparty is a residual bucket, a party like "small shareholder(s)"
-whose value is 100 minus the named holders rather than an observed stake, takes proportionally more out
-of the denominator than the numerator, because those counterparties are concentrated in the build-out
-bucket at {F['resid_buildout']}% and build-out sits in the denominator only. I had assumed the
-restriction would deflate R and threaten the threshold. The assumption was backwards.</p>
-<p>One thing follows from that and no more: nearly a quarter of the edges counted as the database growing
-are new links to a residual bucket, which is coverage of the unnamed rather than of the named.</p>
-<p>The two August 2026 columns are two files the vendor published under the same month, neither marked as
-a version anywhere in the data. Appendix A sets that out, including the reading at which the
-pre-committed decision <span class="fail">fails</span> on one file and clears on the other, and why the
+whose value is 100 minus the named holders rather than an observed stake, takes proportionally more out of
+the denominator than the numerator, because those counterparties are concentrated in the build-out bucket
+at {F['resid_buildout']}% and build-out sits in the denominator only. I had assumed the restriction would
+deflate R and threaten the threshold. The assumption was backwards.</p>
+<p>One further inference follows from that concentration and no more: nearly a quarter of the edges counted
+as the database growing are new links to a residual bucket, which is coverage of the unnamed rather than
+of the named.</p>
+<p>The two August 2026 columns are two files the vendor published under the same month, neither marked as a
+version anywhere in the data. Appendix A sets that out, including the reading at which the pre-committed
+decision <span class="fail">fails</span> on one file and clears on the other, together with the reason the
 endpoint is pinned to the first.</p>
 <p class="src">Sources: <code>outputs/panel_join_summary.txt</code>, <code>outputs/release_ladder.txt</code>,
 <code>outputs/restricted_r.txt</code>, <code>outputs/change_decomposition.txt</code></p>
 
 <h2>5. The layer is eighteen months old</h2>
 <p>What this note measures is the asset-level ownership layer, which links companies to individual plants
-and mines. The vendor confirms it has no release before March 2025, and the earliest file I hold, from
-June 2024, carries entity-to-entity relationships only and no asset-level ownership; the tracker as a
-product is older than the layer. The window here is the layer's first eighteen months, across the
-fourteen releases I hold and the thirteen adjacent pairs between them.</p>
-<p>Those releases were supplied by the vendor on request. No public archive of past releases exists, so this
-comparison is auditable from the files and cannot be reproduced by a reader who starts from the vendor's
-site.</p>
+and mines, and the age of that layer bounds several of the findings above. The vendor confirms it has no
+release before March 2025, and the earliest file I hold, from June 2024, carries entity-to-entity
+relationships only and no asset-level ownership; the tracker as a product is therefore older than the
+layer measured here. The window is accordingly the layer's first eighteen months, across the fourteen
+releases I hold and the thirteen adjacent pairs between them.</p>
+<p>Those releases were supplied by the vendor on request. Because no public archive of past releases
+exists, this comparison is auditable from the files themselves and cannot be reproduced by a reader who
+starts from the vendor's site.</p>
 <p><strong>Findings that depend on that maturity:</strong> the level of R, the decay curves, and the share
 of one release's change that is methodology.</p>
 <p><strong>Findings that do not:</strong> the ancestor over-count, the convention that flips a
 pre-committed verdict, the salience pattern in the hand verification, and the mechanism by which a flag
 change moves {F['ameren_mw']} MW between two companies. Those are properties of how ownership data is
 built and used, not of how long this particular dataset has existed.</p>
-<p>Vintage instability is not peculiar to this vendor or to this kind of vendor. Goes (2023) documents it
-in macroeconomic series revised by statistical agencies, and Berg, Fabisik and Sautner (2021) document
-it in a commercial ESG rating; this note documents it in a free, non-profit, openly licensed database. The three
-share the instability and differ in maturity, and the youngest is the one measured here.</p>
+<p>Against this background, vintage instability appears not to be peculiar to this vendor or to this kind
+of vendor. Goes (2023) documents it in macroeconomic series revised by statistical agencies, and Berg,
+Fabisik and Sautner (2021) document it in a commercial ESG rating; this note documents it in a free,
+non-profit, openly licensed database. The three share the instability and differ in maturity, and the
+youngest of them is the one measured here.</p>
 <p class="src">Sources: <code>outputs/decay_curves.txt</code>, GEM correspondence of 21 August 2026</p>
 
 <h2>6. Limitations</h2>
 <p><strong>The return test detects nothing, and it corroborates nothing.</strong> A pre-registered
 quintile-spread test on {F['panel_eff']} firms, equal-weighted, in local currency, run monthly to
 December 2025 over a window whose length in months happens to equal the panel's size in firms, returns
-every t-statistic below {F['t_max']}, with a Newey-West standard error of
-{F['se_lo']}% to {F['se_hi']}% a year and a minimum detectable effect of about {F['mde_lo']}% a year at
-the Harvey, Liu and Zhu hurdle. No plausible transition premium is that large, so the design could not
-have detected the effect it was built to look for. A null quoted without a minimum detectable effect
-reads as evidence of absence. A cross-sectional
-Fama-MacBeth design was set aside before it ran, on a power calculation requiring 1,296 monthly
-observations, published in the design document.</p>
+every t-statistic below {F['t_max']}, with a Newey-West standard error of {F['se_lo']}% to {F['se_hi']}%
+a year and a minimum detectable effect of about {F['mde_lo']}% a year at the Harvey, Liu and Zhu hurdle.
+Since no plausible transition premium is that large, it follows that the design could not have detected
+the effect it was built to look for, and the null is therefore a statement about the power of the test
+rather than about the world. A null quoted without a minimum detectable effect reads as evidence of
+absence. A cross-sectional Fama-MacBeth design was set aside before it ran, on a power calculation
+requiring 1,296 monthly observations, published in the design document.</p>
 <p><strong>Both return arms contain look-ahead, deliberately and identically</strong>, so they are
 comparable with each other and neither is a return prediction.</p>
 <p><strong>Prices.</strong> Returns use <code>adjClose</code> from Financial Modeling Prep's
 dividend-adjusted end-of-day series, pulled on 21 August 2026. The adjustment is the vendor's, covering
 splits as well as dividends, and no unadjusted close is archived beside it; the series is not
 redistributable, and its per-file checksums are published in the repository manifest.</p>
-<p><strong>Nineteen is a small sample</strong>, drawn once and not reproducible as a draw.</p>
+<p><strong>Nineteen is a small sample</strong>, drawn once and not reproducible as a draw, so the
+{F['n_noevent']} no-event verdicts support a statement about the proportion only through their Wilson
+interval, which Appendix A computes and uses rather than assuming. How the verdicts would divide within
+finer categories is a question these nineteen cases cannot answer, since the sample was drawn from the
+disagreeing edges as a whole and not stratified by mechanism.</p>
 <p><strong>Decay.</strong> Where a decay figure appears it is the one-month-pair cut with the November to
 December 2025 pair excluded, n = 8, build-out share falling {F['decay']}, alongside a correlation of
 +{F['decay_corr']} between build-out share and the gap between releases.</p>
 
 <h2>7. On the vendor</h2>
-<p>Global Energy Monitor is a non-profit. The data is free
-and published under CC BY 4.0, so every input to this note except the price series ships with it. Six
-detailed questions were answered within days. The past releases compared here were sent on request,
-and the vendor undertook in writing to document the imputation rule in future releases. Flags
-marking a large share of ownership edges as no longer
+<p>Global Energy Monitor is a non-profit, and the conditions under which this note could be written at all
+follow from that. The data is free and published under CC BY 4.0, so every input to this note except the
+price series ships with it; six detailed questions were answered within days; and the past releases
+compared here were sent on request, with the vendor undertaking in writing to document the imputation rule
+in future releases. At the same time, flags marking a large share of ownership edges as no longer
 maintained were shipped unprompted and were not mentioned in the covering note. A draft of this note went
 to Global Energy Monitor before publication.</p>
 <p>As at the date checked, the vendor publishes no release list or changelog, its project page gives no
-launch date, and its download page still references an earlier release, so a reader cannot confirm the
-completeness of the release history either. That is a fact about what is published, not a
-criticism of the data.</p>
-<p>These effects are therefore measured at the favourable end of the range. A commercial vendor with a
-revenue interest in its own history is not obviously better behaved, and I would expect the same exercise
-on a paid dataset to be harder to run and no more flattering.</p>
+launch date, and its download page still references an earlier release, so a reader cannot independently
+confirm the completeness of the release history. That observation concerns what is published around the
+data rather than the quality of the data itself, and it is recorded because the release history is the one
+input to this note that a reader cannot reconstruct.</p>
+<p>Taken together, these conditions suggest that the effects reported here are measured at the favourable
+end of the range. A commercial vendor with a revenue interest in its own history is not obviously better
+behaved, and the same exercise on a paid dataset would plausibly be harder to run and no more
+flattering.</p>
 
 <div class="appendix">
 <h2>Appendix A. Two files called August 2026</h2>
 <p>Two files in my archive carry August 2026. The second was sent later than the first and holds columns
-the public release does not, including one the vendor describes as internal, so it is a variant supplied to
-me and not a public reissue. Nothing inside either file identifies which is which, so scripts that resolve a
-release by filename silently switched to the second one; mine did, and the release pin in
-<code>code/_release.py</code> exists because of it.</p>
+the public release does not, including one the vendor describes as internal, which indicates that it is a
+variant supplied to me rather than a public reissue. Because nothing inside either file identifies which is
+which, scripts that resolve a release by filename switch silently to the second one; mine did, and the
+release pin in <code>code/_release.py</code> exists for that reason.</p>
 <table>
 <tr><th>Construction</th><th class="n">V1</th><th class="n">V2_External</th></tr>
 {ladder_rows()}
 <tr class="rule"><td>Threshold set before the script ran</td><td class="n">25%</td><td class="n">25%</td></tr>
 </table>
 <p><strong>At the worst defensible reading the pre-committed decision clears on one file and fails on the
-other.</strong> V is derived from the verified case verdicts and its Wilson interval computed rather than
-assumed, and the worst case applies the upper bound of that interval.</p>
+other.</strong> V is derived from the verified case verdicts, and its Wilson interval is computed rather
+than assumed, so the worst case is obtained by applying the upper bound of that interval rather than by
+choosing a pessimistic figure.</p>
 <p><strong>The endpoint is pinned to V1</strong> because the 328-firm cross-section is itself a V1
 artefact, having been built from that file before the second one arrived; it is not pinned because
 V1 clears the threshold. Had the cross-section been built on V2, the pin would have gone to V2 and the worst-case
 reading would have failed a threshold written before any script ran.</p>
 <h3>The truncation trap</h3>
-<p>Between the two releases the vendor truncated ownership shares to one decimal place: {F['dp_mar']}% of
-March 2025 values need two decimals and none of the August values do.
+<p>Between the two releases the vendor truncated ownership shares to one decimal place, so that
+{F['dp_mar']}% of March 2025 values need two decimals and none of the August values do.
 <strong>{F['trunc']}% of all share-value changes between the pinned releases are that and nothing
-else</strong> ({F['trunc_v2']}% against the second file). R is unaffected, because the 0.06 threshold used to
-build the sample had already excluded them; anyone rerunning this comparison with a tighter threshold will
-manufacture roughly three and a half thousand changes that are formatting.</p>
+else</strong> ({F['trunc_v2']}% against the second file). R is unaffected, because the 0.06 threshold used
+to build the sample had already excluded them; it follows, however, that anyone rerunning this comparison
+with a tighter threshold will manufacture roughly three and a half thousand changes that are
+formatting.</p>
 
 <h2 class="appendix">Appendix B. The mechanism catalogue</h2>
-<p>Every route, found in this data, by which a vintage difference shows an ownership change when nothing
-happened to the company. The table counts the mechanisms that appear as a change to an ownership edge,
-which is what the decomposition can see; six further mechanisms move a number without moving an edge, and
-they are listed after it. The grouping is the one that matters for a design, because build-out is the only
-group that decays as the database matures, and R is exactly the share of this table that does not.</p>
+<p>This appendix catalogues every route, found in this data, by which a vintage difference shows an
+ownership change when nothing happened to the company. The table counts the mechanisms that appear as a
+change to an ownership edge, which is what the decomposition can see; six further mechanisms move a number
+without moving an edge, and they are listed after it. The grouping is the one that matters for a design,
+because build-out is the only group that decays as the database matures, and R is exactly the share of
+this table that does not.</p>
 <table>
 <tr><th>Bucket</th><th>Mechanism</th><th class="n">Edges</th><th class="n">Share of apparent change</th></tr>
 <tr><td rowspan="4"><strong>Build-out</strong><br>decays with maturity</td>
@@ -634,8 +722,9 @@ group that decays as the database matures, and R is exactly the share of this ta
 two releases.</p>
 
 <h3>Six mechanisms that move a number without moving an edge</h3>
-<p>None of these appears in the table, because the decomposition counts edges and none of them adds,
-removes or revises one.</p>
+<p>None of these appears in the table above, because the decomposition counts edges and none of these
+mechanisms adds, removes or revises one. They are set out here because a user who reconciles two releases
+by comparing values rather than edges will meet them first.</p>
 <ol>
 <li><strong>Decimal truncation.</strong> {F['trunc']}% of all share-value changes between the pinned releases
 are one-decimal rounding and nothing else. They sit below the 0.06 threshold used to build the verification
@@ -644,33 +733,37 @@ sample, so they never enter R; anyone who sets a tighter threshold puts every on
 Ameren to Union Electric with no edge added, removed or revised, because what moved was the attribution
 stopping point rather than the graph. Section 3 works the case.</li>
 <li><strong>Ancestor double-count.</strong> Summing the vendor's own share column over all parents gives
-{F['over_mar']} times the operating fleet in March 2025 and {F['over_aug']} times it in August 2026. That is
-a property of the file's shape rather than a change between releases, but the factor grew, so a user
-comparing two naive sums measures the growth of the double-count alongside the growth of the fleet.</li>
-<li><strong>The blank-share convention.</strong> Not the vendor's doing at all. Reading blanks as zero
-rather than imputing them moves measured growth from {F['growth_imp']}% to {F['growth_zero']}%, and puts
-{F['n_zerocap']} firms at exactly zero attributable capacity in March 2025.</li>
+{F['over_mar']} times the operating fleet in March 2025 and {F['over_aug']} times it in August 2026. That
+is a property of the file's shape rather than a change between releases; the factor nonetheless grew, and
+it follows that a user comparing two naive sums measures the growth of the double-count alongside the
+growth of the fleet.</li>
+<li><strong>The blank-share convention.</strong> This one is the analyst's and not the vendor's. Reading
+blanks as zero rather than imputing them moves measured growth from {F['growth_imp']}% to
+{F['growth_zero']}%, and puts {F['n_zerocap']} firms at exactly zero attributable capacity in March
+2025.</li>
 <li><strong>Coverage moving inside a denominator.</strong> Any measure scaled by fleet share inherits the
 coverage change in its denominator, which is what dissolved the scaling result in section 2.</li>
-<li><strong>Two files carrying the same month.</strong> Two files are called August 2026 and nothing
-inside either identifies which is which; Appendix A gives the figures that differ between them.</li>
+<li><strong>Two files carrying the same month.</strong> Two files are called August 2026 and nothing inside
+either identifies which is which, so a script that resolves a release by filename may read either of them;
+Appendix A gives the figures that differ between them.</li>
 </ol>
 
 <h3>Two boundaries this catalogue does not settle</h3>
 <p><strong>Deduplication.</strong> The remapping sheet accounts for {F['remap_n']} entities the vendor
-deleted as duplicates, which is {F['remap_pct']}% of the entities lost between these releases, so an
-unknown part of the {F['m4_n']} removed links is unrecorded deduplication rather than restatement.
-Reclassifying any of them moves edges from restatement to methodology, and both sit inside R, so the
-boundary does not move R, though its internal line is soft.</p>
+deleted as duplicates, which is {F['remap_pct']}% of the entities lost between these releases, and it
+follows that an unknown part of the {F['m4_n']} removed links is unrecorded deduplication rather than
+restatement. Reclassifying any of them moves edges from restatement to methodology, and both sit inside R,
+so the boundary does not move R, though its internal line is soft.</p>
 <p><strong>Real churn.</strong> Of the {F['both_edges']} edges present in both releases, observed ownership
 churn over eighteen months puts a ceiling of {F['churn_ceiling']} genuine corporate events, or
 {F['churn_pct']}% of them. Crediting every one of those to the restatement bucket is what produces the
-generous bound in section 4. It is a ceiling and not an estimate, and it is the most favourable reading
-the data will support.</p>
+generous bound in section 4, which is accordingly a ceiling and not an estimate, and the most favourable
+reading the data will support.</p>
 <p>One thing the vendor does here helps a user directly. August 2026 flags {F['imp_flag_n']} ownership
 edges, {F['imp_flag_p']}% of them, as imputed values, so a reader of that flag can tell an imputed share
-from an observed one directly. March 2025 carries no such flag, which is why
-the imputation row above is a methodology change rather than something a user could have seen coming.</p>
+from an observed one directly. March 2025 carries no such flag, and it is for that reason that the
+imputation row above counts as a methodology change rather than as something a user could have seen
+coming.</p>
 {PRESIGNED_BLOCK}
 <p class="src">Sources: <code>outputs/change_decomposition.txt</code>, <code>outputs/exposure_proxy_summary.txt</code>,
 <code>outputs/decimal_truncation.txt</code>, <code>outputs/bioenergy_check.txt</code></p>
@@ -682,9 +775,9 @@ the imputation row above is a methodology change rather than something a user co
 </table>
 <h3>The six datable cases and their lags</h3>
 <p>Lag is measured from the transaction date to the first day of the month of the first release carrying
-the change. The dates were read by hand from the sources linked, so the file is a curated input,
-<code>evidence/salience_lag_cases.csv</code>, validated against the verdicts above rather than computed
-from them.</p>
+the change. Because the dates were read by hand from the sources linked, the file behind this table,
+<code>evidence/salience_lag_cases.csv</code>, is a curated input validated against the verdicts above
+rather than computed from them.</p>
 <table>
 <tr><th>Subject</th><th>Counterparty</th><th class="n">Transaction</th><th class="n">Release</th><th class="n">Lag, days</th><th>Source</th></tr>
 {salience_rows()}
@@ -693,45 +786,50 @@ from them.</p>
 <h2 class="appendix">Appendix D. Figure register</h2>
 <p>Every figure in this note resolves to a named output file. The note is generated by
 <code>code/19_build_note.py</code>, which extracts each number from those files at build time and aborts
-if a pattern is absent or matches more than once, so no figure here was typed by hand. I built that check
-after typing twelve entity identifiers into an evidence file from memory instead of reading them from the
-source, and getting all twelve wrong.</p>
+if a pattern is absent or matches more than once, so no figure here was typed by hand. That check exists
+because I had previously typed twelve entity identifiers into an evidence file from memory instead of
+reading them from the source, and got all twelve wrong.</p>
 <table>
 <tr><th>Script</th><th>Release resolved</th><th class="n">SHA-256, first 16</th></tr>
 {prov_rows()}
 </table>
 
 <h3>Two conventions this register runs on</h3>
-<p><strong>Every output is deterministic.</strong> Each is sorted before it is written, so a
-reader who reruns the script against the pinned release gets the same bytes and therefore the
-same checksum. Two outputs did not meet that until 8 September, because they were built by
-iterating Python sets and their row order varied between runs while their content did not. The
-deterministic versions are now the outputs of record and the earlier copies are retained beside
-them under a superseded marker, never deleted. No value moved and no figure in this note
-changed.</p>
+<p><strong>Every output is deterministic.</strong> Each is sorted before it is written, so a reader who
+reruns the script against the pinned release obtains the same bytes and therefore the same checksum. Two
+outputs did not meet that condition until 8 September, because they were built by iterating Python sets,
+so that their row order varied between runs while their content did not. The deterministic versions are
+now the outputs of record, and the earlier copies are retained beside them under a superseded marker
+rather than deleted. No value moved and no figure in this note changed.</p>
 <table>
 <tr><th>Promoted 8 September</th><th class="n">output of record</th><th class="n">superseded</th></tr>
 {promoted_rows()}
 </table>
-<p><strong>Two outputs are withheld.</strong> The return arm is computed from a licensed price
-series that cannot be redistributed, so these files are named here with their checksums and the
-script that produces them, and a reader reproduces them by rerunning that script against their
-own pull.</p>
+<p><strong>Two outputs are withheld.</strong> Because the return arm is computed from a licensed price
+series that cannot be redistributed, these two files are named here with their checksums and with the
+script that produces them, and a reader reproduces them by rerunning that script against their own
+pull.</p>
+<p>Of those two, the note draws its figures from the <code>.csv</code> alone. The
+<code>.txt</code> is a summary of the same series, and a summary is a derived object that
+can move while the series does not, which is the claim this note makes about the vendor's
+own files. Every return figure quoted here is therefore computed from the monthly series at
+build time, and the <code>.txt</code> appears in this register as an output of the script
+and nothing more.</p>
 <table>
 <tr><th>Withheld</th><th>Script</th><th class="n">SHA-256, first 16</th></tr>
 {withheld_rows()}
 </table>
-<p>A checksum on a withheld file identifies the file I used, and it is not reproducible by a
-reader with a different pull, because a vendor's adjusted price history is itself restated
-whenever a dividend or a split is applied. That is the same claim this note makes about the
-price layer, applied at the level of the file rather than the dataset: auditable, never
-repeatable. Everything else in this register is reproducible from free data.</p>
+<p>A checksum on a withheld file identifies the file I used, and it is not reproducible by a reader with a
+different pull, since a vendor's adjusted price history is itself restated whenever a dividend or a split
+is applied. That is the same claim this note makes about the price layer, applied at the level of the file
+rather than of the dataset, and the resulting record is therefore auditable and never repeatable.
+Everything else in this register is reproducible from free data.</p>
 </div>
 
 <footer>
-Draft of {TODAY}.
-Generated from the output files by <code>code/19_build_note.py</code>. Not for circulation until the
-citation and novelty checks are complete and the draft has been sent to Global Energy Monitor.
+Draft of {TODAY}, version {VERSION}.
+Generated from the output files by <code>code/19_build_note.py</code>.
+{CHANGELOG_LINE}
 </footer>
 
 </div></body></html>
