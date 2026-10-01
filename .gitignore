@@ -25,3 +25,7 @@ config/tickers_primary.csv
 # register with their checksums, never redistributed.
 outputs/vintage_return_spread.csv
 outputs/vintage_return_spread.txt
+
+# local lists for the public-text checker, process rather than content
+.public_text_terms
+.public_text_allow
