@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-23_fmp_appendix.py -- the appendix the design chat asked for, 8 September 2026.
+23_fmp_appendix.py -- the appendix to the extraction report, 8 September 2026.
 
 Computes, entirely from the local verified copy and with no API access:
 
@@ -64,7 +64,7 @@ class Store:
             paths += sorted(d.glob(f'{s}__[0-9]*__[0-9]*.json.gz'))
         # De-duplicate by date only when reading ONE symbol across its date windows.
         # Reading a whole directory (sym=None) collects different records that legitimately
-        # share a date — constituent changes, delistings — and must not be collapsed.
+        # share a date (constituent changes, delistings) and must not be collapsed.
         dedupe = sym is not None
         out, seen = [], set()
         for p in paths:
@@ -100,7 +100,7 @@ def main() -> int:
 
     # The cache from _appendix_prep.py: last price date, market-cap year-months and the
     # three profile fields, per symbol. Parsing 11,000 files for those costs minutes;
-    # reading them from here costs nothing. Required — run the prep first.
+    # reading them from here costs nothing. Required: run the prep first.
     cache_path = root / '_appendix_cache.json'
     if not cache_path.exists():
         sys.exit(f'No {cache_path.name}. Run _appendix_prep.py until it prints DONE first.')
@@ -157,13 +157,13 @@ def main() -> int:
     L: list[str] = []
     say = L.append
 
-    say(f'# Appendix to the handover-back — {today}')
+    say(f'# Appendix to the extraction report, {today}')
     say('')
     say('Computed from the local verified copy. No API access; nothing here needed the')
-    say('subscription. Answers the four decisions of the design chat\'s reply of 8 September.')
+    say('subscription. Answers the four open decisions of 8 September.')
     say('')
     say(f'- source: `{root}`')
-    say(f'- trading calendar: {"^GSPC" if cal else "none — weekday approximation used"}, '
+    say(f'- trading calendar: {"^GSPC" if cal else "none, weekday approximation used"}, '
         f'{len(cal)} sessions')
     say(f'- delisted-companies list: {len(delisted)} rows, {len(delist_date)} distinct tickers')
     say('')
@@ -218,9 +218,9 @@ def main() -> int:
         gap = (date.fromisoformat(dd) - date.fromisoformat(last)).days
         (early if gap > 0 else late).append((abs(gap), t, dd, last))
     early.sort(reverse=True); late.sort(reverse=True)
-    say(f'- **series stops BEFORE the delisting date: {len(early)}** — a coverage gap. '
+    say(f'- **series stops BEFORE the delisting date: {len(early)}**, a coverage gap. '
         'FMP holds a delisting date it has no prices up to.')
-    say(f'- **series continues AFTER the delisting date: {len(late)}** — not a coverage gap. '
+    say(f'- **series continues AFTER the delisting date: {len(late)}**, not a coverage gap. '
         'A price series that keeps going past its own delisting is the signature of a '
         'ticker being reused by a different company, which is the PARA class in section 4 '
         'arriving by a second route.')
@@ -234,7 +234,7 @@ def main() -> int:
             say(f'| `{t}` | {dd} | {last} | {g} |')
         say('')
     if late:
-        say('Worst continues-after, days — check each for reuse before using the series:')
+        say('Worst continues-after, in days; check each for reuse before using the series:')
         say('')
         say('| ticker | delisted | last price | days past |')
         say('|---|---|---|---:|')
@@ -245,7 +245,7 @@ def main() -> int:
     say('')
     say(f'- removed tickers in the constituent history: **{len(removed)}**')
     say(f'- of those, appearing on the delisted-companies list: **{len(on_list)} '
-        f'({100.0*len(on_list)/max(1,len(removed)):.1f}%)** — the rest left the index '
+        f'({100.0*len(on_list)/max(1,len(removed)):.1f}%)**; the rest left the index '
         f'without delisting, which is why the superseded C2 could not pass')
     say(f'- of those, with any price rows: **{len(with_px)} '
         f'({100.0*len(with_px)/max(1,len(removed)):.1f}%)**')
@@ -451,7 +451,7 @@ def main() -> int:
     say('### Detector A: the history\'s name and the profile\'s name share no word')
     say('')
     say('A name clash on its own is weak: it fires on rebrands and abbreviations of the same')
-    say('company — Apache to APA, Allegheny Technologies to ATI, Brinks to Brink\'s — as well')
+    say('company (Apache to APA, Allegheny Technologies to ATI, Brinks to Brink\'s) as well')
     say('as on genuine reuses. So it is reported in two tiers, split by whether independent')
     say('evidence corroborates it.')
     say('')
@@ -468,7 +468,7 @@ def main() -> int:
             why.append('profile is a fund or ETF')
         (tier1 if why else tier2).append((sy, hn, pn, fs, '; '.join(why)))
 
-    say(f'**Tier 1, corroborated: {len(tier1)}.** A name clash plus at least one of — the')
+    say(f'**Tier 1, corroborated: {len(tier1)}.** A name clash plus at least one of the following: the')
     say('price series continuing past its own delisting date, or an operating company in the')
     say('history replaced by a fund or ETF in the profile. These are the ones to act on.')
     say('')
@@ -505,8 +505,8 @@ def main() -> int:
     say('not IPOs. Abbott and Archer-Daniels both carry 1980-03-17 and neither is a reuse.')
     say('')
     both = [f for f in flag_ipo if f[4]]
-    say(f'- flagged by this test alone: **{len(flag_ipo)}** — too many to act on')
-    say(f'- flagged by this test AND the name test: **{len(both)}** — these are the ones')
+    say(f'- flagged by this test alone: **{len(flag_ipo)}**, too many to act on')
+    say(f'- flagged by this test AND the name test: **{len(both)}**; these are the ones')
     say('  worth looking at, and they are listed below')
     say('')
     if both:
@@ -531,12 +531,12 @@ def main() -> int:
     no_profile = [s for s in union if s not in PROFILE]
     say('Reported, not repaired. No detector can see a reuse where the profile carries the')
     say('older company\'s name and dates, and none can see one for a symbol with no')
-    say(f'profile at all — **{len(no_profile)} of {len(union)} union symbols returned none**.')
+    say(f'profile at all: **{len(no_profile)} of {len(union)} union symbols returned none**.')
     say('Both counts are floors, not counts.')
     say('')
 
     # ---- write ------------------------------------------------------------
-    out = root / f'APPENDIX_handover_back_{today}.md'
+    out = root / f'APPENDIX_extraction_report_{today}.md'
     if out.exists():
         out = out.with_name(out.stem + datetime.now(timezone.utc).strftime('__%H%M%SZ') + '.md')
     out.write_text('\n'.join(L))

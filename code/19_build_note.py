@@ -13,7 +13,7 @@ a named output file at build time by `P()`, which aborts if the pattern is absen
 or matches more than once. If an upstream script is rerun and a number moves, the
 note moves with it or the build fails. Nothing is transcribed.
 
-This also discharges gate 5 of the ruling of 6 September: every figure traceable
+This also discharges shipping gate 5 of 6 September: every figure traceable
 to an output file carrying its release filename and SHA-256. Appendix D is that
 register, generated from the same files.
 
@@ -224,7 +224,7 @@ def withheld_rows():
 
 # --- the presigned-source-URL finding -------------------------------------
 # Admitted to the note on 8 September 2026 under six conditions. The two numbers
-# the ruling allows come from 23_presigned_source_urls.py, which by construction
+# the conditions allow come from 23_presigned_source_urls.py, which by construction
 # cannot emit a key, a token, a signature or a whole URL.
 F["presigned_n"] = P("presigned_source_urls.txt",
                      r"RELEASES CARRYING PRESIGNED SOURCE URLS: (\d+) of \d+")

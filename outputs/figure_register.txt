@@ -1,5 +1,5 @@
 SHIPPING GATE 5  FIGURE REGISTER
-  every number the ruling's section 2 calls for, against the output file
+  every number the note's running order calls for, against the output file
   that should contain it. Run before the prose, so an untraceable number
   is found while it is still cheap to fix.
 

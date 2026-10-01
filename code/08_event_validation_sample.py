@@ -272,8 +272,8 @@ def main():
               f"{r[6][:7]:>8}{r[7][:7]:>8}{str(r[9])[:10]:>12}")
 
     # DO NOT clobber verdicts. Rerunning this script on 22 August wiped eight
-    # hand-verified rows, which took an hour of Carlo's work to produce and only
-    # survived because they were also written into TASK_1.3_INTERIM. The sample
+    # hand-verified rows, which took an hour of manual work to produce and only
+    # survived because they were also written into the interim record. The sample
     # is deterministic under a fixed seed, so a rerun should never need to
     # overwrite a file that already carries answers.
     # THE SAMPLE FILE IS THE AUTHORITY, NOT THIS SCRIPT.

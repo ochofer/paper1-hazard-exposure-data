@@ -3,7 +3,7 @@ SHIPPING GATE: IS EVERY FIGURE IN THE NOTE TRACEABLE TO AN OUTPUT FILE?
 
 WHY THIS EXISTS
 ---------------
-Gate 5 of the ruling of 6 September requires every figure in the note to be
+Shipping gate 5, set on 6 September, requires every figure in the note to be
 traceable to a named output file carrying the release filename and its SHA-256.
 Nothing had tested that. This script does, before the prose is written, because
 a number that cannot be traced is cheap to fix now and expensive to fix in a
@@ -11,7 +11,7 @@ draft that is already built around it.
 
 WHAT IT DOES
 ------------
-It holds every number the ruling's section 2 running order calls for, together
+It holds every number the note's running order calls for, together
 with the output file that should contain it and the exact string that should
 appear there. It then reads each file and checks. A claim whose string is absent
 is reported as UNTRACEABLE, not quietly dropped.
@@ -231,7 +231,7 @@ def main():
         return cache[fn]
 
     say("SHIPPING GATE 5  FIGURE REGISTER")
-    say("  every number the ruling's section 2 calls for, against the output file")
+    say("  every number the note's running order calls for, against the output file")
     say("  that should contain it. Run before the prose, so an untraceable number")
     say("  is found while it is still cheap to fix.")
     say()

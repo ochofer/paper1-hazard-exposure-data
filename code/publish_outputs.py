@@ -1,7 +1,7 @@
 """
 COPY THE PUBLISHABLE OUTPUTS INTO THE PUBLIC REPOSITORY
 
-Executes items 3.1 to 3.3 of the research design chat's ruling of 8 September 2026,
+Executes items 3.1 to 3.3 of the publication procedure of 8 September 2026,
 after classify_outputs.py has classified every file.
 
 WHAT IT COPIES
@@ -101,7 +101,7 @@ def main(apply_it):
         sys.exit(f"ABORTED: the classification report still lists {len(b['UNKNOWN'])} UNKNOWN "
                  f"file(s). Nothing is published under an unresolved classification.")
     if b.get("mixed"):
-        sys.exit("ABORTED: mixed files present. The ruling requires each to be resolved to "
+        sys.exit("ABORTED: mixed files present. The procedure requires each to be resolved to "
                  "GEM-only or FMP-derived by hand before publishing.")
 
     pub, withheld = b.get("GEM-only", []), b.get("FMP-derived", [])

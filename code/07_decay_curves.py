@@ -4,7 +4,7 @@ TASK 1.2: DOES THE BUILD-OUT SHARE DECAY, AND DOES RESTATEMENT STAY FLAT?
 WHY THIS EXISTS
 ---------------
 Task 1.1 decomposed one vintage pair, March 2025 against August 2026, and found
-64% build-out, 20% restatement, 16% methodology change. That answers Carlo's age
+64% build-out, 20% restatement, 16% methodology change. That answers the age
 objection once. It does not answer it as a trend.
 
 The objection in its strongest form is that a young database is mostly adding

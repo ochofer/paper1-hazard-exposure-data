@@ -287,7 +287,7 @@ def main():
     # -----------------------------------------------------------------------
     # THE OBVIOUS OBJECTION, TESTED RATHER THAN ARGUED
     #
-    # Carlo asked on 21 August: could the top parent be moving simply because
+    # A question raised on 21 August: could the top parent be moving simply because
     # the ownership PERCENTAGES were revised? GEM records every percentage
     # shareholder, so a stake revised from 49 to 51 could genuinely change who
     # sits at the top. That is a fair challenge and it deserves a measurement.

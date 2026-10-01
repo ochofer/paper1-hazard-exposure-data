@@ -3,7 +3,7 @@
 21_fmp_verify.py -- the completeness report, which is the actual deliverable.
 
 Reads the extractor's append-only ledger and the raw files on disk and answers
-every question in HANDOVER_FMP_extraction_2026-08-28.md section 4. It is a
+every question in section 4 of the extraction plan of 28 August 2026. It is a
 separate script from the extractor on purpose: success is not "the script
 finished".
 
@@ -124,7 +124,7 @@ def main():
     A("")
     for ep, d in sorted(missing_detail.items()):
         if d["empty"] or d["missing"]:
-            A(f"**`{ep}` — named exceptions**")
+            A(f"**`{ep}`: named exceptions**")
             A("")
             if d["missing"]:
                 A(f"- never fetched ({len(d['missing'])}): {', '.join(d['missing'])}")
@@ -148,7 +148,7 @@ def main():
         if not mins:
             A(f"- `{ep}`: no dated records.")
             continue
-        A(f"**`{ep}`** — earliest date seen anywhere: `{mins[0]}`, latest: `{maxs[-1]}`.")
+        A(f"**`{ep}`**: earliest date seen anywhere `{mins[0]}`, latest `{maxs[-1]}`.")
         A("")
         short = sorted((r["date_min"], s) for s, r in got.items()
                        if r.get("date_min") and r["date_min"] > SAMPLE_WINDOW[0])
@@ -199,7 +199,7 @@ def main():
             A("")
             thin = sum(n for y, n in by_year.items() if y < "2016")
             A(f"- before 2016: {thin} records "
-              f"({100.0 * thin / len(dates):.1f}% of the list) — the handover expects this to")
+              f"({100.0 * thin / len(dates):.1f}% of the list); the extraction plan expects this to")
             A("  be thin; this is the measured figure rather than the repeated claim.")
         except Exception as exc:
             A(f"Could not summarise the delisted list: {exc}")
@@ -243,12 +243,12 @@ def main():
     raw_bytes = dir_size(RAW) if RAW.exists() else 0
     dcf_bytes = dir_size(VENDOR_DCF) if VENDOR_DCF.exists() else 0
     dcf_files = len([f for f in VENDOR_DCF.rglob("*.json.gz")]) if VENDOR_DCF.exists() else 0
-    A(f"- raw working data: `{RAW}` — {human(raw_bytes)}")
-    A(f"- vendor DCF, sealed: `{VENDOR_DCF}` — {human(dcf_bytes)} across {dcf_files} files")
-    A(f"- ledger: `{LEDGER}` — {len(ledger)} entries")
+    A(f"- raw working data: `{RAW}`, {human(raw_bytes)}")
+    A(f"- vendor DCF, sealed: `{VENDOR_DCF}`, {human(dcf_bytes)} across {dcf_files} files")
+    A(f"- ledger: `{LEDGER}`, {len(ledger)} entries")
     A("")
     A("The vendor DCF files were counted and checksummed. **They have not been opened**")
-    A("and no value from them appears in this report. They stay sealed until Carlo's own")
+    A("and no value from them appears in this report. They stay sealed until the author's own")
     A("valuation assumptions are written down and dated.")
     A("")
     A("Nothing in either directory is inside the git repository. The only artefact that")

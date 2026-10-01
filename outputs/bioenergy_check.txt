@@ -1,5 +1,5 @@
 TASK 1.5 SUPPLEMENT  BIOENERGY CHECK, VARIANTS (a) AND (c)
-  ruled by the research design chat, 7 September 2026
+  design decision of 7 September 2026
   the originally specified check could not be run; see the docstring
   pre-committed cut: Spearman 0.95
 
@@ -30,7 +30,7 @@ WHY THE ORIGINAL SPECIFICATION WAS REPLACED, counted rather than argued
 
 ==============================================================================
 U2, THE 604 MATCHED FIRMS WORLDWIDE. Does the convention flip generalise?
-  Asked by the research design chat on 7 September, interpretation fixed
+  Specified on 7 September, interpretation fixed
   BEFORE this ran: if U2 also straddles the 0.95 cut the flip is general;
   if U2 clears under both conventions the flip is a result about the listed
   US and European universe a portfolio manager would actually sort.

@@ -70,6 +70,45 @@ rerun the audit either way and watch the counts move rather than take the figure
 The hazard measurement itself is not built and not scheduled, and it is not in this
 repository.
 
+## Terms
+
+One term for each idea, used the same way in the code, the notebook, the outputs and the
+note.
+
+- **release**: one dated file published by Global Energy Monitor, identified by its filename
+  and SHA-256. The two August 2026 files are **V1** and **V2**, and *version* is used only
+  for them.
+- **vintage**: the data as they stood in one release. A **vintage difference** is the change
+  between two releases of the same tracker, and it is the object this repository measures.
+- **pinned release**: the release a script reads, named by filename and checksum in the
+  script's provenance record; to *pin* is to fix it.
+- **ownership entity**: an owner as recorded by Global Energy Monitor, before any matching.
+  **company** is the listed company an ownership entity resolves to; the note says *firm*
+  for the same thing, and both forms are used.
+- **listed parent**: an ownership entity that resolves to a company in the US and
+  developed-Europe listed universe; there are 328.
+- **priceable**: a listed parent whose shares resolve to a tradeable listing in the price
+  panel; there are 302.
+- **tracked asset**: an operating unit in the ownership data, counted once; the 328 hold
+  5,115. Global Energy Monitor's own words *unit* and *plant* appear where its fields are
+  named.
+- **build-out, restatement, methodology change**: the three causes into which a vintage
+  difference is decomposed. *Revision* is not a fourth category and keeps its ordinary
+  sense.
+- **exposure**: attributable capacity, the share of a tracked asset's capacity assigned to a
+  company through its ownership stake and summed over its assets; **attributable** is the
+  adjective.
+- **convention**: a stated rule for an ambiguous case, such as the blank-share convention,
+  applied the same way in every script and reported with its alternative beside it.
+- **provenance record**: the `RUN_PROVENANCE_*.json` file a script writes at run time,
+  naming every input it opened with its checksum.
+- **figure register**: the table that ties every number in the note to the output file
+  carrying it; shipping **gate** 5 is the requirement that it be complete.
+- **price panel**: the daily total-return series for the priceable companies plus two
+  benchmarks, pulled from Financial Modeling Prep on 21 August 2026 and not redistributed.
+- **crosswalk**: the table that joins ownership entities to security identifiers and
+  tickers, with every hand correction recorded in `config/ticker_overrides.csv`.
+
 ## Why the data layer is a separate thing
 
 A data layer that can only be checked by looking at the final result is one that cannot
@@ -153,9 +192,9 @@ which is the opposite of the direction that would flatter the hypothesis.
 matter here.** Ten observations fall in the relevant band, which gives a direction and not
 a magnitude, and the question cannot be settled from this provider's records, since those
 records do not measure delisting over the window. CRSP's delisting file would settle it.
-Access to CRSP and LSEG Workspace has been requested through Queen Mary's School of
-Economics and Finance; as at 9 September 2026 no decision has been made and follow-ups are
-in progress. Nothing in this repository depends on it.
+Access to CRSP through WRDS was granted by Queen Mary's School of Economics and Finance on
+15 September 2026, after this repository was closed; nothing in it depends on that access,
+and the delisting question stays open for a later study.
 
 ### 2. Transaction costs
 

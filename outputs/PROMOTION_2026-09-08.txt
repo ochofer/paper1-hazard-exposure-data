@@ -1,9 +1,9 @@
 PROMOTION OF THE DETERMINISTIC OUTPUTS TO OUTPUTS OF RECORD
-  executed 2026-09-08, under the research design chat's ruling of 2026-09-07, option (a)
+  executed 2026-09-08, under the publication decision of 2026-09-07, option (a)
   mode: APPLY
 
-  The ruling named this record PROMOTION_2026-09-07.txt after the date of the
-  ruling. It is named for the date it was actually executed instead, because a
+  The decision named this record PROMOTION_2026-09-07.txt after the date of the
+  decision. It is named for the date it was actually executed instead, because a
   file dated earlier than the act it records is the first thing an auditor
   should not have to reconcile.
 
@@ -33,7 +33,7 @@ VERIFIED BEFORE ANY FILE WAS TOUCHED
     deterministic since  10_panel_join.py: sorted name list built from the set difference before writing
     superseded copy      NONE RETAINED
       The pre-sort copy was NOT retained.
-      It was overwritten in place during the script 10 provenance rerun of 7 September, before this ruling existed.
+      It was overwritten in place during the script 10 provenance rerun of 7 September, before this decision existed.
       The pre-sort and post-sort content were verified identical at the time of the fix: same names, same values, order only.
       No reconstruction is attempted here, because a manufactured file is worse than an honest gap in the record.
 

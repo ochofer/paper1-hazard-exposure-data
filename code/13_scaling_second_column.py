@@ -3,10 +3,10 @@ TASK 1.5 SUPPLEMENT: DOES SCALING CHANGE THE RANKING, AND CAN IT BE DONE AT ALL?
 
 WHY THIS EXISTS
 ---------------
-The research design chat ruled on 3 September 2026 that the note should report a
+The design decision of 3 September 2026 is that the note should report a
 second exposure column beside raw attributable MW, and should treat the scaling
 choice itself as a finding measured the same way as the blank-share convention.
-The ruling's proposed second column was "fossil share of owned fleet, computed
+The proposed second column was "fossil share of owned fleet, computed
 inside GEM", chosen so the public repository stays self-contained and CC BY 4.0
 without needing FMP fundamentals.
 
@@ -30,10 +30,10 @@ That is not merely a weak measure. It is a misleading one: a reader seeing
 "fossil share of owned fleet = 0.97" will take it to mean the firm is
 overwhelmingly fossil, when it in fact says nothing about renewables, nuclear or
 hydro because GEM does not track them here. This script measures the degeneracy
-rather than asserting it, so the answer to the ruling is evidence rather than an
+rather than asserting it, so the answer is evidence rather than an
 opinion.
 
-PRE-COMMITTED BEFORE RUNNING, recorded in PROJECT_STATUS.md
+PRE-COMMITTED BEFORE RUNNING, recorded before the first run
 ------------------------------------------------------------
 1. DEGENERACY TEST. Median fossil share above 0.95 AND interquartile range below
    0.10 on the active panel means the measure cannot serve as a scaler. It does
@@ -78,7 +78,7 @@ os.makedirs(OUT, exist_ok=True)
 
 SHEETS = ["Coal Plant Ownership", "Gas Plant Ownership", "Bioenergy Power Ownership"]
 
-# Pre-committed thresholds. See the docstring and PROJECT_STATUS.md.
+# Pre-committed thresholds. See the docstring.
 DEGENERATE_MEDIAN = 0.95
 DEGENERATE_IQR = 0.10
 FOOTNOTE_SPEARMAN = 0.95
@@ -127,8 +127,8 @@ def main():
     new_f = _release.RELEASES["August 2026"]
 
     say("TASK 1.5 SUPPLEMENT  SCALING: CAN A SECOND COLUMN BE BUILT INSIDE GEM?")
-    say("  ruling (d), research design chat, 3 September 2026")
-    say("  thresholds pre-committed before this ran; see PROJECT_STATUS.md")
+    say("  design decision (d), 3 September 2026")
+    say("  thresholds pre-committed before this ran")
     say()
     say("  GEM's ownership tracker carries NO wind, solar, hydro, nuclear or")
     say("  geothermal sheets. The only generation sheets are coal, gas and")

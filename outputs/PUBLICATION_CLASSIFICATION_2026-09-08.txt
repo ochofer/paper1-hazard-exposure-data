@@ -1,5 +1,5 @@
 PUBLICATION CLASSIFICATION OF outputs/ AND evidence/
-  2026-09-08, under the research design chat's ruling of 2026-09-08, item 3.1
+  2026-09-08, under the publication procedure of 2026-09-08, item 3.1
   Classified by what each script CONSUMED, from the run-time provenance
   records, not by filename. Nothing here is moved, changed or published.
 
@@ -68,7 +68,7 @@ CLASSIFICATION, FILE BY FILE
     outputs/gleif_consolidation_flags.csv                      written by 03, free inputs only
     outputs/identifier_survival_by_country.csv                 written by 00, free inputs only
     outputs/isin_candidates.csv                                written by 00, free inputs only
-    outputs/isin_screen.csv                                    classified by hand: GEM entity ids and names joined to GLEIF LEIs and ISIN counts. Both sources free. KNOWN PROVENANCE GAP, recorded 8 September 2026 under the design chat's ruling: no numbered script produces this file and it carries no provenance record, and it is where the 328 comes from. It publishes as it stands, and the gap closes before the paper rather than before the note. A recorded gap is not the same species as an unrecorded one, and that distinction is this note's own
+    outputs/isin_screen.csv                                    classified by hand: GEM entity ids and names joined to GLEIF LEIs and ISIN counts. Both sources free. KNOWN PROVENANCE GAP, recorded 8 September 2026 under the publication procedure: no numbered script produces this file and it carries no provenance record, and it is where the 328 comes from. It publishes as it stands, and the gap closes before the paper rather than before the note. A recorded gap is not the same species as an unrecorded one, and that distinction is this note's own
     outputs/lei_not_in_anna.csv                                written by 00, free inputs only
     outputs/panel_exposure.csv                                 written by 10, free inputs only
     outputs/panel_join_summary.txt                             written by 10, free inputs only
@@ -98,7 +98,7 @@ CLASSIFICATION, FILE BY FILE
   UNKNOWN  (0 file(s))
 
 ==============================================================================
-COUNTS, for the closing handover-back as the ruling requires
+COUNTS, for the closing record as the procedure requires
   GEM-only         60
   mixed             0
   FMP-derived       2

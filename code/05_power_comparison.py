@@ -195,8 +195,8 @@ def main():
     # -----------------------------------------------------------------------
     # DOES A BIGGER CROSS-SECTION RESCUE DESIGN A?
     #
-    # Carlo asked on 21 August whether widening the sample from Europe plus the
-    # United States to Ken French's full developed-market list would help. It is
+    # A question raised on 21 August: would widening the sample from Europe plus the
+    # United States to Ken French's full developed-market list help? It is
     # a fair question because more firms per month does reduce sd(gamma).
     #
     # Measured firm counts from the GEM cross-section, running the traversal

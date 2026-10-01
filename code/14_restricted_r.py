@@ -10,14 +10,14 @@ shareholder(s)" or "natural person(s)" whose value is 100 minus the named
 holders rather than an observed stake. A change in a residual carries no
 ownership information, so it arguably should not count as evidence of anything.
 
-Project A main put an objection to the research design chat on 5 September:
+An objection was recorded on 5 September:
 excluding residuals is not symmetric with the exclusions already inside R.
 Build-out, restatement and methodology partition apparent change by CAUSE,
 whereas a residual counterparty is a property of the COUNTERPARTY and appears in
 all three buckets. Taking residuals out of the numerator alone would compare a
 restricted numerator against an unrestricted denominator.
 
-The chat ruled on 7 September: residuals come out of the numerator AND the
+The decision of 7 September: residuals come out of the numerator AND the
 denominator, and the result is reported beside the published 36.0% with the same
 prominence whatever it shows. This script is that computation.
 
@@ -99,7 +99,7 @@ def main():
     new_f = _release.resolve(NEW_KEY, DATA)
 
     say("TASK 1.1 SUPPLEMENT  RESTRICTED R, RESIDUALS OUT OF BOTH SIDES")
-    say("  ruled by the research design chat, 7 September 2026")
+    say("  design decision of 7 September 2026")
     say("  reported beside the published 36.0% with the same prominence, as pre-committed")
     say()
     say("NAME JOIN, from both releases")

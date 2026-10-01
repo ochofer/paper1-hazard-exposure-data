@@ -1,5 +1,5 @@
 GEM AUGUST 2026 V1 vs V2_External: side by side script outputs
-Produced 2 September 2026 by Project A main.
+Produced 2 September 2026.
 
 METHOD
   Scripts 04, 06, 07 and 08 were run unmodified against two scratch trees that

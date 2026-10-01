@@ -3,7 +3,7 @@
 24_fmp_c2_variant.py -- does the returns window have a solution once ticker reuse is
 separated from coverage?
 
-23_fmp_appendix.py reports the new C2 as the design chat pre-committed it, and it has no
+23_fmp_appendix.py reports the new C2 as pre-committed, and it has no
 solution: 2026 itself scores 63.3%, so no start year can produce a window in which every
 later year clears 90%.
 
@@ -13,7 +13,7 @@ CONTINUES AFTER its delisting date is not a coverage gap at all: the prices are 
 past the delisting they belong to a different company. That is ticker reuse, the PARA class.
 
 So this reports the same measure a second way, counting only coverage as failure, and asks
-whether the window has a solution under it. It changes no ruling. It gives the design chat
+whether the window has a solution under it. It changes no decision. It gives the design
 the number it needs to decide whether the new C2 is a coverage gate that reuse is jamming.
 
     python3 24_fmp_c2_variant.py "<root>"
@@ -129,19 +129,19 @@ def main() -> int:
     say = L.append
     today = datetime.now(timezone.utc).strftime('%Y-%m-%d')
 
-    say(f'# Addendum to the appendix — {today}')
+    say(f'# Addendum to the appendix, {today}')
     say('')
     say('## Does the returns window have a solution once reuse is separated from coverage?')
     say('')
     say('The new C2 as pre-committed has no solution. This asks the same question a second')
-    say('way, counting a series that continues past its own delisting date as what it is —')
-    say('ticker reuse, not a coverage gap. Nothing here overrides the ruling; it is the')
-    say('number the design chat needs in order to decide whether to keep C2 as a window gate.')
+    say('way, counting a series that continues past its own delisting date as what it is:')
+    say('ticker reuse, not a coverage gap. Nothing here overrides the pre-committed rule; it is the')
+    say('number needed in order to decide whether to keep C2 as a window gate.')
     say('')
     say('| year | on list | runs to delisting | continues after (reuse) | stops early (gap) | '
-        'no price rows | C2 as ruled | C2, coverage only |')
+        'no price rows | C2 as specified | C2, coverage only |')
     say('|---|---:|---:|---:|---:|---:|---:|---:|')
-    ruled, coverage = {}, {}
+    specified, coverage = {}, {}
     for y in years:
         v = by[y]
         n = max(1, v['n'])
@@ -151,7 +151,7 @@ def main() -> int:
         # company. Passing it would flatter the measure.
         den = v['n'] - v['late']
         c_pct = 100.0 * v['ok'] / den if den > 0 else float('nan')
-        ruled[y], coverage[y] = r_pct, c_pct
+        specified[y], coverage[y] = r_pct, c_pct
         cs = 'n/a' if den <= 0 else f'{c_pct:.1f}%'
         say(f"| {y} | {v['n']} | {v['ok']} | {v['late']} | {v['early']} | {v['nopx']} | "
             f"{r_pct:.1f}% | {cs} |")
@@ -159,10 +159,10 @@ def main() -> int:
 
     tot = {k: sum(by[y][k] for y in years) for k in ('n', 'ok', 'late', 'early', 'nopx')}
     den = tot['n'] - tot['late']
-    say(f"- overall as ruled: **{tot['ok']} of {tot['n']} "
+    say(f"- overall as specified: **{tot['ok']} of {tot['n']} "
         f"({100.0*tot['ok']/max(1,tot['n']):.1f}%)**")
     say(f"- overall, coverage only: **{tot['ok']} of {den} "
-        f"({100.0*tot['ok']/max(1,den):.1f}%)** — {tot['late']} reuse cases removed from "
+        f"({100.0*tot['ok']/max(1,den):.1f}%)**, {tot['late']} reuse cases removed from "
         f"the denominator, {tot['early']} genuine coverage gaps and {tot['nopx']} with no "
         f"price rows left in it")
     say('')
@@ -175,13 +175,13 @@ def main() -> int:
                 return start
         return None
 
-    a = first_year_from_which_all_pass(ruled)
+    a = first_year_from_which_all_pass(specified)
     b = first_year_from_which_all_pass(coverage)
     say('## The C2 leg of the returns window')
     say('')
     say('| measure | earliest year from which every later year clears 90% |')
     say('|---|---|')
-    say(f'| C2 as ruled | **{a if a else "no solution"}** |')
+    say(f'| C2 as specified | **{a if a else "no solution"}** |')
     say(f'| C2, coverage only | **{b if b else "no solution"}** |')
     say('')
     if b:
@@ -202,8 +202,8 @@ def main() -> int:
     else:
         say('None. Every year with a non-empty denominator clears 90%.')
     say('')
-    say('The denominators are small — most years carry fewer than 30 removed tickers that')
-    say('reach the delisted list at all — so a single symbol moves a year by several points.')
+    say('The denominators are small (most years carry fewer than 30 removed tickers that')
+    say('reach the delisted list at all), so a single symbol moves a year by several points.')
     say('That is a property of the measure, not of the pull, and it is worth saying out loud')
     say('before anyone reads a year-on-year pattern into the column.')
 

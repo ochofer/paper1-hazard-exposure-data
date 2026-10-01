@@ -16,7 +16,7 @@ coverage moving rather than anything about the firms.
 
 THE CHECK AS ORIGINALLY SPECIFIED COULD NOT BE RUN
 --------------------------------------------------
-The research design chat's ruling of 5 September asked for the scaled arm to be
+The design decision of 5 September asked for the scaled arm to be
 recomputed on firms with NO bioenergy in either vintage. That produces a
 constant, not a comparison: with no bioenergy the share is fossil / (fossil + 0),
 which is exactly 1 by construction. Counted on the file: 457 of the 679 firms
@@ -24,7 +24,7 @@ present in both vintages have no bioenergy in either and positive fossil capacit
 in both, and every one of them has a fossil share of exactly 1.000 on both sides,
 standard deviation zero. A Spearman on a constant is undefined, not reassuring.
 
-The chat accepted this on 7 September and ruled two replacements, both run here:
+This was accepted on 7 September and two replacements were specified, both run here:
 
   (a) THE CHECK. Restrict to firms with bioenergy present in BOTH vintages, so
       the denominator exists on both sides and any movement in it is real rather
@@ -34,7 +34,7 @@ The chat accepted this on 7 September and ruled two replacements, both run here:
   (c) THE IMMUNE-BY-CONSTRUCTION COMPARISON. Coal share of coal plus gas. It
       contains no bioenergy at all, so the coverage change cannot touch it.
 
-Variant (b), restricting to firms whose bioenergy is unchanged, was ruled out as
+Variant (b), restricting to firms whose bioenergy is unchanged, was rejected as
 conditioning on the outcome.
 
 INTERPRETATION, FIXED BY THE CHAT BEFORE THIS RAN
@@ -45,7 +45,7 @@ a coverage finding that still illustrates the thesis, because an analyst's choic
 of denominator still moves the verdict.
 
 If (a) falls below 0.95 under at least one convention, the instability survives
-the coverage control and the conventions section stands as ruled.
+the coverage control and the conventions section stands as specified.
 
 Either way both numbers appear in the note with the 0.95 cut beside them. This
 script states which branch fired rather than leaving it to be read off a table.
@@ -120,7 +120,7 @@ def main():
     panel = set(pd.read_csv(PANEL, dtype={"entity_id": str})["entity_id"])
 
     say("TASK 1.5 SUPPLEMENT  BIOENERGY CHECK, VARIANTS (a) AND (c)")
-    say("  ruled by the research design chat, 7 September 2026")
+    say("  design decision of 7 September 2026")
     say("  the originally specified check could not be run; see the docstring")
     say(f"  pre-committed cut: Spearman {CUT}")
     say()
@@ -166,7 +166,7 @@ def main():
     say()
     say("=" * 78)
     say("U2, THE 604 MATCHED FIRMS WORLDWIDE. Does the convention flip generalise?")
-    say("  Asked by the research design chat on 7 September, interpretation fixed")
+    say("  Specified on 7 September, interpretation fixed")
     say("  BEFORE this ran: if U2 also straddles the 0.95 cut the flip is general;")
     say("  if U2 clears under both conventions the flip is a result about the listed")
     say("  US and European universe a portfolio manager would actually sort.")
@@ -259,7 +259,7 @@ def main():
     else:
         say("  BRANCH 2. (a) falls below 0.95 under at least one convention.")
         say("  The instability SURVIVES the coverage control, so it is not merely the")
-        say("  bioenergy coverage change. The conventions section stands as ruled.")
+        say("  bioenergy coverage change. The conventions section stands as specified.")
         say("  Both numbers appear with the cut beside them.")
 
     _release.write_provenance(

@@ -409,7 +409,7 @@ def main():
                 "were not captured for this pull and are not inferred from "
                 "filesystem mtimes, which change when a file is copied.",
             "capture_fetch_timestamps":
-                "TODO for the next extraction: record the request time per "
+                "Open for the next extraction: record the request time per "
                 "symbol at fetch time, not afterwards.",
             "redistributable": False,
             "repeatable_without_payment": False,

@@ -1,6 +1,6 @@
 TASK 1.5 SUPPLEMENT  SCALING: CAN A SECOND COLUMN BE BUILT INSIDE GEM?
-  ruling (d), research design chat, 3 September 2026
-  thresholds pre-committed before this ran; see PROJECT_STATUS.md
+  design decision (d), 3 September 2026
+  thresholds pre-committed before this ran
 
   GEM's ownership tracker carries NO wind, solar, hydro, nuclear or
   geothermal sheets. The only generation sheets are coal, gas and

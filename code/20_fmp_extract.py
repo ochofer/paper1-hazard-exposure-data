@@ -2,7 +2,7 @@
 """
 20_fmp_extract.py -- bulk extraction from Financial Modeling Prep before cancellation.
 
-Implements HANDOVER_FMP_extraction_2026-08-28.md section 3.
+Implements section 3 of the extraction plan of 28 August 2026.
 
 Hard rules, each of which has cost this project something once:
   * Never overwrite an existing raw file. Skip it, or write beside it with a suffix.
@@ -162,7 +162,7 @@ ENDPOINTS = [
     dict(tier=3, name="vendor_dcf",                base=BASE_STABLE, path="discounted-cash-flow",
          scope="per_symbol", dated=False, quarantine=True,
          note="SEQUENCING RULE: stored in vendor_dcf_DO_NOT_OPEN, not to be read until "
-              "Carlo's own valuation assumptions are written down and dated"),
+              "the author's own valuation assumptions are written down and dated"),
     dict(tier=3, name="vendor_dcf_levered",        base=BASE_STABLE, path="levered-discounted-cash-flow",
          scope="per_symbol", dated=False, quarantine=True, note="as above"),
 ]
@@ -335,7 +335,7 @@ def main():
     if not guard.exists():
         guard.write_text(
             "# Do not open these files\n\n"
-            "FMP's own DCF valuations. They are a validation check for Carlo's valuation\n"
+            "FMP's own DCF valuations. They are a validation check for the author's valuation\n"
             "model, to be compared only AFTER that model is finished and its assumptions\n"
             "are written down and dated. Reading them first would anchor the assumptions,\n"
             "which is the valuation-model version of the specification search this project\n"

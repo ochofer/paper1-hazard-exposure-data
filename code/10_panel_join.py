@@ -33,7 +33,7 @@ is firms entering the panel rather than firms changing.
 
 Fixing it properly means rebuilding the panel separately under each vintage,
 which changes what "the 328" means and would break the figure that is already
-public in Carlo's CV, cover letter and website. That is a task 1.6 decision, not
+public on the author's CV and website. That is a decision for the panel-join step, not
 something to do here.
 
 MISSING MEANS ZERO, DELIBERATELY

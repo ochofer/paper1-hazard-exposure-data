@@ -3,7 +3,7 @@ BOTH RELEASES SIDE BY SIDE: THE V-REVISED R LADDER, COMPUTED NOT TRANSCRIBED
 
 WHY THIS EXISTS
 ---------------
-The ruling of 6 September requires a section reporting both August 2026 releases
+The design decision of 6 September requires a section reporting both August 2026 releases
 side by side, with R and the worst case for each in the same table as the
 pre-committed 25% bar. The gate 5 register of 7 September found that three of
 those numbers, R on V2 and the worst-case pair 25.2% and 24.3%, existed only in
@@ -29,7 +29,7 @@ Everything from source, nothing carried over:
    reimplemented here and nothing is read out of a summary.
 
    Reading both releases is NOT a repin. The pin governs the note's endpoint and
-   remains V1; the ruling separately requires V2 to be reported beside it, and
+   remains V1; the design separately requires V2 to be reported beside it, and
    _release.RELEASES carries the V2 key for exactly this purpose.
 
 3. The ladder: R with the restatement bucket revised down by V at each reading,

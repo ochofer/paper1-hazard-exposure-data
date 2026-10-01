@@ -2,9 +2,9 @@ PROVENANCE RERUN AND DETERMINISM FIX, 7 September 2026
 
 WHY. Scripts 04, 06 and 07 were rerun UNCHANGED against the pinned V1 files
 solely to emit RUN_PROVENANCE records. Their outputs on disk were written on
-23 August 2026, before the provenance code existed, so gate 5 of the ruling of
-6 September could not be met for any figure resting on them. The design chat
-instructed on 7 September that the rerun be written beside the 23 August
+23 August 2026, before the provenance code existed, so shipping gate 5 of
+6 September could not be met for any figure resting on them. The design
+decision of 7 September was that the rerun be written beside the 23 August
 outputs, never over them, diffed digit for digit, and the comparison recorded.
 
 FIRST PASS, unchanged code.

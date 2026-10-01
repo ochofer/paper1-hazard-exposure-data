@@ -201,12 +201,12 @@ def main() -> int:
             print("  1. Make a second local copy (external drive, or confirm Time Machine has it).")
             print("  2. Re-run with --second pointing at it.")
             print("  3. Delete the folder from Google Drive, and empty Drive's bin.")
-            print("  4. Send the design chat the handover with the section C numbers.")
-            print("  5. Cancel only after they have read it.")
+            print("  4. File the extraction report with the section C numbers.")
+            print("  5. Cancel only after the report has been reviewed.")
         else:
             print()
             print("Two verified local copies. Now delete the Drive copy, empty Drive's bin,")
-            print("and send the handover. Cancel only after the design chat has read it.")
+            print("and file the extraction report. Cancel only after it has been reviewed.")
     else:
         print("FAIL. Files are missing, or their contents do not match the manifest.")
         print("Do not delete the Drive copy and do not cancel.")

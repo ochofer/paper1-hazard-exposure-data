@@ -1,9 +1,9 @@
 """
 PROMOTE THE DETERMINISTIC OUTPUTS TO OUTPUTS OF RECORD
 
-Executes the research design chat's ruling of 7 September 2026, option (a).
+Executes the publication decision of 7 September 2026, option (a).
 
-WHAT THE RULING SAID
+WHAT THE DECISION SAID
 --------------------
 The preserve-beside instruction of 7 September was a guard against silent change.
 It did its job: it is what surfaced the ordering artefact at all. Once the diff
@@ -67,7 +67,7 @@ NO_COPY = [
      "10_panel_join.py",
      "sorted name list built from the set difference before writing",
      "The pre-sort copy was NOT retained. It was overwritten in place during the "
-     "script 10 provenance rerun of 7 September, before this ruling existed. The "
+     "script 10 provenance rerun of 7 September, before this decision existed. The "
      "pre-sort and post-sort content were verified identical at the time of the "
      "fix: same names, same values, order only. No reconstruction is attempted "
      "here, because a manufactured file is worse than an honest gap in the record."),
@@ -107,11 +107,11 @@ def rows_and_header(path):
 def main(apply_it):
     today = date.today().isoformat()
     say("PROMOTION OF THE DETERMINISTIC OUTPUTS TO OUTPUTS OF RECORD")
-    say(f"  executed {today}, under the research design chat's ruling of 2026-09-07, option (a)")
+    say(f"  executed {today}, under the publication decision of 2026-09-07, option (a)")
     say(f"  mode: {'APPLY' if apply_it else 'DRY RUN, nothing is written'}")
     say()
-    say("  The ruling named this record PROMOTION_2026-09-07.txt after the date of the")
-    say("  ruling. It is named for the date it was actually executed instead, because a")
+    say("  The decision named this record PROMOTION_2026-09-07.txt after the date of the")
+    say("  decision. It is named for the date it was actually executed instead, because a")
     say("  file dated earlier than the act it records is the first thing an auditor")
     say("  should not have to reconcile.")
     say()

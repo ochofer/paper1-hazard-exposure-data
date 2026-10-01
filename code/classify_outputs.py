@@ -1,7 +1,7 @@
 """
 CLASSIFY EVERY OUTPUT BY PROVENANCE BEFORE ANY OF IT IS PUBLISHED
 
-Executes item 3.1 of the research design chat's ruling of 8 September 2026.
+Executes item 3.1 of the publication procedure of 8 September 2026.
 
 THE RULE BEING APPLIED
 ----------------------
@@ -20,7 +20,7 @@ WHY IT WORKS FROM THE PROVENANCE RECORDS
 ----------------------------------------
 The RUN_PROVENANCE_*.json records were written at run time and name the inputs
 each script actually opened, including its upstream chain. That is a record of
-consumption rather than a reading of intent, which is what the ruling asks for. A
+consumption rather than a reading of intent, which is what the procedure asks for. A
 static parse of the source would tell me what the code appears to read; the
 provenance records tell me what it did read.
 
@@ -32,7 +32,7 @@ Where those two disagree the file is marked UNKNOWN rather than reconciled here.
 WHAT IT DOES NOT DO
 -------------------
 It moves nothing, deletes nothing, publishes nothing and changes no output. It
-writes one report. Item 3.4 of the ruling says to stop and report rather than
+writes one report. Item 3.4 of the procedure says to stop and report rather than
 decide at the keyboard, and this script is that instruction in code.
 
 Run:  python classify_outputs.py
@@ -65,7 +65,7 @@ FREE_MARKERS = [
 ]
 
 # Files no numbered script writes with a literal path. Classified BY HAND under
-# item 3.1 of the ruling of 8 September, with the reason recorded here rather
+# item 3.1 of the procedure of 8 September, with the reason recorded here rather
 # than decided at the keyboard and forgotten. Each was opened and read first.
 HAND = {
     "PROVENANCE_RERUN_DIFF_2026-09-07.txt": (
@@ -81,8 +81,8 @@ HAND = {
         "under a superseded marker or not at all; it must not read as current"),
     "isin_screen.csv": (
         "GEM-only", "GEM entity ids and names joined to GLEIF LEIs and ISIN counts. Both "
-        "sources free. KNOWN PROVENANCE GAP, recorded 8 September 2026 under the design "
-        "chat's ruling: no numbered script produces this file and it carries no provenance "
+        "sources free. KNOWN PROVENANCE GAP, recorded 8 September 2026 under the "
+        "publication procedure: no numbered script produces this file and it carries no provenance "
         "record, and it is where the 328 comes from. It publishes as it stands, and the gap "
         "closes before the paper rather than before the note. A recorded gap is not the same "
         "species as an unrecorded one, and that distinction is this note's own"),
@@ -207,7 +207,7 @@ def written_files(path):
 def main():
     today = date.today().isoformat()
     say("PUBLICATION CLASSIFICATION OF outputs/ AND evidence/")
-    say(f"  {today}, under the research design chat's ruling of 2026-09-08, item 3.1")
+    say(f"  {today}, under the publication procedure of 2026-09-08, item 3.1")
     say("  Classified by what each script CONSUMED, from the run-time provenance")
     say("  records, not by filename. Nothing here is moved, changed or published.")
     say()
@@ -329,7 +329,7 @@ def main():
 
     say()
     say("=" * 78)
-    say("COUNTS, for the closing handover-back as the ruling requires")
+    say("COUNTS, for the closing record as the procedure requires")
     for cls in ("GEM-only", "mixed", "FMP-derived", "UNKNOWN"):
         say(f"  {cls:<14} {len(buckets.get(cls, [])):>4}")
     total = sum(len(v) for v in buckets.values())
@@ -349,7 +349,7 @@ def main():
 
     if buckets.get("UNKNOWN"):
         say()
-        say("STOP. There are UNKNOWN files. The ruling says to report rather than decide")
+        say("STOP. There are UNKNOWN files. The procedure says to report rather than decide")
         say("at the keyboard, so nothing is published until each one is classified by hand")
         say("and the reason recorded here.")
 

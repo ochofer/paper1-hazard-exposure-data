@@ -7,7 +7,7 @@
     "source": "Financial Modeling Prep",
     "pull_date": "2026-08-21",
     "pull_date_provenance": "declared, from the archive README. Per-file fetch timestamps were not captured for this pull and are not inferred from filesystem mtimes, which change when a file is copied.",
-    "capture_fetch_timestamps": "TODO for the next extraction: record the request time per symbol at fetch time, not afterwards.",
+    "capture_fetch_timestamps": "Open for the next extraction: record the request time per symbol at fetch time, not afterwards.",
     "redistributable": false,
     "repeatable_without_payment": false,
     "note": "This manifest makes the pull auditable, not repeatable. Rebuilding the price layer requires a paid FMP subscription. Every other input in this repository is free and redistributable."

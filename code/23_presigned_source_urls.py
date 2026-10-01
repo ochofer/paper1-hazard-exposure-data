@@ -1,9 +1,9 @@
 """
 HOW MANY RELEASES SHIP A SOURCE CITATION THAT EXPIRES ON ISSUE
 
-Written under the ruling of 8 September 2026, which admits the presigned-URL
+Written under the design decision of 8 September 2026, which admits the presigned-URL
 finding into the note as one short subsection under six conditions. This script
-supplies the only two new numbers that ruling allows: how many of the releases
+supplies the only two new numbers that decision allows: how many of the releases
 held here carry presigned source URLs, and the expiry those URLs declare.
 
 WHY THE FINDING IS ABOUT VERIFIABILITY AND NOT SECURITY
@@ -23,7 +23,7 @@ WHAT THIS SCRIPT WILL NOT DO
 ----------------------------
 It never writes a key, a token, a signature or a whole URL to any output. It
 counts, and it reports the declared expiry values it finds. The condition in the
-ruling is that the note quote the shape only, so the script cannot emit anything
+decision is that the note quote the shape only, so the script cannot emit anything
 richer than the shape even if a later reader asks it to.
 
 Run:  python 23_presigned_source_urls.py
