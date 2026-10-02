@@ -115,10 +115,11 @@ F["u3g_imp"] = P("panel_join_summary.txt", r"2025   553\.3   2026   618\.2   \(\
 # --- the four return figures, computed from the monthly series ---------------
 # These were typed as literals until 15 September 2026, and one was extracted
 # from vintage_return_spread.txt, a summary of the series rather than the series
-# itself. That summary drifted: its August 2026 rows stopped agreeing with the
-# .csv beside it while its March 2025 rows still did. The .csv is the file of
-# record, its checksum is unchanged since the first published version, and every
-# figure below is now derived from it at build time.
+# itself. The copy of that summary supplied for the version 1.1 build was from
+# before the release was pinned on 3 September 2026, and its August 2026 rows did
+# not agree with the .csv; the summary beside the series does agree with it. The
+# .csv is the file of record, its checksum is unchanged since the first published
+# version, and every figure below is derived from it at build time.
 def _return_figures(fn="vintage_return_spread.csv", lag=6):
     p = os.path.join(OUT, fn)
     if not os.path.exists(p):
@@ -172,7 +173,7 @@ F["m9_n"], F["m9_p"] = _row(r"imputed share moved because owner count changed")
 F["bo_n"], F["bo_p"] = _row(r"-- BUILD-OUT TOTAL")
 F["rs_n"], F["rs_p"] = _row(r"-- RESTATEMENT TOTAL")
 F["mt_n"], F["mt_p"] = _row(r"-- METHODOLOGY TOTAL")
-F["chg_total"] = P("change_decomposition.txt", r"total apparent change ([\d,]+)")
+F["chg_total"] = P("change_decomposition.txt", r"total apparent change (\d[\d,]*\d)")
 F["chg_unchanged"] = P("change_decomposition.txt", r"unchanged edges ([\d,]+)")
 F["remap_n"] = P("change_decomposition.txt", r"remapping sheet loaded: ([\d,]+) entities")
 F["remap_pct"] = P("change_decomposition.txt", r"sheet accounts for only ([\d.]+)%")
@@ -310,7 +311,7 @@ TODAY = date.today().isoformat()
 # Version of the published note. Bump this and add a line to CHANGELOG below
 # before tagging a new release. A note whose subject is undocumented revision
 # cannot itself be revised without a record of what moved.
-VERSION = "1.1"
+VERSION = "1.2"
 CHANGELOG = {
     "1.0": "First published version, 9 September 2026.",
     "1.1": "Prose revised throughout, and no figure changed: all 87 were checked against "
@@ -319,6 +320,18 @@ CHANGELOG = {
            "hand or read from vintage_return_spread.txt, a summary of that series whose "
            "August 2026 rows had drifted from the series itself while its March 2025 rows "
            "had not. The .csv is the file of record and its checksum is unchanged.",
+    "1.2": "Prose revised, 2 October 2026, and no figure changed. The Summary gains two paragraphs, on "
+           "what the existing evidence on vintage revisions does not cover and on why this database is "
+           "an informative setting; section 8 is added, and the comparison with the macroeconomic and "
+           "ESG evidence moves into it from section 5; two claims are withdrawn, that the minimum "
+           "detectable effect is larger than any plausible transition premium and that a commercial "
+           "vendor is not obviously better behaved, the second replaced by the licence and archive "
+           "point. Two corrections to the figure register: the count of changed edges in Appendix B "
+           "printed with a trailing comma in versions 1.0 and 1.1, read from the output file along "
+           "with the figure; and the checksum version 1.1 listed for vintage_return_spread.txt was "
+           "that of a copy made before the release was pinned on 3 September, whose August 2026 rows "
+           "disagreed with the series, rather than of the summary beside the series, which agrees with "
+           "it and carries the checksum shown here. No return figure depends on that summary.",
 }
 CHANGELOG_LINE = " ".join(f"<strong>Version {k}.</strong> {v}" for k, v in sorted(CHANGELOG.items()))
 
@@ -435,9 +448,21 @@ code, outputs and provenance records: github.com/ochofer/paper1-hazard-exposure-
 differencing two vintages of the same database, treating an edge that appears in the later file and not
 in the earlier one as an event with a date. This note asks whether that difference behaves like a record
 of events.</p>
+<p><strong>What the existing evidence does not cover.</strong> Vintage instability is documented in
+macroeconomic series revised by statistical agencies (Goes, 2023) and in a commercial ESG rating (Berg,
+Fabisik and Sautner, 2021). But in neither setting can a reader look up the event a revision is supposed
+to record, so neither shows what a difference between two releases actually contains. An ownership change
+is different in that respect: it either happened or it did not, and the transaction behind it sits on the
+public record, so a difference can be checked case by case.</p>
 <p><strong>What I did.</strong> To answer it, I drew {F['n_cases']} apparent ownership changes at random
 from the {F['restatement_n']} that two releases of the same database disagree on, and I searched for the
 transaction behind each one in exchange filings, company statements and press releases.</p>
+<p><strong>Why this database is an informative setting.</strong> The tracker is free and published under
+CC BY 4.0, so every input to this note except the price series ships with it. The vendor supplied fourteen
+past releases on request, which no public archive offers, and the asset-level layer is eighteen months
+old, so the window examined here is the whole of its life. At the same time, those conditions are
+unusually open: a paid dataset would be harder to audit on the same terms, since its past releases are not
+distributable and its licence would not permit publishing the inputs beside the result.</p>
 <p><strong>What a practitioner takes from it.</strong> Three findings carry the note. First,
 {F['n_noevent']} of the {F['n_cases']} had no corporate event behind them at all, which indicates that
 most of what a vintage difference records is the file being edited rather than the world changing. Second,
@@ -452,9 +477,8 @@ convention and {F['p_sp_imp']} under the other. Taken with the hand verification
 that a signal built on this measure is substantially re-drawn by a release in which most of the movement
 is not an event.</p>
 <p><strong>The return test detects nothing.</strong> Every t-statistic is below {F['t_max']} against a
-minimum detectable effect of about {F['mde_lo']}% a year, which is larger than any plausible transition
-premium; the test was pre-registered and is reported for that reason, and it corroborates nothing in
-either direction.</p>
+minimum detectable effect of about {F['mde_lo']}% a year at the Harvey, Liu and Zhu hurdle. The test was
+pre-registered and is reported for that reason, and it corroborates nothing in either direction.</p>
 <p><strong>The caveat that bounds all of it.</strong> The asset-level layer measured here has existed for
 eighteen months, so some of what follows is plausibly a property of a young dataset and some is a property
 of how ownership data is built and used; section 5 separates them.</p>
@@ -474,8 +498,7 @@ Japanese issuer and a 1.9bn USD acquisition by a listed US utility; the four it 
 to {F['slow_hi']} days, which is {F['slow_yr_lo']} to {F['slow_yr_hi']} years, are older, or reach the
 affected entity only through the perimeter of a larger deal.</p>
 <p><strong>The recording lag is therefore not a constant, and its variation lines up with how visible the
-event was.</strong> That property matters more than the average delay, because a constant lag is corrected
-with an offset, whereas a lag that depends on salience implies that the events entering a vintage
+event was.</strong> A constant lag is corrected with an offset, whereas a lag that depends on salience implies that the events entering a vintage
 difference promptly are a biased subset, skewed toward the large and the recent, with the bias invisible
 in the data itself. Six cases cannot establish a correlation and none is claimed here, since the sample
 was drawn to verify verdicts rather than to estimate a relationship. What the six do establish is that the
@@ -513,8 +536,8 @@ nested.</p>
 <p><strong>Why the convention carries that much force.</strong> Under the naive reading, {F['n_zerocap']}
 firms carry attributable capacity of exactly zero in March 2025, because every ownership edge they have
 has a blank share and a blank multiplied by zero is nothing; under imputation none do. The convention
-therefore does more than change the values, since it decides whether a firm registers as having any
-exposure at all, which is a membership decision rather than a measurement one.</p>
+therefore decides whether a firm registers as having any exposure at all, which is a membership decision
+rather than a measurement one.</p>
 <p>The same choice roughly halves measured growth: on the 604 firms present in both releases, attributable
 capacity grows {F['growth_zero']}% reading blanks as zero and {F['growth_imp']}% imputing them. The reason
 the reading bites so hard is the distribution of blanks itself, since March 2025 carries {F['blank_mar']}
@@ -525,8 +548,9 @@ filled them in between releases.</p>
 {F['fs_zero']} and {F['fs_imp']} against the same 0.95 threshold, with top-quintile overlap of
 {F['fs_ov_zero']}% and {F['fs_ov_imp']}%. Restricting to the 133 firms whose denominator exists in both
 releases, however, it is {F['bio_zero']} and {F['bio_imp']}, with overlap of {F['bio_ov_zero']}% and
-{F['bio_ov_imp']}%. <strong>The instability was therefore mostly the denominator's own coverage moving
-between releases rather than anything about the firms</strong>, and the scaling result accordingly stands
+{F['bio_ov_imp']}%. <strong>These figures indicate that the instability arises mostly from the
+denominator's own coverage moving between releases rather than from anything about the firms</strong>,
+and the scaling result accordingly stands
 as a coverage finding and not as a measurement one. The control that dissolved it was specified before it
 ran, which is the only reason the demotion is credible rather than convenient.</p>
 <p class="src">Sources: <code>outputs/bioenergy_check.txt</code>, <code>outputs/scaling_second_column.txt</code>,
@@ -545,7 +569,7 @@ built, retired or sold between them. What changed instead was Union Electric's l
 true, so that under a nearest-listed-parent rule it became the stopping point and retained the capacity
 its parent had previously been receiving.</p>
 <p><strong>Ameren was not delisted.</strong> It is flagged as publicly listed in both releases, and it lost
-the capacity because a subsidiary gained the flag. Because the cross-section here was built on the later
+the capacity because a subsidiary gained the flag. Since the cross-section here was built on the later
 release, Ameren does not appear in it at all, and it follows that a boolean on a subsidiary decided which
 of two companies entered the study.</p>
 <p>A further consequence follows for anyone using the file directly. Summing the vendor's own ownership
@@ -566,9 +590,10 @@ power-only; the effective panel is therefore {F['panel_eff']} firms.</p>
 <tr><td>Growth in attributable capacity</td><td class="n">+{F['u3g_zero']}%</td><td class="n">+{F['u3g_imp']}%</td></tr>
 </table>
 <p>These figures indicate that the extreme portfolio turns over 8% to 13% of its names on a data release
-with no economic event behind it, and that the continuous ranking moves considerably more than that. For a
-signal rebalanced on vendor releases, it follows that the turnover is a cost paid for revisions to the
-record rather than for changes in the underlying fleet, and that it is paid every release.</p>
+with no economic event behind it, against rank correlations of {F['p_sp_zero']} and {F['p_sp_imp']}
+between the two releases. For a signal rebalanced on vendor releases, it follows that the turnover is a
+cost paid for revisions to the record rather than for changes in the underlying fleet, and that it is
+paid every release.</p>
 <h3>R, every construction</h3>
 <p>R is the share of apparent ownership change that is not the database growing. Because the construction
 of that share involves several defensible choices, every construction is set out in one table rather than
@@ -612,11 +637,6 @@ of one release's change that is methodology.</p>
 pre-committed verdict, the salience pattern in the hand verification, and the mechanism by which a flag
 change moves {F['ameren_mw']} MW between two companies. Those are properties of how ownership data is
 built and used, not of how long this particular dataset has existed.</p>
-<p>Against this background, vintage instability appears not to be peculiar to this vendor or to this kind
-of vendor. Goes (2023) documents it in macroeconomic series revised by statistical agencies, and Berg,
-Fabisik and Sautner (2021) document it in a commercial ESG rating; this note documents it in a free,
-non-profit, openly licensed database. The three share the instability and differ in maturity, and the
-youngest of them is the one measured here.</p>
 <p class="src">Sources: <code>outputs/decay_curves.txt</code>, GEM correspondence of 21 August 2026</p>
 
 <h2>6. Limitations</h2>
@@ -625,9 +645,8 @@ quintile-spread test on {F['panel_eff']} firms, equal-weighted, in local currenc
 December 2025 over a window whose length in months happens to equal the panel's size in firms, returns
 every t-statistic below {F['t_max']}, with a Newey-West standard error of {F['se_lo']}% to {F['se_hi']}%
 a year and a minimum detectable effect of about {F['mde_lo']}% a year at the Harvey, Liu and Zhu hurdle.
-Since no plausible transition premium is that large, it follows that the design could not have detected
-the effect it was built to look for, and the null is therefore a statement about the power of the test
-rather than about the world. A null quoted without a minimum detectable effect reads as evidence of
+An effect smaller than that cannot be detected here at all, so the null is a statement about the power of
+the test rather than about the world. A null quoted without a minimum detectable effect reads as evidence of
 absence. A cross-sectional Fama-MacBeth design was set aside before it ran, on a power calculation
 requiring 1,296 monthly observations, published in the design document.</p>
 <p><strong>Both return arms contain look-ahead, deliberately and identically</strong>, so they are
@@ -658,10 +677,35 @@ launch date, and its download page still references an earlier release, so a rea
 confirm the completeness of the release history. That observation concerns what is published around the
 data rather than the quality of the data itself, and it is recorded because the release history is the one
 input to this note that a reader cannot reconstruct.</p>
-<p>Taken together, these conditions suggest that the effects reported here are measured at the favourable
-end of the range. A commercial vendor with a revenue interest in its own history is not obviously better
-behaved, and the same exercise on a paid dataset would plausibly be harder to run and no more
-flattering.</p>
+<p>Taken together, these conditions suggest that the effects reported here are measured where the inputs
+are most open to inspection. A paid dataset would be harder to audit on the same terms, since its past
+releases are not distributable and its licence would not permit publishing the inputs beside the
+result.</p>
+
+<h2>8. What this measures, and what it does not</h2>
+<p>The natural comparison is with the settings in which vintage instability has already been documented.
+Goes (2023) reports it in macroeconomic series revised by statistical agencies, and Berg, Fabisik and
+Sautner (2021) report it in a commercial ESG rating. This note reports it in a free, non-profit, openly
+licensed database, and in a layer eighteen months old, so the three differ in maturity and in whether the
+event a revision records can be looked up at all.</p>
+<p>For a user of the file, the implication is therefore that a vintage difference is not a usable event
+indicator, since {F['n_noevent']} of the {F['n_cases']} sampled differences had no transaction behind
+them and the six that did entered the file on a lag that varies with how visible the event was. For a
+signal built on the measure, the estimates in section 4 suggest that a single release re-draws the
+ranking at rank correlations of {F['p_sp_zero']} and {F['p_sp_imp']}, on a panel where most of the
+movement between the two files is not an event.</p>
+<p>The limits that bear on that claim are set out in section 6. The one that bounds it most is that
+nineteen cases were drawn once and were not stratified by mechanism, so how the verdicts would divide
+within finer categories is a question these data cannot answer.</p>
+<p>What would settle the questions left open is a longer archive and a stratified draw. A release history
+covering several years would show whether R decays as the layer matures, which fourteen releases across
+eighteen months cannot; and a sample drawn separately within each mechanism would give verdict shares by
+mechanism rather than in aggregate.</p>
+<p>Against this evidence, the claim here is narrow. A difference between two vintages of this file
+records, for the most part, the file being edited. Where it records an event, it can do so years late,
+and in the six cases dated the delay was longest for the events that were least visible. And two
+undocumented conventions, one the vendor's and one the analyst's, each move a verdict that was written
+down before any script ran.</p>
 
 <div class="appendix">
 <h2>Appendix A. Two files called August 2026</h2>
