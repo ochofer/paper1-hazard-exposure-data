@@ -21,8 +21,8 @@ reported in the data-quality note.
 
 That note is published as *What a vintage difference measures*, a hand verification of
 ownership changes in a public asset-level database. It is the tagged release
-`note-v1.1`, at
-https://github.com/ochofer/paper1-hazard-exposure-data/releases/tag/note-v1.1, and
+`note-v1.2`, at
+https://github.com/ochofer/paper1-hazard-exposure-data/releases/tag/note-v1.2, and
 every figure in it resolves to a named output file under `outputs/`.
 
 ---
