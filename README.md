@@ -377,9 +377,9 @@ Data sources: [Kenneth R. French Data Library](https://mba.tuck.dartmouth.edu/pa
 
 ## Other projects
 
-**Optimal versus naive diversification.** Under an index-tracking mandate on French's 49 industries, five covariance estimators understate their own tracking error, by 22 to 61 per cent. The replication of DeMiguel, Garlappi and Uppal (2009) reproduces 29 of the 30 Sharpe ratios that carry a band. Page https://www.carlohofer.com/projects/optimal-vs-naive-diversification/ , dashboard https://www.carlohofer.com/optimal-vs-naive-diversification/dashboard/B-P_dashboard.html , code https://github.com/ochofer/optimal-vs-naive-diversification
+**Optimal versus naive diversification.** Under an index-tracking mandate on French's 49 industries, five covariance estimators understate their own tracking error, by 22 to 61 per cent. The replication of DeMiguel, Garlappi and Uppal (2009) reproduces 29 of the 30 Sharpe ratios that carry a band. [Page](https://www.carlohofer.com/projects/optimal-vs-naive-diversification/), [dashboard](https://www.carlohofer.com/optimal-vs-naive-diversification/dashboard/B-P_dashboard.html), [code](https://github.com/ochofer/optimal-vs-naive-diversification)
 
-**Rules-based portfolio.** Runs a small real-money portfolio under rules published before the first order: two UCITS ETFs at 70/30, a monthly cycle with pre-trade checks, look-through exposure and ex-ante risk on a public dashboard. Page https://www.carlohofer.com/projects/rules-based-portfolio/ , dashboard https://www.carlohofer.com/rules-based-portfolio/ , code https://github.com/ochofer/rules-based-portfolio
+**Rules-based portfolio.** Runs a small real-money portfolio under rules published before the first order: two UCITS ETFs at 70/30, a monthly cycle with pre-trade checks, look-through exposure and ex-ante risk on a public dashboard. [Page](https://www.carlohofer.com/projects/rules-based-portfolio/), [dashboard](https://www.carlohofer.com/rules-based-portfolio/), [code](https://github.com/ochofer/rules-based-portfolio)
 
 ---
 
