@@ -368,6 +368,8 @@ than substitutes written for this project.
 > Newey, W. K. and West, K. D. (1987). "A simple, positive semi-definite, heteroskedasticity and autocorrelation consistent covariance matrix." *Econometrica* 55(3), 703-708.
 >
 > Shumway, T. (1997). "The delisting bias in CRSP data." *Journal of Finance* 52(1), 327-340.
+>
+> Shumway, T. and Warther, V. A. (1999). "The delisting bias in CRSP's Nasdaq data and its implications for the size effect." *Journal of Finance* 54(6), 2361-2379.
 
 Data sources: [Kenneth R. French Data Library](https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/data_library.html),
 [Global Energy Monitor](https://globalenergymonitor.org/),

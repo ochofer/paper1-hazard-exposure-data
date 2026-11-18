@@ -2201,8 +2201,10 @@ worst outcomes among exactly the group I am studying, and the surviving exposed
 companies would look like they earned a premium. That mechanism manufactures the
 result I am looking for.
 
-The classic reference is Shumway (1997), which showed that ignoring the returns of
-delisted firms materially changes estimated premia in US data.
+The classic references are Shumway (1997), which documented that CRSP's files omit the
+delisting returns of many firms and that the omitted returns are large and negative for
+firms delisted for poor performance, and Shumway and Warther (1999), which showed that
+putting those returns back changes an estimated premium, the size effect on Nasdaq.
 
 ### What this test can and cannot do
 
@@ -2235,6 +2237,9 @@ is worthless.
 
 > Shumway, T. (1997). "The delisting bias in CRSP data." *Journal of Finance* 52(1),
 > 327-340.
+>
+> Shumway, T. and Warther, V. A. (1999). "The delisting bias in CRSP's Nasdaq data and its
+> implications for the size effect." *Journal of Finance* 54(6), 2361-2379.
 """))
 
 cells.append(code(r'''
