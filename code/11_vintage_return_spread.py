@@ -55,8 +55,9 @@ KNOWN LIMITATIONS, STATED RATHER THAN HIDDEN
    either spread should not be quoted on its own.
 2. EQUAL WEIGHTED, not value weighted. We have no market-cap series. Equal
    weighting overweights small firms, which is the standard critique.
-3. The panel is 175 firms, those with both an exposure number and a price
-   series. Quintiles are therefore 35 firms.
+3. Each arm holds the firms with exposure above zero in that release and a
+   price series; the run log prints the size of each arm and of its quintile
+   (corrected 19 November 2026: this line stated one count for all four arms).
 4. Newey-West standard errors, 6 lags, computed here rather than via statsmodels
    which is not installed and cannot be (no egress). The implementation is the
    textbook Bartlett-kernel form and is checked against the plain OLS standard
@@ -130,7 +131,7 @@ def main():
         lines.append(s)
 
     log("TASK 1.5  DOES THE RESULT MOVE WITH THE VINTAGE?")
-    log("  pre-committed reading is in the docstring. Report whatever comes out.")
+    log("  the reading is set in the docstring, before the run. Report whatever comes out.")
 
     panel = pd.read_csv(PANEL, dtype={"entity_id": str})
     tick = pd.read_csv(TICK, dtype={"entity_id": str})
@@ -189,16 +190,21 @@ def main():
             f"{mu*12*100:>11.2f}%{t_ols:>10.2f}{t_nw:>10.2f}")
 
     log(f"\n{'='*74}\nMINIMUM DETECTABLE EFFECT. READ THIS BEFORE THE TEST BELOW")
-    log("  Carlo pre-committed to reporting the MDE on any return result, so")
-    log("  that a null is never passed off as evidence of absence when it is")
-    log("  really absence of power.")
-    log(f"\n  {'arm':<22}{'NW se':>10}{'MDE t=1.96':>13}{'MDE t=3.0':>12}")
+    log("  The MDE is reported on any return result, by a rule set before the run,")
+    log("  so that a null is never passed off as evidence of absence when it is")
+    log("  absence of power.")
+    # The column at 80 per cent power was added 19 November 2026, after the
+    # results were known: the MDE at t = 3.0 is the effect detected half the time.
+    log(f"\n  {'arm':<22}{'NW se':>10}{'MDE t=1.96':>13}{'MDE t=3.0':>12}"
+        f"{'MDE t=3.0, 80% power':>22}")
     for (vint, rule), S in series.items():
         se = S["se_nw"] * 12 * 100
-        log(f"  {vint+' blank='+rule:<22}{se:>9.2f}%{1.96*se:>12.2f}%{3.0*se:>11.2f}%")
+        log(f"  {vint+' blank='+rule:<22}{se:>9.2f}%{1.96*se:>12.2f}%{3.0*se:>11.2f}%"
+            f"{(3.0 + 0.84)*se:>21.2f}%")
     log("\n  t = 3.0 is the Harvey, Liu and Zhu hurdle for a newly proposed")
-    log("  factor. An effect smaller than the MDE cannot be detected here at")
-    log("  all, so the size of these spreads carries no information.")
+    log("  factor. An effect of the MDE's size is detected half the time, and a")
+    log("  smaller effect less than half the time; the last column is the effect")
+    log("  detected four times in five.")
 
     log(f"\n{'='*74}\nTHE ACTUAL TEST: DOES THE ANSWER MOVE WITH THE VINTAGE?")
     for rule in ("zero", "impute"):
@@ -221,7 +227,7 @@ def main():
         within = abs(diff) < pooled_se
         verdict = ("ROBUST" if (within and corr > 0.95) else
                    "FRAGILE" if ((not within) or corr < 0.90) else "MIXED")
-        log(f"    PRE-COMMITTED VERDICT: {verdict}")
+        log(f"    VERDICT BY THE RULE IN THE HEADER: {verdict}")
 
     log(f"\n{'='*74}\nAND HOW MUCH IS THE BLANK-SHARE CONVENTION ALONE?")
     for vint in ("2025", "2026"):
@@ -256,7 +262,7 @@ def main():
     out.to_csv(os.path.join(OUT, "vintage_return_spread.csv"))
     with open(os.path.join(OUT, "vintage_return_spread.txt"), "w") as f:
         f.write("\n".join(lines) + "\n")
-    log(f"\n  written to {os.path.abspath(OUT)}")
+    log(f"\n  written to {os.path.relpath(OUT, os.path.join(HERE, ".."))}")
 
 
 if __name__ == "__main__":

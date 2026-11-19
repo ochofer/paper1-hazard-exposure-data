@@ -71,7 +71,7 @@
 
 <h1>Reproducing this analysis</h1>
 <p class="meta">
-Companion to <code>notebooks/01_raw_panels.ipynb</code> · Carlo Hofer · last revised 22 August 2026<br>
+Companion to <code>notebooks/01_raw_panels.ipynb</code> · Carlo Hofer · last revised 19 November 2026<br>
 Cost key: <span class="st s-free">FREE</span> no account needed · <span class="st s-opt">FREE KEY</span> free registration · <span class="st s-paid">PAID</span> requires a subscription · <span class="st s-note">READ</span> nothing to run
 </p>
 
@@ -86,7 +86,7 @@ notebook but that you need if you are going to execute it.</p>
 <div class="box key">
   <p><strong>The short version.</strong> Roughly two thirds of my project runs on free
   public data and needs about twenty minutes. The share price panel requires a paid
-  subscription of about $150 for one month, and I cannot legally redistribute it, so it
+  subscription of $166 for one month, and I cannot legally redistribute it, so it
   is not in this repository. Everything else, including both blocking tests and the whole
   company-matching pipeline, is free.</p>
 </div>
@@ -103,7 +103,10 @@ climate hazards, measured from the locations of the physical assets it owns, hel
 explain its stock returns after controlling for the usual risk factors.</p>
 
 <p>My notebook builds and audits the data for that study. It does not test the
-hypothesis. I use three datasets:</p>
+hypothesis. The study was stood down before any hazard variable was built; the repository's
+note, <em>What a vintage difference measures</em>, reports what was found in the ownership
+data instead, and the notebook stands as the record of the data layer as built in August
+2026. I use three datasets:</p>
 
 <table>
   <tr><th>Dataset</th><th>What it provides</th><th>Cost</th></tr>
@@ -161,7 +164,7 @@ hypothesis. I use three datasets:</p>
     <div class="box warn">
       <p><strong>The advertised monthly prices are usually the annually-billed rates.</strong>
       Paying monthly costs more per month and avoids a twelve-month commitment, which is
-      the right trade for a one-off data pull. I paid about $150 for a single month,
+      the right trade for a one-off data pull. I paid $166 for a single month,
       downloaded everything, archived it, and cancelled.</p>
     </div>
     <p>If you would rather not pay, sections 0, 1, 2 and 6 still run, and I wrote section 6
@@ -230,10 +233,9 @@ hypothesis. I use three datasets:</p>
   <div class="body">
     <p>I get roughly 4,000 daily rows for 2010 to 2025, which is about 252 trading days a
     year.</p>
-    <p>My quickest sanity check is the summary table. The minimum and maximum of the
-    market factor should fall in March 2020, and they should be around -12 and +9 percent.
-    Those are the two extreme days of the COVID crash and recovery. If they fall somewhere
-    else, the dates were parsed wrongly.</p>
+    <p>My quickest sanity check is the summary table. The minimum of the market factor
+    should fall on 16 March 2020, around -12 percent, and the maximum on 9 April 2025, around
+    +9.7 percent. If they fall somewhere else, the dates were parsed wrongly.</p>
     <details><summary>If the parser raises "No YYYYMMDD rows found"</summary><div class="inner">
       <p>The URL is pointing at a monthly file rather than a daily one. Monthly files use
       six-digit dates and additionally append a block of annual data below the monthly
@@ -253,7 +255,7 @@ hypothesis. I use three datasets:</p>
     so a second run costs almost nothing.</p>
     <table>
       <tr><th>Step</th><th>Watch for</th></tr>
-      <tr><td>2, resolution</td><td>Roughly 270 of 328 companies resolving to listed shares. A well-known listed company in the unresolved list is a matching failure, not evidence that it is unlisted</td></tr>
+      <tr><td>2, resolution</td><td>Roughly 270 of the 328 ownership entities resolving to listed shares. A well-known listed company in the unresolved list is a matching failure, not evidence that it is unlisted</td></tr>
       <tr><td>2b, one listing per company</td><td>The line <code>no symbol is claimed by two entities</code>. If two companies share a ticker, the crosswalk has merged them</td></tr>
       <tr><td>2c, currency</td><td>Currency filled for every company, and the spot-check table showing European companies on European exchanges rather than US over-the-counter lines</td></tr>
       <tr><td>2d, name retry and corrections</td><td>Each recovered name printed with its similarity score. Read them; a low score on an unfamiliar name is worth checking by hand</td></tr>
@@ -297,7 +299,9 @@ hypothesis. I use three datasets:</p>
     the subscription because it prices companies that no longer exist. Section 6 needs only
     the factor data and a price panel.</p>
     <p>I wrote the thresholds for section 5 into the notebook <em>above</em> the cell that
-    computes the number, which is the only point at which a threshold means anything.
+    computes the number; the rates fall in the middle and the top band, and the threshold was
+    set aside for the reason section 5b gives, that the rate is measured on the provider's
+    recent list and not on the sample's population.
     Section 6 checks that a diversified portfolio has a market beta near one, which is
     close to a definition rather than a hypothesis, and that regulated utilities come back
     less market-sensitive than integrated oil companies.</p>
@@ -339,8 +343,11 @@ hypothesis. I use three datasets:</p>
     <p>What I publish instead:</p>
     <ul>
       <li><strong>The code that fetches it</strong>, so the download is inspectable.</li>
-      <li><strong>The resolved ticker list</strong> in <code>config/</code>, which is my
-      own work and is the part that took the effort.</li>
+      <li><strong>The inputs to the ticker resolution</strong> in <code>config/</code>: the
+      universe and its ISINs, and the hand corrections in <code>config/ticker_overrides.csv</code>,
+      each with a written reason. The resolved list itself, <code>config/tickers_primary.csv</code>,
+      is rebuilt by the notebook and is not committed; the manifest names the 304 symbols it
+      produced.</li>
       <li><strong>The hand corrections</strong> in <code>config/ticker_overrides.csv</code>,
       each with a written reason.</li>
       <li><strong>A manifest</strong> recording row counts, date ranges and a SHA-256 for
@@ -364,12 +371,14 @@ hypothesis. I use three datasets:</p>
       <tr><td><strong>The ownership snapshot is undated.</strong> Using a current ownership map to explain past returns is look-ahead bias in the explanatory variable, which no downstream care repairs</td><td>Investigated. The publisher's earlier releases cannot reconstruct a historical map, because most change between releases is their own research catching up</td></tr>
       <tr><td><strong>Survivorship bias is unmeasured at the relevant company size.</strong> The price provider's delisting records do not reach back far enough</td><td>Bounded as far as the source allows in section 5. CRSP would settle it</td></tr>
       <tr><td><strong>No currency conversion.</strong> Nine currencies, and UK prices are in pence rather than pounds</td><td>Deliberately left to a separate, testable step</td></tr>
-      <tr><td><strong>Most return variation sits in the last third of the sample</strong>, and both driving episodes correlate with hazard exposure by construction</td><td>Measured in section 6c. Pre-committed to reporting split samples as standard rather than as robustness</td></tr>
+      <tr><td><strong>Most return variation sits in the last third of the sample</strong>, and both driving episodes correlate with hazard exposure by construction</td><td>Measured in section 6c. Split samples are reported as standard rather than as robustness, by a rule set in the notebook before the run</td></tr>
       <tr><td><strong>Some asset owners are subsidiaries of listed parents.</strong> Whether to roll them up changes what counts as a company</td><td>Open. A research design decision, not a lookup</td></tr>
     </table>
-    <p>If a null result emerges, I intend to report it as one alongside the minimum effect
-    size the sample could have detected. A study that can only publish one of its two
-    possible answers is not a test of anything.</p>
+    <p>If a null result had emerged, it would have been reported as one alongside the minimum
+    effect size the sample could have detected; the study was stood down before the exposure
+    measure was built, and the null that is reported is the return test of the note, with its
+    minimum detectable effect. A study that can only publish one of its two possible answers is
+    not a test of anything.</p>
   </div>
 </div>
 

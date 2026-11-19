@@ -50,12 +50,20 @@ REGISTER = [
     # ---- lead: hand verification and selection ------------------------------
     ("lead", "restatement bucket the sample was drawn from", "2,543", "restricted_r.txt"),
     ("lead", "R as published", "36.0%", "change_decomposition.txt"),
-    ("lead", "pre-committed GO bar", "25%", "change_decomposition.txt"),
+    ("lead", "the 25% bar, set in script 06's header", "25%", "change_decomposition.txt"),
     ("lead", "generous bound on R", "29.1%", "change_decomposition.txt"),
     ("lead", "19 cases verified", "19", "event_validation_sample.csv"),
-    ("lead", "salience lag, fast cases", "12 to 71 days", "salience_lag.txt"),
-    ("lead", "salience lag, slow cases", "670 to 1,674 days", "salience_lag.txt"),
-    ("lead", "salience lag, datable cases in the evidence file", "cases in the evidence file                6", "salience_lag.txt"),
+    ("lead", "recording lag, the two cases inside the window", "12 to 71 days", "salience_lag.txt"),
+    ("lead", "recording lag, the four cases from before the first release", "670 to 1,674 days", "salience_lag.txt"),
+    ("lead", "recording lag, datable cases in the evidence file", "cases in the evidence file                6", "salience_lag.txt"),
+    # Added 19 November 2026, after the results were known: the lags from the first release that
+    # could have carried each change, the rule's R, the NO EVENT interval, the firms both releases
+    # cover, the U3 accounting and the tests on the decay pairs.
+    ("lead", "days after the first release that could have carried the four", "426 to 457 days", "salience_lag.txt"),
+    ("lead", "R by the rule, strict V applied, V1", "29.7%", "release_ladder.txt"),
+    ("lead", "R by the rule, strict V applied, V2", "28.9%", "release_ladder.txt"),
+    ("lead", "NO EVENT share, lower bound of its Wilson interval", "0.410", "release_ladder.txt"),
+    ("lead", "NO EVENT share, upper bound of its Wilson interval", "0.809", "release_ladder.txt"),
 
     # ---- conventions (blocked on branch 1, numbers still registered) --------
     ("conventions", "raw MW Spearman, blank=zero", "0.9146", "scaling_second_column.txt"),
@@ -85,18 +93,37 @@ REGISTER = [
     ("portfolio", "top-quintile overlap, blank=impute", "92.1%", "panel_join_summary.txt"),
     ("portfolio", "U3 exposure growth, blank=zero", "+20.0%", "panel_join_summary.txt"),
     ("portfolio", "U3 exposure growth, blank=impute", "+11.7%", "panel_join_summary.txt"),
+    ("portfolio", "firms with coal or gas units in both releases", "coal or gas units in both releases                       152", "panel_join_summary.txt"),
+    ("portfolio", "Spearman on the 152 firms with units in both releases, blank=zero", "0.8957", "panel_join_summary.txt"),
+    ("portfolio", "Spearman on the 152 firms with units in both releases, blank=impute", "0.9661", "panel_join_summary.txt"),
+    ("portfolio", "top quintile kept on the 152, under both readings", "28 of 30 (93.3%)", "panel_join_summary.txt"),
+    ("portfolio", "growth on the 152, blank=zero", "+13.2%", "panel_join_summary.txt"),
+    ("portfolio", "growth on the 152, blank=impute", "+5.4%", "panel_join_summary.txt"),
+    ("portfolio", "of the 152, at zero in March 2025 with blanks read as zero", "of the 152, at zero in March 2025 under this reading   9", "panel_join_summary.txt"),
+    ("portfolio", "Spearman on the 143 above zero in March 2025 under both readings, blank=zero", "0.9571", "panel_join_summary.txt"),
+    ("portfolio", "Spearman on the 143 above zero in March 2025 under both readings, blank=impute", "0.9689", "panel_join_summary.txt"),
+    ("portfolio", "firms that entered coverage between the two releases", "entered between the two releases 36", "panel_join_summary.txt"),
+    ("conventions", "U3, panel firms with units in both releases", "U3, 171 panel firms", "bioenergy_check.txt"),
+    ("conventions", "U3 firms with bioenergy alone in at least one release", "bioenergy alone in at least one release, blank=impute  19", "bioenergy_check.txt"),
 
     # ---- both releases side by side ----------------------------------------
     ("releases", "R on V1", "36.0%", "change_decomposition.txt"),
     ("releases", "R on V2", "35.4%", "release_ladder.txt"),
-    ("releases", "worst case on V1", "25.2%", "release_ladder.txt"),
-    ("releases", "worst case on V2", "24.3%", "release_ladder.txt"),
+    ("releases", "strict V at its upper bound, the unclear case not real, V1", "25.2%", "release_ladder.txt"),
+    ("releases", "strict V at its upper bound, the unclear case not real, V2", "24.3%", "release_ladder.txt"),
+    ("releases", "strict V with the unclear case counted as real, V1", "28.7%", "release_ladder.txt"),
+    ("releases", "strict V with the unclear case counted as real, V2", "27.8%", "release_ladder.txt"),
+    ("releases", "strict V with the unclear case counted as real, at its upper bound, V1", "24.2%", "release_ladder.txt"),
+    ("releases", "strict V with the unclear case counted as real, at its upper bound, V2", "23.2%", "release_ladder.txt"),
     ("releases", "restricted R", "38.7%", "restricted_r.txt"),
     ("releases", "decimal truncation, V1", "80.0%", "decimal_truncation.txt"),
     ("releases", "decimal truncation, count", "3,561", "decimal_truncation.txt"),
     ("releases", "decimal truncation, V2", "78.5%", "decimal_truncation.txt"),
     ("releases", "decay, preferred cut n=8", "61.6% to 48.0%", "decay_curves.txt"),
     ("releases", "decay, gap-length correlation", "+0.51", "decay_curves.txt"),
+    ("releases", "decay, Welch p-value on the eight pairs", "p 0.33", "decay_curves.txt"),
+    ("releases", "decay, trend p-value on the eight pairs", "p 0.42", "decay_curves.txt"),
+    ("releases", "decay, gap-length correlation p-value on 12 pairs", "p 0.09", "decay_curves.txt"),
 
     # ---- the tracker's age --------------------------------------------------
     ("age", "December 2025 methodology share", "96.2", "decay_curves.txt"),
@@ -168,7 +195,16 @@ REGISTER = [
 # reformatted. A display that invents a figure fails the build.
 # ---------------------------------------------------------------------------
 DISPLAY = {
-    "salience lag, datable cases in the evidence file": "6",
+    "recording lag, datable cases in the evidence file": "6",
+    "firms with coal or gas units in both releases": "152",
+    "firms that entered coverage between the two releases": "36",
+    "U3, panel firms with units in both releases": "171",
+    "U3 firms with bioenergy alone in at least one release": "19",
+    "decay, Welch p-value on the eight pairs": "0.33",
+    "decay, trend p-value on the eight pairs": "0.42",
+    "decay, gap-length correlation p-value on 12 pairs": "0.09",
+    "top quintile kept on the 152, under both readings": "28 firms",
+    "of the 152, at zero in March 2025 with blanks read as zero": "9",
     "U2 firms with zero attributable capacity in March 2025": "33",
     "panel firms with exposure in August 2026, of the 191-firm effective panel": "188",
     "December 2025 methodology share": "96.2%",
@@ -350,7 +386,7 @@ def main():
     with open(os.path.join(OUT, "figure_register.txt"), "w") as fh:
         fh.write("\n".join(_lines) + "\n")
     say()
-    say(f"  written to {os.path.abspath(OUT)}")
+    say(f"  written to {os.path.relpath(OUT, os.path.join(HERE, ".."))}")
 
 
 if __name__ == "__main__":

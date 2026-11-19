@@ -284,7 +284,7 @@ def main():
     with open(path, "w") as f:
         f.write("\n".join(lines) + "\n")
     say()
-    say(f"written to {os.path.abspath(path)}")
+    say(f"written to {os.path.relpath(path, os.path.join(HERE, '..'))}")
 
 
 if __name__ == "__main__":

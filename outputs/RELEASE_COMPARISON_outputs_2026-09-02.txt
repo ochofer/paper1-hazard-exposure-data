@@ -479,3 +479,11 @@ SCHEMA DRIFT ACROSS RELEASES
   distinct sheet counts   : [np.int64(10), np.int64(11), np.int64(12), np.int64(13)]
   distinct entity keys    : ['Entity ID', 'GEM Entity ID']
   distinct ownership widths: [np.int64(6), np.int64(7), np.int64(8)]
+
+CORRECTED 19 NOVEMBER 2026
+  The sentence printed twice above by script 06, 'The age objection is answered on
+  the data: a majority of apparent change is NOT explained by a young database
+  adding coverage', was false at R = 36.0 and 35.4 per cent: 64.0 and 64.6 per
+  cent of apparent change is the database adding coverage, and the finding is
+  that 36.0 and 35.4 per cent is not. The script's text was corrected on this
+  date; this file keeps the lines as produced on 2 September 2026.

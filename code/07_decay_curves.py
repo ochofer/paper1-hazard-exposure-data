@@ -136,6 +136,88 @@ def load(path):
     return edges, imputed, has_flag, schema
 
 
+# ---- the t distribution, written out because scipy is not installed here ---
+# Added 19 November 2026. The regularised incomplete beta function by the
+# continued fraction of Numerical Recipes; checked against scipy.stats on the
+# committed decay_curves.csv to the fourth decimal before it was committed.
+def _betacf(a, b, x, maxit=200, eps=3e-14, fpmin=1e-300):
+    qab, qap, qam = a + b, a + 1.0, a - 1.0
+    c, d = 1.0, 1.0 - qab * x / qap
+    d = 1.0 / (d if abs(d) > fpmin else fpmin)
+    h = d
+    for m in range(1, maxit + 1):
+        m2 = 2 * m
+        aa = m * (b - m) * x / ((qam + m2) * (a + m2))
+        d = 1.0 + aa * d
+        d = 1.0 / (d if abs(d) > fpmin else fpmin)
+        c = 1.0 + aa / c
+        c = c if abs(c) > fpmin else fpmin
+        h *= d * c
+        aa = -(a + m) * (qab + m) * x / ((a + m2) * (qap + m2))
+        d = 1.0 + aa * d
+        d = 1.0 / (d if abs(d) > fpmin else fpmin)
+        c = 1.0 + aa / c
+        c = c if abs(c) > fpmin else fpmin
+        de = d * c
+        h *= de
+        if abs(de - 1.0) < eps:
+            break
+    return h
+
+
+def _betai(a, b, x):
+    import math
+    if x <= 0.0:
+        return 0.0
+    if x >= 1.0:
+        return 1.0
+    bt = math.exp(math.lgamma(a + b) - math.lgamma(a) - math.lgamma(b)
+                  + a * math.log(x) + b * math.log(1.0 - x))
+    if x < (a + 1.0) / (a + b + 2.0):
+        return bt * _betacf(a, b, x) / a
+    return 1.0 - bt * _betacf(b, a, 1.0 - x) / b
+
+
+def t_two_sided_p(t, dof):
+    """Two-sided p-value of a t statistic on dof degrees of freedom."""
+    return _betai(dof / 2.0, 0.5, dof / (dof + t * t))
+
+
+def welch_test(a, b):
+    """Welch's t-test of two means, unequal variances. Returns t, df, p."""
+    import math
+    na, nb = len(a), len(b)
+    va, vb = a.var(ddof=1), b.var(ddof=1)
+    se = math.sqrt(va / na + vb / nb)
+    t = (a.mean() - b.mean()) / se
+    dof = (va / na + vb / nb) ** 2 / ((va / na) ** 2 / (na - 1) + (vb / nb) ** 2 / (nb - 1))
+    return t, dof, t_two_sided_p(t, dof)
+
+
+def trend_test(y):
+    """Least-squares slope of y on its position, its t statistic and p."""
+    import math
+    import numpy as np
+    x = np.arange(len(y), dtype=float)
+    xm, ym = x.mean(), y.mean()
+    sxx = ((x - xm) ** 2).sum()
+    slope = ((x - xm) * (y - ym)).sum() / sxx
+    res = y - (ym - slope * xm) - slope * x
+    se = math.sqrt((res ** 2).sum() / (len(y) - 2) / sxx)
+    t = slope / se
+    return slope, t, t_two_sided_p(t, len(y) - 2)
+
+
+def corr_test(x, y):
+    """Pearson correlation, its t statistic on n - 2 degrees of freedom and p."""
+    import math
+    import numpy as np
+    r = float(np.corrcoef(x, y)[0, 1])
+    n = len(x)
+    t = r * math.sqrt((n - 2) / (1.0 - r * r))
+    return r, t, t_two_sided_p(t, n - 2)
+
+
 def main():
     lines = []
 
@@ -175,7 +257,7 @@ def main():
         {f'release_{d:%Y-%m}': p for d, p in seq})
 
     say("TASK 1.2  DECAY CURVES ACROSS CONSECUTIVE GEM RELEASES")
-    say("  pre-committed prediction: build-out declining, restatement flat,")
+    say("  prediction set in the header before the run: build-out declining, restatement flat,")
     say("  methodology spiking at specific releases rather than trending")
     say()
     say(f"  {len(seq)} releases found:")
@@ -223,8 +305,8 @@ def main():
         # all six early pairs flag-absent, all six late pairs flag-present.
         # Build-out share was therefore mechanically lower in the second half
         # whether or not a real trend existed, and the verdict could not be read
-        # as evidence for the prediction. Caught by the Project A scaffolding and
-        # blocking tests chat on 22 August.
+        # as evidence for the prediction. Caught on 22 August, before the result
+        # was written up.
         #
         # The fix: compute every pair BOTH ways. The blind pass applies the
         # pre-December rule throughout, so the trend test is comparable across
@@ -314,7 +396,7 @@ def main():
     say()
 
     # -- verdict against the pre-commitment ---------------------------------
-    say("VERDICT AGAINST THE PRE-COMMITTED PREDICTION")
+    say("VERDICT AGAINST THE PREDICTION SET IN THE HEADER BEFORE THE RUN")
     n = len(df)
     if n >= 4:
         h1, h2 = df.iloc[:n // 2], df.iloc[n // 2:]
@@ -375,6 +457,24 @@ def main():
             f"{df['build_pct_blind'].corr(df['months']):+.2f}")
         say("    Report whichever of these the note quotes, and say which it is.")
 
+        # Added 19 November 2026, after the results were known: the two halves and
+        # the trend tested rather than described. The t distribution is evaluated by the incomplete beta
+        # function written below, since scipy is not installed here.
+        say()
+        say("  WHAT THE EIGHT PAIRS DISTINGUISH, added 19 November 2026")
+        aa = a4["build_pct_blind"].to_numpy(dtype=float)
+        bb = b4["build_pct_blind"].to_numpy(dtype=float)
+        t_w, df_w, p_w = welch_test(aa, bb)
+        say(f"    Welch t-test, first four pairs against last four: t {t_w:.2f}, "
+            f"df {df_w:.1f}, p {p_w:.2f}")
+        slope, t_s, p_s = trend_test(d4["build_pct_blind"].to_numpy(dtype=float))
+        say(f"    straight trend across the eight pairs: slope {slope:+.2f} points a pair, "
+            f"t {t_s:.2f}, p {p_s:.2f}")
+        r_g, t_g, p_g = corr_test(df["build_pct_blind"].to_numpy(dtype=float),
+                                  df["months"].to_numpy(dtype=float))
+        say(f"    correlation of build-out share with gap length on {len(df)} pairs: "
+            f"{r_g:+.2f}, p {p_g:.2f}")
+
     say()
     say("METHODOLOGY SPIKES, the datable rule changes")
     top = df.nlargest(3, "method_pct")   # flag-aware, which is where spikes show
@@ -405,7 +505,7 @@ def main():
     with open(os.path.join(OUT, "decay_curves.txt"), "w") as f:
         f.write("\n".join(lines) + "\n")
     say()
-    say(f"written to {os.path.abspath(OUT)}")
+    say(f"written to {os.path.relpath(OUT, os.path.join(HERE, ".."))}")
 
 
 if __name__ == "__main__":

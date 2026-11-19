@@ -29,3 +29,7 @@ outputs/vintage_return_spread.txt
 # local lists for the public-text checker, process rather than content
 .public_text_terms
 .public_text_allow
+
+# The releases of the ownership tracker and the price archive, which the scripts read from
+# Data/ beside code/ when a run is made inside the repository; never committed.
+Data/

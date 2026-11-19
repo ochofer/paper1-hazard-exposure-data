@@ -17,17 +17,16 @@ already run against V1, while 08 and 09 ran against V2, and 10 and 11 joined a
 V1 cross-section to a V2 exposure measure.
 
 The measured cost of that split is in RELEASE_SPLIT_MEASUREMENT_2026-09-02.html.
-The short version is that R is 36.0% on V1 and 35.4% on V2, and the worst-case
-reading of the pre-committed GO threshold clears on one file and fails on the
-other. A resolution rule that depends on the contents of a directory is not a
+The short version is that R is 36.0% on V1 and 35.4% on V2, and the reading of
+the 25% threshold at the upper bound of V's interval clears on one file and
+fails on the other. A resolution rule that depends on the contents of a directory is not a
 reproducible input, whatever the rule is.
 
 THE DECISION IT ENFORCES
 ------------------------
-Carlo pinned V1 on 3 September 2026. The reasons are recorded in
-PROJECT_STATUS.md; the binding one is that the 328-firm cross-section is itself
-a V1 artefact, script 00 having been hardcoded to V1 and run on 19 August, and
-328 is fixed in public documents.
+I pinned V1 on 3 September 2026. The binding reason is that the 328-firm
+cross-section is itself a V1 artefact, script 00 having been hardcoded to V1
+and run on 19 August, and 328 is fixed in public documents.
 
 V2_External is deliberately still listed below under its own key. It is
 reported alongside V1 in the note as a second column, including the worst case

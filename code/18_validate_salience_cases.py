@@ -4,9 +4,8 @@ VALIDATE THE SALIENCE EVIDENCE FILE, AND COMPUTE THE LAGS FROM IT
 WHY THIS EXISTS
 ---------------
 The gate 5 register of 7 September found exactly one number in the note that is
-not traceable to any output file: the salience lag table, the six datable cases
-whose recording delay correlates with how visible the underlying event was. It
-is the finding the note leads on, after the hand verification that earns it.
+not traceable to any output file: the lag table, the six datable cases and the
+delay between each transaction and the first release carrying it.
 
 It cannot be computed. The transaction dates come from exchange filings, company
 press releases and EDINET, read by hand. Presenting a hand-verified table as a
@@ -37,6 +36,16 @@ the delay a researcher differencing vintages would actually experience. Where a
 newest_update stamp exists it is reported beside the lag as an independent
 cross-check, not substituted for it.
 
+Added 19 November 2026, after the results were known: what the sampling frame fixes.
+The cases are edges that differ between the March 2025 and the August 2026
+releases, so a change absent from March 2025 cannot be carried before the next
+release held, May 2025, and a transaction inside the window cannot be carried
+after August 2026. For each case the script prints the first release that could
+have carried the change (May 2025 for a transaction before March 2025, the first
+release after the transaction's month otherwise), the days from that release
+to the carrying one, and the carrying release's position in the sequence of
+releases from that first one.
+
 Run:  python 18_validate_salience_cases.py
 Out:  outputs/salience_lag.txt
       outputs/salience_lag.csv
@@ -56,6 +65,22 @@ EVIDENCE = os.path.join(HERE, "..", "evidence", "salience_lag_cases.csv")
 SAMPLE = os.path.join(OUT, "event_validation_sample.csv")
 
 REAL_VERDICTS = {"REAL", "REAL BUT MISDATED"}
+
+# The releases held, by month, as outputs/decay_curves.txt lists them, and the
+# month of the earlier release of the pair the cases were drawn from.
+RELEASES_HELD = ["2025-03", "2025-05", "2025-07", "2025-08", "2025-09", "2025-10",
+                 "2025-11", "2025-12", "2026-01", "2026-02", "2026-03", "2026-05",
+                 "2026-07", "2026-08"]
+BASE_RELEASE = "2025-03"
+
+
+def first_release_that_could_carry(t):
+    """The first release after BASE_RELEASE and after the transaction's month."""
+    m = t.strftime("%Y-%m")
+    for r in RELEASES_HELD:
+        if r > BASE_RELEASE and r > m:
+            return r
+    return None
 
 _lines = []
 
@@ -123,6 +148,20 @@ def main():
     ev["t"] = pd.to_datetime(ev.transaction_date)
     ev["r"] = pd.to_datetime(ev.gem_release_date_used)
     ev["lag_days"] = (ev.r - ev.t).dt.days
+    # Added 19 November 2026: the frame's floor or ceiling and the lag counted
+    # from the first release that could have carried the change.
+    ev["first_release_that_could_carry"] = [first_release_that_could_carry(t) for t in ev.t]
+    first_dates = pd.to_datetime(ev.first_release_that_could_carry + "-01")
+    ev["days_after_first_possible"] = (ev.r - first_dates).dt.days
+    ev["release_position_from_first_possible"] = [
+        RELEASES_HELD.index(c) - RELEASES_HELD.index(f) + 1
+        for c, f in zip(ev.gem_first_release_carrying_change, ev.first_release_that_could_carry)]
+    base_date = pd.Timestamp(BASE_RELEASE + "-01")
+    last_date = pd.Timestamp(RELEASES_HELD[-1] + "-01")
+    ev["before_first_release"] = ev.t < base_date
+    ev["lag_floor_or_ceiling_days"] = [
+        (fd - t).days if t < base_date else (last_date - t).days
+        for t, fd in zip(ev.t, first_dates)]
     ev = ev.sort_values("lag_days").reset_index(drop=True)
 
     say()
@@ -145,28 +184,48 @@ def main():
     say(f"  slow, beyond four months: {len(slow)} cases, "
         f"{slow.lag_days.min():,} to {slow.lag_days.max():,} days "
         f"({slow.lag_days.min()/365.25:.1f} to {slow.lag_days.max()/365.25:.1f} years)")
-    say()
-    say("  A PHRASING CORRECTION FOR THE NOTE. The slow group has been described as")
-    say("  'two to four and a half years'. The shortest of the four is "
-        f"{slow.lag_days.min():,} days,")
-    say(f"  which is {slow.lag_days.min()/365.25:.1f} years, not two. The accurate phrase is")
-    say(f"  '{slow.lag_days.min()/365.25:.1f} to {slow.lag_days.max()/365.25:.1f} years', "
-        f"or the days themselves.")
-    say()
-    say("  The two fast cases are the recent, heavily covered transactions: a")
-    say("  statutory disclosure by a listed Japanese issuer, and a 1.9bn USD")
-    say("  acquisition by a listed US utility. The four slow ones are older or reach")
-    say("  the affected entity only through a perimeter. Salience note per case is in")
-    say("  the evidence file.")
-    say()
-    say("  WHAT THIS IS NOT. Six cases cannot establish a correlation. The claim the")
-    say("  note makes is that the lag is not a constant, which one fast case and one")
-    say("  slow case would establish, and that its variation lines up with salience,")
-    say("  which is offered as the reading of six hand-checked cases and labelled as")
-    say("  such. An offset cannot fix a lag that is not constant, and that is the")
-    say("  consequence that matters.")
 
-    ev.drop(columns=["k", "t", "r"]).to_csv(
+    # Added 19 November 2026, after the results were known. The paragraphs printed here
+    # until then read the two groups as the visible and the less visible events;
+    # the frame fixes the groups, as the figures below show.
+    say()
+    say("=" * 78)
+    say("WHAT THE FRAME FIXES, added 19 November 2026. A change sampled from the")
+    say("difference between March 2025 and August 2026 cannot be carried before May")
+    say("2025, the first release after March, nor after August 2026.")
+    say()
+    say(f"  {'case':<5}{'transaction':<13}{'frame':<17}{'first release that could carry':<32}"
+        f"{'carried':<9}{'days after it':>14}{'position':>10}")
+    for _, r in ev.iterrows():
+        frame = (f"at least {r['lag_floor_or_ceiling_days']:,}" if r["before_first_release"]
+                 else f"at most {r['lag_floor_or_ceiling_days']:,}")
+        say(f"  {r['case']:<5}{r['transaction_date']:<13}{frame:<17}"
+            f"{r['first_release_that_could_carry']:<32}{r['gem_first_release_carrying_change']:<9}"
+            f"{r['days_after_first_possible']:>14,}{r['release_position_from_first_possible']:>10}")
+    pre = ev[ev.before_first_release]
+    inw = ev[~ev.before_first_release]
+    ordinal = {1: "first", 2: "second", 3: "third", 4: "fourth", 5: "fifth", 6: "sixth"}
+    months = sorted(set(pre.gem_first_release_carrying_change))
+    month_names = " and ".join(pd.Timestamp(m + "-01").strftime("%B %Y") for m in months)
+    say()
+    say(f"  the {len(pre)} cases with transactions before March 2025, "
+        f"{pd.Timestamp(pre.t.min()).strftime('%B %Y')} to {pd.Timestamp(pre.t.max()).strftime('%B %Y')}: "
+        f"carried {pre.days_after_first_possible.min():,} to "
+        f"{pre.days_after_first_possible.max():,} days after the first release that")
+    say(f"  could have carried them, {pd.Timestamp(pre.first_release_that_could_carry.iloc[0] + '-01').strftime('%B %Y')}, "
+        f"in {month_names}; their lags could not be under "
+        f"{pre.lag_floor_or_ceiling_days.min():,} to {pre.lag_floor_or_ceiling_days.max():,} days")
+    pos = " and ".join(ordinal.get(int(p), str(p))
+                       for p in sorted(inw.release_position_from_first_possible))
+    ceil = " and ".join(f"{c:,}" for c in sorted(inw.lag_floor_or_ceiling_days))
+    say(f"  the {len(inw)} cases with transactions inside the window: carried in the {pos} "
+        f"release after the transaction; their lags could not exceed {ceil} days")
+    say()
+    say("  Six cases cannot establish a correlation, and every case from before the")
+    say("  first release is also a less visible one, so whether the lag varies with")
+    say("  how visible the event was cannot be told from them.")
+
+    ev.drop(columns=["k", "t", "r", "before_first_release"]).to_csv(
         os.path.join(OUT, "salience_lag.csv"), index=False)
     _release.write_provenance(
         OUT, "18_salience_lag",
@@ -176,9 +235,12 @@ def main():
                "n_cases": len(ev),
                "fast_threshold_days": 120,
                "n_fast": len(fast), "n_slow": len(slow),
+               "releases_held": RELEASES_HELD, "base_release": BASE_RELEASE,
+               "days_after_first_possible": {str(r['case']): int(r['days_after_first_possible'])
+                                             for _, r in ev.iterrows()},
                "lag_days": {str(r['case']): int(r['lag_days']) for _, r in ev.iterrows()}})
     say()
-    say(f"  written to {os.path.abspath(OUT)}")
+    say(f"  written to {os.path.relpath(OUT, os.path.join(HERE, ".."))}")
     with open(os.path.join(OUT, "salience_lag.txt"), "w") as fh:
         fh.write("\n".join(_lines) + "\n")
 

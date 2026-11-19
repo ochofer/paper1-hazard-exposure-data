@@ -6,8 +6,9 @@ WHY THIS IS A SEPARATE SCRIPT
 09_exposure_proxy.py measures attributable operating coal and gas capacity for
 every listed firm in the world: 666 firms in March 2025, 765 in August 2026.
 That is the right universe for describing the dataset, but it is not the panel
-the paper is about. The paper's cross-section is 328 listed firms headquartered
-in Ken French's developed Europe plus the United States, built by
+the paper is about. The paper's cross-section is 328 ownership entities that the
+tracker flags as listed, headquartered in Ken French's developed Europe plus the
+United States, 302 of them with a price series, built by
 00_coverage_and_crosswalk.py and frozen in outputs/cross_section.csv.
 
 Task 1.5 asks whether sorting THAT panel on the exposure proxy gives a
@@ -33,7 +34,7 @@ is firms entering the panel rather than firms changing.
 
 Fixing it properly means rebuilding the panel separately under each vintage,
 which changes what "the 328" means and would break the figure that is already
-public on the author's CV and website. That is a decision for the panel-join step, not
+public on my CV and website. That is a decision for the panel-join step, not
 something to do here.
 
 MISSING MEANS ZERO, DELIBERATELY
@@ -185,6 +186,44 @@ def main():
             log(f"       {str(nm.get(e, e))[:34]:<36} "
                 f"{A.get(e, 0):>9,.0f} -> {B.get(e, 0):>9,.0f} MW")
 
+    # Added 19 November 2026, after the results were known; the block prints
+    # its figures from the same frame the sort above uses.
+    log(f"\n{'='*74}\nFIRMS WITH EXPOSURE IN BOTH RELEASES, added 19 November 2026")
+    log("  the panel is defined on the later release, so the figures above mix")
+    log("  firms whose capacity moved with firms the earlier release did not cover")
+    both_imp = active[(active.mw_2025_impute > 0) & (active.mw_2026_impute > 0)]
+    entered = int(((active.mw_2025_impute == 0) & (active.mw_2026_impute > 0)).sum())
+    left = int(((active.mw_2025_impute > 0) & (active.mw_2026_impute == 0)).sum())
+    log(f"  of the {len(active)} firms with exposure in either release:")
+    log(f"    coal or gas units in both releases                      {len(both_imp):>4}")
+    log(f"    in one release only                                     {len(active) - len(both_imp):>4}"
+        f"   (entered between the two releases {entered}, left {left})")
+    kb = max(1, len(both_imp) // QUANTILE)
+    # the same firms less those at zero in March 2025 under the zero reading, so that the gap between the
+    # two readings can be read with and without them
+    both_pos = both_imp[both_imp.mw_2025_zero > 0]
+    for r in RULES:
+        A = active[f"mw_2025_{r}"]
+        B = active[f"mw_2026_{r}"]
+        a, b = both_imp[f"mw_2025_{r}"], both_imp[f"mw_2026_{r}"]
+        ovb, sab, sbb = overlap(a, b, kb)
+        rose = int(((A == 0) & (B > 0)).sum())
+        fell = int(((A > 0) & (B == 0)).sum())
+        blank_only = int(((A == 0) & (B > 0) & (active.mw_2025_impute > 0)).sum())
+        log(f"\n  --- blank={r} ---")
+        log(f"    Spearman, the {len(both_imp)} firms with units in both releases   {spearman(a, b):.4f}")
+        log(f"    top quintile kept, the {len(both_imp)}                   {len(sab & sbb)} of {kb} ({ovb*100:.1f}%)")
+        log(f"    total GW, the {len(both_imp)}  2025 {a.sum()/1000:>7,.1f}   2026 {b.sum()/1000:>7,.1f}"
+            f"   ({(b.sum()/a.sum()-1)*100:+.1f}%)")
+        log(f"    of the {len(both_imp)}, at zero in March 2025 under this reading   {int((a == 0).sum())}"
+            + ("   (every edge they have carrying a blank share)" if int((a == 0).sum()) else ""))
+        log(f"    Spearman, the {len(both_pos)} of them above zero in March 2025 under both readings   "
+            f"{spearman(both_pos[f'mw_2025_{r}'], both_pos[f'mw_2026_{r}']):.4f}")
+        log(f"    of the {len(active)}, at zero in March 2025 and above zero in August 2026   {rose}"
+            f"   (entered coverage {rose - blank_only}, covered in March 2025 with "
+            f"blank shares only {blank_only})")
+        log(f"    of the {len(active)}, above zero in March 2025 and at zero in August 2026   {fell}")
+
     log(f"\n{'='*74}\nHOW MUCH THE BLANK-SHARE CONVENTION ALONE MOVES THE SORT")
     _, _, sa_z, sb_z = res["zero"]
     _, _, sa_i, sb_i = res["impute"]
@@ -220,7 +259,7 @@ def main():
 
     with open(os.path.join(OUT, "panel_join_summary.txt"), "w") as f:
         f.write("\n".join(lines) + "\n")
-    log(f"\n  written to {os.path.abspath(OUT)}")
+    log(f"\n  written to {os.path.relpath(OUT, os.path.join(HERE, ".."))}")
 
 
 if __name__ == "__main__":

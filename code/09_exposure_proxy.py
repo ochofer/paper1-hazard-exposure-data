@@ -11,7 +11,7 @@ This is the transition exposure proxy. Task 1.5 then asks whether sorting firms
 on it gives a different answer depending on which vintage you happened to
 download, which is the Berg, Fabisik and Sautner move.
 
-PRE-COMMITTED CHOICES, made with Carlo on 2 September 2026 BEFORE anything ran
+CHOICES SET ON 2 SEPTEMBER 2026, BEFORE ANYTHING RAN
 -----------------------------------------------------------------------------
     sectors      Coal Plant Ownership and Gas Plant Ownership only. One unit
                  throughout (MW), so no conversion assumptions. Both sheets
@@ -437,7 +437,7 @@ def main():
 
     with open(os.path.join(OUT, "exposure_proxy_summary.txt"), "w") as f:
         f.write("\n".join(lines) + "\n")
-    log(f"\n  written to {os.path.abspath(OUT)}")
+    log(f"\n  written to {os.path.relpath(OUT, os.path.join(HERE, ".."))}")
 
 
 if __name__ == "__main__":

@@ -1,14 +1,18 @@
 # Scripts
 
-Everything that runs outside the notebook. All of it uses free, openly licensed data, with
-one exception noted at the end, so almost all of it can be rerun by anyone.
+Everything that runs outside the notebook. The ownership data is free and openly licensed,
+and the price series is licensed and withheld, as noted at the end. The fourteen past
+releases of the ownership tracker that scripts 04, 06 to 10, 12 to 15 and 17 read were
+supplied by the vendor on request and are neither on the vendor's site nor in this
+repository, so those scripts cannot be rerun from what is published; scripts 05, 16 and 18
+read committed files alone and can.
 
 The first two build the company universe. The numbered scripts from `04` onward are the
 vintage and measurement work behind the note on what a vintage difference measures.
 
 | Script | What it does | Inputs |
 |---|---|---|
-| `00_coverage_and_crosswalk.py` | Builds my company universe from the ownership data and counts survivors at every filtering step. This is blocking test 3, and it is where the 328 companies come from | Global Energy Monitor ownership tracker, CC BY 4.0 |
+| `00_coverage_and_crosswalk.py` | Builds my company universe from the ownership data and counts survivors at every filtering step. This is blocking test 3, and it is where the 328 ownership entities come from | Global Energy Monitor ownership tracker, CC BY 4.0 |
 | `03_gleif_crosscheck.py` | Audits the identifiers in that ownership data against GLEIF, to separate genuine coverage limits from wrong-entity bugs | GLEIF golden copy files, CC0 |
 
 Run them in that order, since the second reads the output of the first.
@@ -30,7 +34,7 @@ research design decision nobody can find is a research design decision nobody ca
 with, and the whole point of publishing this is that someone can argue with it.
 
 The most instructive one is `OPERATING_ONLY`. Set it to `False` and the universe goes from
-328 companies to 372. That single line accounts for the entire difference between my count
+328 ownership entities to 372. That single line accounts for the entire difference between my count
 and an earlier one, which is the fastest way to see what a filtering choice actually costs.
 
 ## The vintage and measurement scripts, `04` onward
@@ -38,8 +42,8 @@ and an earlier one, which is the fastest way to see what a filtering choice actu
 They run in numerical order and each reads the outputs of the ones before it. `_release.py`
 holds the release pin: the exact filenames of the GEM releases used, resolved by an explicit
 name rather than by a glob, so a script fails rather than silently picking up a different
-file. Two files were published as August 2026 and nothing inside either marks it as a
-version, which is why the pin exists.
+file. Two files I hold carry August 2026, one of them sent to me on 26 August 2026, and
+nothing inside either marks it as a version, which is why the pin exists.
 
 | Script | What it does |
 |---|---|
@@ -50,11 +54,11 @@ version, which is why the pin exists.
 | `08_event_validation_sample.py` | Draws the random sample of apparent changes to check by hand |
 | `09_exposure_proxy.py` | Attributes coal and gas capacity to the nearest listed parent, under both blank-share conventions |
 | `10_panel_join.py` | Joins the measure to the company cross-section |
-| `11_vintage_return_spread.py` | The pre-registered return test. **Reads the licensed price series** |
+| `11_vintage_return_spread.py` | The return test, whose rule is set in its header. **Reads the licensed price series** |
 | `12_decimal_truncation.py` | How much of the share-value change is one-decimal rounding |
 | `13_scaling_second_column.py` | The same measure scaled by fleet share |
 | `14_restricted_r.py` | R with residual counterparties removed from both sides |
-| `15_bioenergy_check.py` | The pre-committed control on the scaling result |
+| `15_bioenergy_check.py` | The control on the scaling result, set in its header before the run |
 | `16_figure_register.py` | Holds every figure the note prints against the output file that should contain it, and reports anything untraceable |
 | `17_release_ladder.py` | Both August 2026 releases side by side, with V derived from the verdicts and its Wilson interval computed |
 | `18_validate_salience_cases.py` | Validates the hand-collected evidence file against the verified sample and computes the recording lags |
@@ -65,14 +69,16 @@ version, which is why the pin exists.
 
 ### Two conventions these scripts hold to
 
-**No figure is typed by hand.** `19_build_note.py` pulls every number in the note out of a
-named output file at build time and aborts if a pattern is missing or matches twice. I wrote
+**No result figure is typed by hand.** `19_build_note.py` pulls every result figure in the
+note out of a named output file at build time and aborts if a pattern is missing or matches
+twice; the typed labels and settings are listed in the note's Appendix D. I wrote
 that check after typing twelve entity identifiers into an evidence file from memory instead
 of reading them from the source, and getting all twelve wrong.
 
-**Every output is deterministic.** Each is sorted before it is written, so a reader who
+**Every data output is deterministic.** Each is sorted before it is written, so a reader who
 reruns a script against the pinned release gets the same bytes and therefore the same
-checksum. Two outputs did not meet that until 8 September 2026: they were built by iterating
+checksum; the run logs print the output path relative to the repository (until version 1.3
+six of them printed the absolute path of the folder they were run in). Two outputs did not meet that until 8 September 2026: they were built by iterating
 Python sets, and Python randomises string hashing per process, so their row order varied
 between runs while their content did not. Both scripts now sort before writing. The
 deterministic versions are the outputs of record, the earlier copies are kept beside them

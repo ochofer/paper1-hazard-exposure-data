@@ -128,7 +128,7 @@ def main():
 
     say("TASK 1.5 SUPPLEMENT  SCALING: CAN A SECOND COLUMN BE BUILT INSIDE GEM?")
     say("  design decision (d), 3 September 2026")
-    say("  thresholds pre-committed before this ran")
+    say("  thresholds set in the header before this ran")
     say()
     say("  GEM's ownership tracker carries NO wind, solar, hydro, nuclear or")
     say("  geothermal sheets. The only generation sheets are coal, gas and")
@@ -185,7 +185,7 @@ def main():
     panel = set(pd.read_csv(PANEL, dtype={"entity_id": str})["entity_id"])
     say()
     say("=" * 74)
-    say("TEST 1 (PRE-COMMITTED). IS FOSSIL SHARE DEGENERATE?")
+    say("TEST 1 (RULE SET BEFORE THE RUN). IS FOSSIL SHARE DEGENERATE?")
     say(f"  degenerate if median > {DEGENERATE_MEDIAN} AND interquartile range < {DEGENERATE_IQR}")
 
     verdicts = {}
@@ -207,7 +207,7 @@ def main():
                 f"-> {'DEGENERATE' if deg else 'usable'}")
 
     say()
-    say("TEST 3 (PRE-COMMITTED). DOES FOSSIL SHARE ORDER FIRMS DIFFERENTLY FROM RAW MW?")
+    say("TEST 3 (RULE SET BEFORE THE RUN). DOES FOSSIL SHARE ORDER FIRMS DIFFERENTLY FROM RAW MW?")
     say("  within one vintage. If these agree, the second column adds nothing.")
     for rule in ("zero", "impute"):
         d = allf[(allf.blank_rule == rule) & (allf.vintage == "August 2026")]
@@ -216,7 +216,7 @@ def main():
             f"Spearman(fossil share, raw fossil MW) = {spearman(d.fossil_share, d.fossil_mw):.4f}")
 
     say()
-    say("TEST 2 (PRE-COMMITTED). DOES EACH MEASURE MOVE BETWEEN VINTAGES?")
+    say("TEST 2 (RULE SET BEFORE THE RUN). DOES EACH MEASURE MOVE BETWEEN VINTAGES?")
     say(f"  drops to a footnote if the between-vintage Spearman exceeds {FOOTNOTE_SPEARMAN}")
     for measure in ("fossil_mw", "fossil_share", "coal_share"):
         say(f"    --- {measure} ---")
@@ -261,7 +261,7 @@ def main():
                                 "footnote_spearman": FOOTNOTE_SPEARMAN},
                "degeneracy_verdicts": {f"{k[0]}|{k[1]}": bool(v) for k, v in verdicts.items()}})
     say()
-    say(f"  written to {os.path.abspath(OUT)}")
+    say(f"  written to {os.path.relpath(OUT, os.path.join(HERE, ".."))}")
     with open(path, "w") as fh:
         fh.write("\n".join(_lines) + "\n")
 

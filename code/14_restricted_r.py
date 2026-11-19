@@ -100,7 +100,7 @@ def main():
 
     say("TASK 1.1 SUPPLEMENT  RESTRICTED R, RESIDUALS OUT OF BOTH SIDES")
     say("  design decision of 7 September 2026")
-    say("  reported beside the published 36.0% with the same prominence, as pre-committed")
+    say("  reported beside the published 36.0% with the same prominence, as set before the run")
     say()
     say("NAME JOIN, from both releases")
     names = {}
@@ -168,7 +168,7 @@ def main():
     say(f"  {'residuals out of both sides':<38}{r_num:>12,}{r_tot:>14,}{R_restricted*100:>8.1f}%")
     say()
     say(f"  change in R: {(R_restricted - R)*100:+.1f} percentage points")
-    say(f"  pre-committed GO threshold: {GO_THRESHOLD*100:.0f}%")
+    say(f"  GO threshold, set in script 06's header: {GO_THRESHOLD*100:.0f}%")
     say(f"  as published  {'clears' if R >= GO_THRESHOLD else 'FAILS'}")
     say(f"  restricted    {'clears' if R_restricted >= GO_THRESHOLD else 'FAILS'}")
 
@@ -181,7 +181,7 @@ def main():
     say("  from the denominator than from the numerator, and R RISES.")
     say()
     say("  The working assumption throughout was that excluding residuals would")
-    say("  deflate R and put the pre-committed 25% bar at risk. It does the")
+    say("  deflate R and put the 25% bar at risk. It does the")
     say("  reverse. The restricted measure is the more conservative construction")
     say("  and it makes the go decision safer, not thinner.")
     say()
@@ -204,7 +204,7 @@ def main():
                "R_restricted": round(R_restricted, 6),
                "go_threshold": GO_THRESHOLD})
     say()
-    say(f"  written to {os.path.abspath(OUT)}")
+    say(f"  written to {os.path.relpath(OUT, os.path.join(HERE, ".."))}")
     with open(os.path.join(OUT, "restricted_r.txt"), "w") as fh:
         fh.write("\n".join(_lines) + "\n")
 

@@ -303,13 +303,13 @@ def main():
         return
     s.to_csv(out_path, index=False)
     print()
-    print(f"  written to {os.path.abspath(OUT)}")
+    print(f"  written to {os.path.relpath(OUT, os.path.join(HERE, ".."))}")
     print()
     print("  NEXT: fill the verdict column with one of")
     print("    REAL      a dated public announcement matches the change")
     print("    NO EVENT  nothing found, and the change looks like a correction")
     print("    UNCLEAR   cannot tell from public sources")
-    print("  V = REAL / 20. Pre-committed reading is in the docstring.")
+    print("  V = REAL / 20. The reading, set in the docstring before the draw, decides.")
 
 
 if __name__ == "__main__":

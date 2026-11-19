@@ -13,7 +13,7 @@ checksums them, and reads no values.
     python3 21_fmp_verify.py
 
 Writes:
-    <OUT>/COMPLETENESS_REPORT_<date>.md    the report Carlo reads before cancelling
+    <OUT>/COMPLETENESS_REPORT_<date>.md    the report I read before cancelling
     <repo>/data/raw/manifest.json          the public audit record (no data, no key)
 """
 

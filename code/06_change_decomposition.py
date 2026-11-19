@@ -8,8 +8,8 @@ asset changes on 46% of assets while its direct owner changes on 5%. The
 conclusion drawn was that roughly 90% of apparent ownership change is GEM's
 research rather than corporate events.
 
-Carlo raised the objection that sinks a careless version of that claim. The
-Ownership Tracker began in 2024. A comparison across 2025 and 2026 therefore
+One objection sinks a careless version of that claim. The Ownership Tracker
+began in 2024. A comparison across 2025 and 2026 therefore
 spans a database in build-out, and a referee will say that of course a young
 dataset mostly adds coverage. That objection is correct and it has to be
 answered with a measurement rather than an argument.
@@ -120,7 +120,8 @@ def main():
     say("TASK 1.1  DECOMPOSITION OF APPARENT OWNERSHIP CHANGE")
     say(f"  old: {os.path.basename(old_f)}")
     say(f"  new: {os.path.basename(new_f)}")
-    say(f"  pre-committed GO threshold: restatement + methodology >= {GO_THRESHOLD:.0%}")
+    say(f"  GO threshold, set in this script's header before the run: "
+        f"restatement + methodology >= {GO_THRESHOLD:.0%}")
     say()
 
     oo = pd.read_excel(old_f, sheet_name="Entity Ownership", dtype=str).fillna("")
@@ -252,7 +253,7 @@ def main():
     meth = sum(v for k, v in changed.items() if k[0] == "METHODOLOGY")
     R = (rest + meth) / total_change
 
-    say("VERDICT AGAINST THE PRE-COMMITTED RULE")
+    say("VERDICT AGAINST THE RULE SET IN THE HEADER BEFORE THE RUN")
     say(f"  build-out                  {build:>8,}  {build/total_change*100:>5.1f}%   decays with maturity")
     say(f"  restatement                {rest:>8,}  {rest/total_change*100:>5.1f}%   does not decay")
     say(f"  methodology change         {meth:>8,}  {meth/total_change*100:>5.1f}%   does not decay")
@@ -260,8 +261,11 @@ def main():
     say()
     if R >= GO_THRESHOLD:
         say(f"  GO. R of {R:.1%} clears the {GO_THRESHOLD:.0%} bar set before running.")
-        say("  The age objection is answered on the data: a majority of apparent")
-        say("  change is NOT explained by a young database adding coverage.")
+        # Corrected 19 November 2026: at R = 36.0% the
+        # majority of apparent change IS the database adding coverage, and the
+        # sentence printed here until then said the opposite.
+        say(f"  The age objection is answered on the data: {R:.1%} of apparent change")
+        say("  is restatement or methodology rather than the database adding coverage.")
     elif R < NOGO_THRESHOLD:
         say(f"  NO-GO. R of {R:.1%} is below the {NOGO_THRESHOLD:.0%} floor.")
         say("  The change is essentially coverage growth. Stop Track 1.")
@@ -327,7 +331,7 @@ def main():
     with open(os.path.join(OUT, "change_decomposition.txt"), "w") as f:
         f.write("\n".join(lines) + "\n")
     say()
-    say(f"written to {os.path.abspath(OUT)}")
+    say(f"written to {os.path.relpath(OUT, os.path.join(HERE, ".."))}")
 
 
 if __name__ == "__main__":

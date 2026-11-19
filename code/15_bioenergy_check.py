@@ -37,7 +37,7 @@ This was accepted on 7 September and two replacements were specified, both run h
 Variant (b), restricting to firms whose bioenergy is unchanged, was rejected as
 conditioning on the outcome.
 
-INTERPRETATION, FIXED BY THE CHAT BEFORE THIS RAN
+INTERPRETATION, FIXED BEFORE THIS RAN
 --------------------------------------------------
 If (a) clears 0.95 under BOTH conventions, the convention-flip result is
 attributed to the denominator's coverage change, and the note demotes scaling to
@@ -92,6 +92,12 @@ def quintile_overlap(s_old, s_new, n=5):
     return len(a & b) / k, k, len(a & b)
 
 
+# The raw-capacity correlation of each comparison, kept so that the table of
+# the three universes prints what this script computes. Until 19 November 2026
+# four of its cells were typed literals equal to the computed values.
+RAW = {}
+
+
 def compare(d, rule, firms, measure, label):
     a = d[(d.vintage == OLD) & (d.blank_rule == rule)].set_index("entity_id")
     b = d[(d.vintage == NEW) & (d.blank_rule == rule)].set_index("entity_id")
@@ -109,8 +115,9 @@ def compare(d, rule, firms, measure, label):
         f"Spearman {rho:.4f}  top-quintile overlap {100*ov:5.1f}% ({hit} of {k})")
     if measure != "fossil_mw":
         rov, rk, rhit = quintile_overlap(ra, rb)
+        RAW[(label, rule)] = spearman(ra, rb)
         say(f"    {'  like-for-like, RAW fossil MW, same firms':<44} "
-            f"{'':<13} n={len(keep):>4}  Spearman {spearman(ra, rb):.4f}  "
+            f"{'':<13} n={len(keep):>4}  Spearman {RAW[(label, rule)]:.4f}  "
             f"top-quintile overlap {100*rov:5.1f}% ({rhit} of {rk})")
     return rho
 
@@ -122,7 +129,7 @@ def main():
     say("TASK 1.5 SUPPLEMENT  BIOENERGY CHECK, VARIANTS (a) AND (c)")
     say("  design decision of 7 September 2026")
     say("  the originally specified check could not be run; see the docstring")
-    say(f"  pre-committed cut: Spearman {CUT}")
+    say(f"  cut set before the run: Spearman {CUT}")
     say()
 
     z = d[d.blank_rule == "zero"]
@@ -211,21 +218,46 @@ def main():
     say("  zeros are what drag the blank=zero rank correlation down. Filtering them")
     say("  out removes the convention's effect, which is the thing being measured.")
 
+    # U3, the panel firms with a row in both vintages, computed here from
+    # scaling_by_firm.csv as script 13 computes it. Until 19 November 2026 its
+    # count and its two correlations were typed literals in this table.
+    u3 = [e for e in both if e in panel]
+    u3_res, u3_fossil_both = {}, {}
+    for rule in ("zero", "impute"):
+        q = d[d.blank_rule == rule]
+        ar = q[q.vintage == OLD].set_index("entity_id")
+        br = q[q.vintage == NEW].set_index("entity_id")
+        u3_res[rule] = spearman(ar.loc[u3, "fossil_mw"], br.loc[u3, "fossil_mw"])
+        u3_fossil_both[rule] = int(((ar.loc[u3, "fossil_mw"] > 0)
+                                    & (br.loc[u3, "fossil_mw"] > 0)).sum())
+    bio_label = "fossil share, bioenergy in both, worldwide"
     say()
     say("  THE THREE UNIVERSES, raw fossil MW between vintages:")
     say(f"    {'universe':<44}{'blank=zero':>12}{'blank=impute':>14}")
-    say(f"    {'U3, 171 panel firms':<44}{0.9146:>12.4f}{0.9761:>14.4f}")
+    say(f"    {f'U3, {len(u3)} panel firms':<44}{u3_res['zero']:>12.4f}{u3_res['impute']:>14.4f}")
     say(f"    {'U2, 604 matched firms worldwide':<44}"
         f"{u2_res['zero']:>12.4f}{u2_res['impute']:>14.4f}")
-    say(f"    {'133 firms with bioenergy in both':<44}{0.9747:>12.4f}{0.9766:>14.4f}")
-    say(f"    {'the pre-committed cut':<44}{CUT:>12.2f}{CUT:>14.2f}")
+    say(f"    {f'{len(bio_both)} firms with bioenergy in both':<44}"
+        f"{RAW[(bio_label, 'zero')]:>12.4f}{RAW[(bio_label, 'impute')]:>14.4f}")
+    say(f"    {'the cut, set before the run':<44}{CUT:>12.2f}{CUT:>14.2f}")
+
+    # Added 19 November 2026, after the results were known: what U3 holds,
+    # counted.
+    say()
+    say("  U3, COUNTED, added 19 November 2026")
+    say(f"    panel firms with coal, gas or bioenergy units in both releases   {len(u3)}")
+    for rule in ("zero", "impute"):
+        say(f"    of which coal or gas capacity above zero in both, blank={rule:<7} "
+            f"{u3_fossil_both[rule]}")
+    say(f"    of which bioenergy alone in at least one release, blank=impute  "
+        f"{len(u3) - u3_fossil_both['impute']}")
 
     say()
     lo, hi = min(u2_res.values()), max(u2_res.values())
     if lo < CUT < hi:
         say("  U2 STRADDLES THE CUT. The convention flip is GENERAL, not an artefact")
         say("  of the regional panel, and the note says so. It reproduces on 604")
-        say("  firms worldwide and on 171 panel firms, in the same direction.")
+        say(f"  firms worldwide and on {len(u3)} panel firms, in the same direction.")
     elif lo > CUT:
         say("  U2 CLEARS UNDER BOTH CONVENTIONS. The flip is a result about the listed")
         say("  US and European universe a portfolio manager would sort, not a property")
@@ -274,7 +306,7 @@ def main():
                               for k, v in a_res.items()},
                "branch": "coverage_change" if both_clear else "instability_survives"})
     say()
-    say(f"  written to {os.path.abspath(OUT)}")
+    say(f"  written to {os.path.relpath(OUT, os.path.join(HERE, ".."))}")
     with open(os.path.join(OUT, "bioenergy_check.txt"), "w") as fh:
         fh.write("\n".join(_lines) + "\n")
 

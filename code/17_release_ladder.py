@@ -5,7 +5,7 @@ WHY THIS EXISTS
 ---------------
 The design decision of 6 September requires a section reporting both August 2026 releases
 side by side, with R and the worst case for each in the same table as the
-pre-committed 25% bar. The gate 5 register of 7 September found that three of
+25% bar set in script 06's header. The gate 5 register of 7 September found that three of
 those numbers, R on V2 and the worst-case pair 25.2% and 24.3%, existed only in
 RELEASE_COMPARISON_outputs_2026-09-02.txt, a hand-assembled bundle rather than a
 script output, with no provenance record behind them. A headline of the section
@@ -16,8 +16,8 @@ WHAT IT DOES
 Everything from source, nothing carried over:
 
 1. V is DERIVED from the verdicts in event_validation_sample.csv rather than
-   hard-coded. Two readings, because the pre-committed rule predates the
-   REAL BUT MISDATED category and does not say which side those fall on:
+   hard-coded. Two readings, because the rule in script 08's header predates
+   the REAL BUT MISDATED category and does not say which side those fall on:
      in-window   REAL and in window only
      strict      any real datable transaction, whenever it happened
    Wilson score intervals at 95% for each, because at n = 19 a point estimate
@@ -33,8 +33,11 @@ Everything from source, nothing carried over:
    _release.RELEASES carries the V2 key for exactly this purpose.
 
 3. The ladder: R with the restatement bucket revised down by V at each reading,
-   denominator held at total apparent change, which is the construction task 1.3
-   pre-committed to.
+   denominator held at total apparent change, which is the construction set in
+   script 08's header. Since 19 November 2026 the ladder leads with the rule's
+   own row, strict V applied, and carries two further rows with the UNCLEAR
+   case counted as real, at its point value and at its upper bound; the
+   NO EVENT share is printed with the same Wilson interval.
 
 WHAT IT DELIBERATELY DOES NOT DO
 --------------------------------
@@ -129,15 +132,33 @@ def main():
     readings = []
     for lab, k in (("in-window only", in_window), ("strict literal", strict)):
         lo, hi = wilson(k, n)
-        say(f"  V, {lab:<20} {k}/{n} = {k/n:.3f}   95% Wilson {lo:.3f} to {hi:.3f}")
-        readings.append((f"in-window V = {k/n:.3f}" if lab.startswith("in-window")
-                         else f"strict V = {k/n:.3f}", k / n))
-        if lab == "strict literal":
-            readings.append((f"worst case, strict V at its 95% upper bound {hi:.3f}", hi))
+        say(f"  V, {lab:<24} {k}/{n} = {k/n:.3f}   95% Wilson {lo:.3f} to {hi:.3f}")
+        if lab.startswith("in-window"):
+            readings.append((f"in-window V = {k/n:.3f}", k / n))
+        else:
+            rule_row = (f"by the rule, strict V = {k/n:.3f}", k / n)
+            readings.append((f"strict V at its 95% upper bound {hi:.3f}, "
+                             f"the unclear case counted as not real", hi))
+    # Added 19 November 2026, after the results were known: the UNCLEAR case
+    # counted as real, at its point value and at its upper bound, and the NO
+    # EVENT share with its interval.
+    unclear = int((v == "UNCLEAR").sum())
+    k_all = strict + unclear
+    lo_a, hi_a = wilson(k_all, n)
+    say(f"  V, {'strict, unclear as real':<24} {k_all}/{n} = {k_all/n:.3f}   "
+        f"95% Wilson {lo_a:.3f} to {hi_a:.3f}")
+    readings.append((f"strict V with the unclear case counted as real, "
+                     f"{k_all} of {n} = {k_all/n:.3f}", k_all / n))
+    readings.append((f"strict V with the unclear case counted as real, "
+                     f"at its 95% upper bound {hi_a:.3f}", hi_a))
+    noev = int((v == "NO EVENT").sum())
+    lo_e, hi_e = wilson(noev, n)
+    say(f"  NO EVENT share, {'same interval':<12} {noev}/{n} = {noev/n:.3f}   "
+        f"95% Wilson {lo_e:.3f} to {hi_e:.3f}")
     say()
-    say("  Both intervals straddle a pre-committed branch boundary. At n = 19 the")
-    say("  sample cannot separate the branches, and V is never quoted without its")
-    say("  interval.")
+    say("  Both intervals of V straddle a branch boundary of the rule in script 08's")
+    say("  header. At n = 19 the sample cannot separate the branches, and V is")
+    say("  never quoted without its interval.")
 
     say()
     say("=" * 78)
@@ -159,11 +180,12 @@ def main():
     say()
     say("=" * 78)
     say(f"THE LADDER. R = (restatement + methodology) / total, restatement revised")
-    say(f"down by V. Pre-committed GO bar {GO_THRESHOLD*100:.0f}%.")
+    say(f"down by V. The {GO_THRESHOLD*100:.0f}% bar is set in script 06's header; the rule")
+    say(f"revising R by V is in script 08's header. The rule's own row leads.")
     say()
-    say(f"  {'reading':<46}{'V1 (PINNED)':>16}{'V2_External':>16}")
+    say(f"  {'reading':<70}{'V1 (PINNED)':>16}{'V2_External':>16}")
     rows = []
-    for lab, vv in [("as published, V not applied", 0.0)] + readings:
+    for lab, vv in [rule_row, ("before the correction, V not applied", 0.0)] + readings:
         cells = []
         for rel, _ in RELEASES:
             b = counts[rel]
@@ -171,16 +193,20 @@ def main():
             r = (b["restatement"] * (1 - vv) + b["methodology"]) / tot
             cells.append(r)
         verdicts = ["clears" if c >= GO_THRESHOLD else "FAILS" for c in cells]
-        say(f"  {lab:<46}{cells[0]*100:>9.1f}% {verdicts[0]:<6}{cells[1]*100:>9.1f}% {verdicts[1]:<6}")
+        say(f"  {lab:<70}{cells[0]*100:>9.1f}% {verdicts[0]:<6}{cells[1]*100:>9.1f}% {verdicts[1]:<6}")
         rows.append({"reading": lab, "V": round(vv, 4),
                      "R_V1": round(cells[0], 6), "R_V2": round(cells[1], 6),
                      "verdict_V1": verdicts[0], "verdict_V2": verdicts[1]})
 
     say()
-    worst = rows[-1]
-    say("  THE LINE THAT MATTERS. At the worst defensible reading the pre-committed")
-    say(f"  decision {worst['verdict_V1']} on V1 at {worst['R_V1']*100:.1f}% and "
-        f"{worst['verdict_V2']} on V2 at {worst['R_V2']*100:.1f}%.")
+    up_not_real = rows[3]
+    up_real = rows[5]
+    say("  THE LINE THAT MATTERS. At the upper bound of V's interval the decision")
+    say(f"  {up_not_real['verdict_V1']} on V1 at {up_not_real['R_V1']*100:.1f}% and "
+        f"{up_not_real['verdict_V2']} on V2 at {up_not_real['R_V2']*100:.1f}% with the "
+        f"unclear case counted as not real,")
+    say(f"  and {up_real['verdict_V1']} on V1 at {up_real['R_V1']*100:.1f}% and "
+        f"{up_real['verdict_V2']} on V2 at {up_real['R_V2']*100:.1f}% with it counted as real.")
     say("  Both files are called August 2026 and neither is marked as a version.")
     say("  The endpoint is pinned to V1 because the 328-firm cross-section is itself")
     say("  a V1 artefact, never because V1 clears the bar.")
@@ -195,7 +221,7 @@ def main():
         extra={"n_sample": n, "v_in_window": in_window, "v_strict": strict,
                "wilson_z": Z, "go_threshold": GO_THRESHOLD, "ladder": rows})
     say()
-    say(f"  written to {os.path.abspath(OUT)}")
+    say(f"  written to {os.path.relpath(OUT, os.path.join(HERE, ".."))}")
     with open(os.path.join(OUT, "release_ladder.txt"), "w") as fh:
         fh.write("\n".join(_lines) + "\n")
 

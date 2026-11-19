@@ -15,9 +15,9 @@ kept apart.
 
 Two return tests are distinguished here. A cross-sectional Fama-MacBeth design was
 specified and then set aside before it ran, on a power calculation published in this
-repository. A separate quintile-spread comparison was pre-registered and run, and its
-result, together with the minimum detectable effect that makes that result readable, is
-reported in the data-quality note.
+repository. A separate quintile-spread comparison was run by a rule set before the run, in the
+header of its script, and its result, read by that rule, is reported in the data-quality
+note with the minimum detectable effect that makes it readable.
 
 That note is published as *What a vintage difference measures*, a hand verification of
 ownership changes in a public asset-level database. It is the tagged release
@@ -44,7 +44,7 @@ into building that bridge and then attempting to prove it wrong.
 
 **Current state of the sample:** 328 ownership entities resolve to the US and
 developed-Europe listed universe, 302 of them to a tradeable listing, and all 328
-together hold 5,115 tracked assets. The price panel holds
+together hold 5,115 asset holdings, an asset owned by two of the 328 counted in each. The price panel holds
 1,122,798 daily rows across 304 symbols, being those 302 companies plus two benchmarks,
 on a single total-return convention, and passes 16 of 16 integrity checks.
 
@@ -89,9 +89,9 @@ note.
   developed-Europe listed universe; there are 328.
 - **priceable**: a listed parent whose shares resolve to a tradeable listing in the price
   panel; there are 302.
-- **tracked asset**: an operating unit in the ownership data, counted once; the 328 hold
-  5,115. Global Energy Monitor's own words *unit* and *plant* appear where its fields are
-  named.
+- **tracked asset**: an operating unit in the ownership data; the 328 hold 5,115 asset
+  holdings, an asset owned by two of the 328 counted in each. Global Energy Monitor's own
+  words *unit* and *plant* appear where its fields are named.
 - **build-out, restatement, methodology change**: the three causes into which a vintage
   difference is decomposed. *Revision* is not a fourth category and keeps its ordinary
   sense.
@@ -193,8 +193,8 @@ matter here.** Ten observations fall in the relevant band, which gives a directi
 a magnitude, and the question cannot be settled from this provider's records, since those
 records do not measure delisting over the window. CRSP's delisting file would settle it.
 Access to CRSP through WRDS was granted by Queen Mary's School of Economics and Finance on
-15 September 2026, after this repository was closed; nothing in it depends on that access,
-and the delisting question stays open for a later study.
+15 September 2026, after the price pulls of 21 August and of 2 and 7 September 2026; nothing
+in this repository uses that access, and the delisting question stays open for a later study.
 
 ### 2. Transaction costs
 
@@ -274,8 +274,8 @@ single field, `adjClose`, taken from Financial Modeling Prep's
 `historical-price-eod/dividend-adjusted` endpoint and pulled on 21 August 2026. **The
 adjustment is the vendor's, not mine.** It is back-adjusted for splits as well as
 dividends: NextEra's four-for-one split of 26 October 2020 shows no discontinuity in the
-series, and 2010 levels sit well below the nominal closes of the time, for example Exxon
-at 37.14 on 4 January 2010 against a nominal close near 69. **No unadjusted close is
+series, and 2010 levels sit well below the nominal closes of the time, for example Exxon's
+adjusted level in January 2010 sits at about half its nominal close of the time. **No unadjusted close is
 stored beside it in the archive**, so the adjustment cannot be undone or independently
 checked from what this repository describes.
 
@@ -300,18 +300,19 @@ source for each. Two files are withheld, `vintage_return_spread.csv` and
 `vintage_return_spread.txt`, because they are computed from the licensed price series;
 they are named in the note's figure register with their checksums, and rerunning
 `code/11_vintage_return_spread.py` against your own pull reproduces them. Everything else
-is here in full, which is 53 of the 55 files.
+is here in full: the other files of `outputs/`, with the two withheld named above.
 
 One known gap is recorded here rather than left silent. `outputs/isin_screen.csv` joins the
-ownership entities to GLEIF identifiers and ISIN counts, and it is the file the 328 companies
-come from. Both of its inputs are free and openly licensed, but no script in `code/` produces
+ownership entities to GLEIF identifiers and ISIN counts, and it is the file the 328 ownership
+entities come from. Both of its inputs are free and openly licensed, but no script in `code/` produces
 it and it carries no provenance record, because it was built by hand. It is published as it
 stands, and closing that gap is a task for the paper rather than for this repository.
 Everything else in `outputs/` resolves to a numbered script with a provenance record naming
 the release and its checksum.
 
-Every output is sorted before it is written, so that rerunning a script against the pinned
-release reproduces its checksum exactly. Files carrying a `_SUPERSEDED_` marker are earlier
+Every data output is sorted before it is written, so that rerunning a script against the
+pinned release reproduces its checksum exactly; the run logs print the output path relative
+to the repository. Files carrying a `_SUPERSEDED_` marker are earlier
 copies of two outputs whose row order varied between runs before that rule was enforced, and
 they are kept rather than deleted; `outputs/PROMOTION_2026-09-08.txt` records the checksums
 on both sides and shows the row count and header unchanged. No value moved.
@@ -354,8 +355,10 @@ should print and what to do when it does not, are in
 
 ## References
 
-The methods used here are standard, and the published implementations have been used rather
-than substitutes written for this project.
+The methods used here are standard. Every estimator is written in the project's own code on
+numpy and pandas: the Newey-West standard errors of the factor regressions in notebook 01
+(`newey_west_ols`) and of the return test in script 11 and the note's build, and the rank
+correlations and quintile overlaps of scripts 09, 10, 13 and 15.
 
 > Blume, M. E. and Stambaugh, R. F. (1983). "Biases in computed returns: An application to the size effect." *Journal of Financial Economics* 12(3), 387-404.
 >

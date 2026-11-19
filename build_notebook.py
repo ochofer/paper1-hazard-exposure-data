@@ -64,6 +64,10 @@ helps explain its stock returns once the usual risk factors are accounted for.
 This notebook builds and audits the data. It does not test the hypothesis. That
 separation is deliberate and I explain why below.
 
+The study was stood down before any hazard variable was built; the repository's note,
+*What a vintage difference measures*, reports what was found in the ownership data
+instead. This notebook stands as the record of the data layer as built in August 2026.
+
 ---
 
 ## What you are looking at
@@ -115,9 +119,11 @@ prove my own pipeline is broken, before I use it.
 Open it in Google Colab using the badge in the repository README, then Runtime, Run
 all. Section 0 clones the repository into the Colab machine for you.
 
-Sections 1, 2 and 6 need no paid access. Sections 3, 4, 5 and 7 need an API key from
-Financial Modeling Prep, stored in Colab's Secrets panel under the name `FMP_API_KEY`.
-Section 2 works better with a free key from OpenFIGI, stored as `OPENFIGI_API_KEY`.
+Sections 0, 1 and 2 need no paid access, section 2 running better with a free key from
+OpenFIGI, stored as `OPENFIGI_API_KEY`; sections 2b to 2d, 3, 4 and 5 need a subscription
+to Financial Modeling Prep, its key stored in Colab's Secrets panel under the name
+`FMP_API_KEY`; section 6 needs a price panel in the same shape and no key; section 7
+archives what was downloaded and needs no key.
 The notebook tells you when a key is missing rather than failing obscurely.
 
 Full step-by-step instructions, including what each step should print and what to do
@@ -548,8 +554,9 @@ factors that themselves earned nothing over the sample faces weaker competition 
 would in a period when those factors performed well. I report the sample-period factor
 premia alongside any alpha for exactly this reason.
 
-The `min` and `max` rows are a useful sanity check. The extreme values should land in
-March 2020, and they do.
+The `min` and `max` rows are a useful sanity check. The minimum, about -12 per cent,
+falls on 16 March 2020 and the maximum, about +9.7 per cent, on 9 April 2025; if they
+fall elsewhere, the dates were parsed wrongly.
 """))
 
 cells.append(code(r'''
@@ -973,8 +980,9 @@ anywhere in a 90 megabyte file and the fingerprint changes completely. That make
 possible to prove two copies are identical rather than assume it, which matters here
 for three reasons:
 
-- The price data comes from a paid subscription that has been cancelled. Once it is
-  gone, this archive cannot be rebuilt, so being able to detect corruption in a backup
+- The price data comes from a paid subscription that has been cancelled (the pull of
+  21 August 2026; a second pull of September 2026 is in notebook 02 and nothing here
+  rests on it). Once it is gone, this archive cannot be rebuilt, so being able to detect corruption in a backup
   is not a theoretical nicety.
 - The factor file is updated in place by its publisher. A checksum of what was received
   on the day is the only way to demonstrate later which version was used.
@@ -1137,7 +1145,7 @@ records, including what kind of security each one is.
 
 Because bonds have ISINs too. A heavily indebted utility can have hundreds of ISINs and
 no listed shares at all. In this dataset the LEI-to-ISIN mapping produced 98,104
-company-security pairs for 328 companies. The largest single holder was a bank with
+company-security pairs for the 328 ownership entities. The largest single holder was a bank with
 21,793 of them, nearly all structured notes.
 
 So an ISIN existing tells you almost nothing. What OpenFIGI adds is the security *type*,
@@ -1857,7 +1865,7 @@ and looks for a home-exchange listing instead, switching only if the home line t
 least three times as much.
 
 This matters because a US over-the-counter receipt is the wrong security for a European
-company, not a noisy version of the right one. Three Finnish companies
+company, not a noisy version of the right one. Four Finnish companies
 in this dataset were on receipts trading a few hundred to a few hundred thousand dollars
 a day, against home listings trading tens of millions. A receipt also carries an
 exchange rate movement and trades during US hours against a European closing price, so
@@ -2232,8 +2240,12 @@ Three quantities, in increasing order of usefulness:
 | 5% to 15% | Proceed, but bound the effect by recomputing the headline result assuming delisted firms earned the observed gap |
 | over 15% | The survivor-only sample cannot carry the main claim. Either rebuild the universe from historical data, or reframe the paper around what this sample can support |
 
-I write this down before running the test. A threshold chosen after seeing the number
-is worthless.
+The thresholds were set before the run, in this text above the cell that computes the
+number; the public history cannot show the order. The measured rates fall in the middle
+band (9.6 per cent over 2021 to 2025, size and venue matched) and in the top band (30.9
+per cent extrapolated to sixteen years), and section 5b sets the threshold aside as
+measured on the wrong population, after the number was seen; the findings file records
+which band each rate falls in.
 
 > Shumway, T. (1997). "The delisting bias in CRSP data." *Journal of Finance* 52(1),
 > 327-340.
@@ -2411,7 +2423,7 @@ across both would be worse than not measuring at all, because the number would c
 authority of a computation while describing a different population.
 
 There is a second problem, and it may be larger. The recorded delisting counts by year
-rise by a factor of roughly thirty between the start of the window and the end.
+rise from 7 in 2010 to 2,353 in 2025.
 Delisting rates do not behave like that. **Coverage does.** If the provider's list is
 effectively a recent snapshot rather than a historical record, then no rate computed
 from it across the full window means anything.
@@ -2542,8 +2554,9 @@ venue, and size is what the split above shows to be the variable that matters.
 The standard tool for this question is CRSP's delisting file, which is complete from
 1926, distinguishes mergers from liquidations from involuntary delistings, and attaches
 a delisting return to each event. It is available through WRDS at most universities.
-Everything I do in this section is a substitute for it, and I would replace it given
-access.
+Everything I do in this section is a substitute for it, and I would have replaced it
+given access; access to CRSP was granted on 15 September 2026, after the price pulls of
+21 August and of 2 and 7 September, and nothing here depends on it.
 
 Free alternatives worth noting: SEC Form 25 filings, which are the formal delisting
 notice and are searchable on EDGAR back well before 2010 for US companies; and the GLEIF
@@ -2694,9 +2707,10 @@ time, and mildly autocorrelated, meaning today's return carries information abou
 tomorrow's. Ordinary least squares standard errors assume neither, and would overstate
 how precisely the coefficients are estimated.
 
-I use Newey and West (1987) standard errors, which are robust to both. Five lags is the
-conventional choice for daily data, and I fixed it before seeing any result rather than
-tuning it afterwards.
+I use Newey and West (1987) standard errors, which are robust to both, computed in this
+notebook's own code (`newey_west_ols`). Five lags is the conventional choice for daily
+data, set before the run, in this text above the cell; the public history cannot show
+the order.
 
 > Newey, W. K. and West, K. D. (1987). "A simple, positive semi-definite,
 > heteroskedasticity and autocorrelation consistent covariance matrix."
@@ -3019,8 +3033,9 @@ if len(r6):
 cells.append(md(r"""
 ### 6c. Not microstructure, and not missing factors. So what?
 
-The alpha barely moves across weighting schemes and return frequencies, so I can rule out
-the rebalancing bias. Next I rule out missing factors, and I have a specific reason to
+The alpha stays between 2.8 and 3.9 per cent a year across the four combinations of
+weighting and return frequency (3.67, 2.83, 3.93 and 3.49), positive in all four, so the
+rebalancing bias does not account for it. Next I rule out missing factors, and I have a specific reason to
 expect that one to matter.
 
 The portfolio loads positively on the value factor, and the value premium was negative
@@ -3422,10 +3437,11 @@ it is a research design decision rather than a lookup, and it is not made here.
 
 ### On reporting a null result
 
-If the exposure measure turns out to have no explanatory power for returns, that is a
-result and I intend to report it as one, alongside the minimum effect size the sample
-could have detected. A study that can only publish one of its two possible answers is
-not a test of anything.
+If the exposure measure had turned out to have no explanatory power for returns, that
+would have been a result to report as one, alongside the minimum effect size the sample
+could have detected; the study was stood down before the measure was built, and the null
+that is reported is the return test of the note, with its minimum detectable effect. A
+study that can only publish one of its two possible answers is not a test of anything.
 """))
 
 cells.append(md(r"""

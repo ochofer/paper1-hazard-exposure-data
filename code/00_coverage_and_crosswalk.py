@@ -299,6 +299,34 @@ def main():
           f"{((~cs.has_lei) & (~cs.has_cik)).sum():,}")
     cs.to_csv(os.path.join(OUT, "cross_section.csv"), index=False)
 
+    # Added 19 November 2026, after the results were known: the asset counts of the
+    # cross-section sum to 5,115 with an asset owned by two of the 328 counted
+    # in each, and the number of distinct assets was not printed anywhere; the
+    # count of listed entities with five or more operating assets, by region,
+    # was given in FINDINGS_2026-08-21.md as 918 = 112 + 111 + 689, which does
+    # not add up. Both are printed here from the same frame.
+    distinct = set().union(*reg.values()) if reg else set()
+    holdings = sum(len(s) for s in reg.values())
+    five = {a: s for a, s in firm_assets.items() if len(s) >= 5}
+    hq = lambda a: E.loc[a, "Headquarters Country"] if a in E.index else ""
+    n_us = sum(1 for a in five if hq(a) == "United States")
+    n_eu = sum(1 for a in five if hq(a) in FRENCH_EUROPE)
+    with open(os.path.join(OUT, "cross_section_summary.txt"), "w") as fh:
+        fh.write("CROSS-SECTION SUMMARY, added 19 November 2026\n")
+        fh.write(f"  ownership entities in the cross-section                 {len(reg):,}\n")
+        fh.write(f"  asset holdings, an asset counted once per owner          {holdings:,}\n")
+        fh.write(f"  distinct operating assets held by them                   {len(distinct):,}\n")
+        fh.write("\n")
+        fh.write("RECOUNT of the listed entities with five or more operating assets,\n")
+        fh.write("attributed to the nearest listed parent, by headquarters country\n")
+        fh.write(f"  entities flagged as listed in the file                   {int(E.listed.sum()):,}\n")
+        fh.write(f"  with five or more operating assets, worldwide            {len(five):,}\n")
+        fh.write(f"    United States                                          {n_us:,}\n")
+        fh.write(f"    the sixteen European countries of the region           {n_eu:,}\n")
+        fh.write(f"    elsewhere                                              {len(five) - n_us - n_eu:,}\n")
+    print(f"distinct operating assets held by the {len(reg):,}: {len(distinct):,} "
+          f"({holdings:,} holdings); listed entities with five or more: {len(five):,}")
+
     # ---- LEI to ISIN -----------------------------------------------------
     print("\n=== LEI TO ISIN (ANNA file) ===")
     anna = pd.read_csv(ANNA_CSV, dtype=str)
@@ -374,10 +402,10 @@ def main():
     print("byte grep for ',FI' also returns zero. Finnish and Irish firms therefore")
     print("cannot be resolved through ANNA and need a separate route.")
 
-    print(f"\nwritten to {os.path.abspath(OUT)}")
+    print(f"\nwritten to {os.path.relpath(OUT, os.path.join(HERE, ".."))}")
     for f in ["cross_section.csv", "isin_candidates.csv", "lei_not_in_anna.csv",
               "firms_without_lei.csv", "coverage_by_capacity.csv",
-              "identifier_survival_by_country.csv"]:
+              "identifier_survival_by_country.csv", "cross_section_summary.txt"]:
         print("  " + f)
 
 
