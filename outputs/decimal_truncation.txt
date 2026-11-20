@@ -47,4 +47,4 @@ WHAT THIS MEANS
   rule and it is not reproducible. Quote the STRICT figure above and
   cite this script.
 
-  written to /sessions/rcw-01x512ciuk9onswtpod4uzve/mnt/Projects/Finance Project A/outputs
+  written to outputs

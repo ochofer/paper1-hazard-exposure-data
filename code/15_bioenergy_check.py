@@ -5,8 +5,10 @@ WHY THIS EXISTS
 ---------------
 Script 13 found that the scaled exposure measure, fossil share of GEM-tracked
 thermal capacity, is far less stable across vintages than raw megawatts on the
-same firms: Spearman 0.81 and 0.85 against 0.97, top-quintile overlap 75% to 79%
-against 94% to 97%.
+same firms: Spearman 0.81 and 0.85 against 0.97. Its top-quintile overlap has no
+one figure, because more than a hundred of the panel firms tie at a share of 1
+for about thirty places at the cut (script 13's test 2, since 19 November 2026
+printed as the bounds the ties allow); raw megawatts tie nowhere at the cut.
 
 It also found a contamination. Bioenergy is the entire non-fossil part of that
 denominator, and GEM's bioenergy coverage changed sharply between the releases:
@@ -59,6 +61,7 @@ import os
 
 import pandas as pd
 
+import _overlap
 import _release
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -86,10 +89,11 @@ def spearman(a, b):
 
 
 def quintile_overlap(s_old, s_new, n=5):
+    """The top-quintile overlap as the lowest and the highest count that the
+    firms tied at each cut allow, with the tie counts (_overlap, added
+    19 November 2026): one figure where no tie leaves the top set open."""
     k = max(1, int(round(len(s_old) / n)))
-    a = set(s_old.sort_values(ascending=False).head(k).index)
-    b = set(s_new.sort_values(ascending=False).head(k).index)
-    return len(a & b) / k, k, len(a & b)
+    return _overlap.overlap_bounds(s_old, s_new, k)
 
 
 # The raw-capacity correlation of each comparison, kept so that the table of
@@ -109,16 +113,16 @@ def compare(d, rule, firms, measure, label):
         return None
     aa, bb = a.loc[keep, measure], b.loc[keep, measure]
     rho = spearman(aa, bb)
-    ov, k, hit = quintile_overlap(aa, bb)
+    ov = quintile_overlap(aa, bb)
     ra, rb = a.loc[keep, "fossil_mw"], b.loc[keep, "fossil_mw"]
     say(f"    {label:<44} blank={rule:<7} n={len(keep):>4}  "
-        f"Spearman {rho:.4f}  top-quintile overlap {100*ov:5.1f}% ({hit} of {k})")
+        f"Spearman {rho:.4f}  top-quintile overlap {_overlap.overlap_text(ov)}")
     if measure != "fossil_mw":
-        rov, rk, rhit = quintile_overlap(ra, rb)
+        rov = quintile_overlap(ra, rb)
         RAW[(label, rule)] = spearman(ra, rb)
         say(f"    {'  like-for-like, RAW fossil MW, same firms':<44} "
             f"{'':<13} n={len(keep):>4}  Spearman {RAW[(label, rule)]:.4f}  "
-            f"top-quintile overlap {100*rov:5.1f}% ({rhit} of {rk})")
+            f"top-quintile overlap {_overlap.overlap_text(rov)}")
     return rho
 
 
@@ -165,10 +169,20 @@ def main():
         compare(d, rule, [e for e in bio_both if e in panel], "fossil_share",
                 "fossil share, bioenergy in both, the 328 panel")
 
+    # The unrestricted figures of script 13's test 2, computed here from
+    # scaling_by_firm.csv on the same firms as script 13 computes them: the
+    # panel firms with a fossil share in both releases, the Spearman on average
+    # ranks and the overlap as the bounds the ties at the cut allow.
     say()
-    say("  For reference, the unrestricted figures from script 13, panel firms:")
-    say("    fossil share, blank=zero    Spearman 0.8107   top-quintile overlap 75.0%")
-    say("    fossil share, blank=impute  Spearman 0.8509   top-quintile overlap 79.4%")
+    say("  For reference, the unrestricted figures of script 13, panel firms:")
+    for rule in ("zero", "impute"):
+        ar = d[(d.vintage == OLD) & (d.blank_rule == rule)].set_index("entity_id")["fossil_share"]
+        br = d[(d.vintage == NEW) & (d.blank_rule == rule)].set_index("entity_id")["fossil_share"]
+        common = [e for e in ar.index.intersection(br.index)
+                  if e in panel and pd.notna(ar[e]) and pd.notna(br[e])]
+        ov = quintile_overlap(ar.loc[common], br.loc[common])
+        say(f"    fossil share, blank={rule:<7} n={len(common):>4}  Spearman {spearman(ar.loc[common], br.loc[common]):.4f}  "
+            f"top-quintile overlap {_overlap.overlap_text(ov)}")
 
     say()
     say("=" * 78)
@@ -182,7 +196,7 @@ def main():
     say("  is where U2 is defined and where the +9.8% / +5.0% growth pair is measured.")
     say("  A first attempt filtered U2 to firms with POSITIVE capacity in both")
     say("  vintages, giving 576 firms and the OPPOSITE branch. The filter was mine,")
-    say("  not the project's definition, and it decided a pre-committed branch. Both")
+    say("  not the project's definition, and it decided a branch set before the run. Both")
     say("  are reported below so the difference is visible rather than a choice.")
 
     ep = pd.read_csv(os.path.join(OUT, "exposure_proxy_by_firm.csv"))
@@ -194,15 +208,15 @@ def main():
         keep = sorted(set(av.index) & set(bv.index))
         aa, bb = av[keep], bv[keep]
         rho = spearman(aa, bb)
-        ov, k, hit = quintile_overlap(aa, bb)
+        ov = quintile_overlap(aa, bb)
         u2_res[rule] = rho
         say(f"    U2, as defined      blank={rule:<7} n={len(keep):>4}  Spearman {rho:.4f}"
-            f"  top-quintile overlap {100*ov:5.1f}% ({hit} of {k})")
+            f"  top-quintile overlap {_overlap.overlap_text(ov)}")
         nz = [e for e in keep if av[e] > 0 and bv[e] > 0]
         an, bn = av[nz], bv[nz]
-        ov2, k2, hit2 = quintile_overlap(an, bn)
+        ov2 = quintile_overlap(an, bn)
         say(f"    positive in both    blank={rule:<7} n={len(nz):>4}  Spearman {spearman(an, bn):.4f}"
-            f"  top-quintile overlap {100*ov2:5.1f}% ({hit2} of {k2})")
+            f"  top-quintile overlap {_overlap.overlap_text(ov2)}")
 
     say()
     say("  WHY THE TWO DIFFER, and it is the conventions section's own point.")
@@ -306,7 +320,7 @@ def main():
                               for k, v in a_res.items()},
                "branch": "coverage_change" if both_clear else "instability_survives"})
     say()
-    say(f"  written to {os.path.relpath(OUT, os.path.join(HERE, ".."))}")
+    say(f"  written to {os.path.relpath(OUT, os.path.join(HERE, '..'))}")
     with open(os.path.join(OUT, "bioenergy_check.txt"), "w") as fh:
         fh.write("\n".join(_lines) + "\n")
 

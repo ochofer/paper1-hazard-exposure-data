@@ -97,12 +97,32 @@ F["u2_imp"] = P("bioenergy_check.txt", r"U2, as defined\s+blank=impute\s+n=\s*60
 F["bio_zero"] = P("bioenergy_check.txt", r"bioenergy in both, worldwide\s+blank=zero\s+n=\s*133\s+Spearman ([\d.]+)")
 F["bio_imp"] = P("bioenergy_check.txt", r"bioenergy in both, worldwide\s+blank=impute\s+n=\s*133\s+Spearman ([\d.]+)")
 F["n_zerocap"] = P("bioenergy_check.txt", r"Under blank=zero, (\d+) of the March 2025 firms")
-F["fs_zero"] = P("bioenergy_check.txt", r"fossil share, blank=zero\s+Spearman ([\d.]+)")
-F["fs_imp"] = P("bioenergy_check.txt", r"fossil share, blank=impute\s+Spearman ([\d.]+)")
-F["fs_ov_zero"] = P("bioenergy_check.txt", r"fossil share, blank=zero\s+Spearman [\d.]+\s+top-quintile overlap ([\d.]+)%")
-F["fs_ov_imp"] = P("bioenergy_check.txt", r"fossil share, blank=impute\s+Spearman [\d.]+\s+top-quintile overlap ([\d.]+)%")
-F["bio_ov_zero"] = P("bioenergy_check.txt", r"bioenergy in both, worldwide\s+blank=zero\s+n=\s*133\s+Spearman [\d.]+\s+top-quintile overlap\s+([\d.]+)%")
-F["bio_ov_imp"] = P("bioenergy_check.txt", r"bioenergy in both, worldwide\s+blank=impute\s+n=\s*133\s+Spearman [\d.]+\s+top-quintile overlap\s+([\d.]+)%")
+F["fs_zero"] = P("bioenergy_check.txt", r"fossil share, blank=zero\s+n=\s*\d+\s+Spearman ([\d.]+)")
+F["fs_imp"] = P("bioenergy_check.txt", r"fossil share, blank=impute\s+n=\s*\d+\s+Spearman ([\d.]+)")
+# The top-quintile overlap of fossil share on the panel has no one figure: since
+# 19 November 2026 the scripts print the lowest and the highest count that the
+# firms tied at each cut allow, with the tie counts, and the note reads the
+# counts. An overlap the note gives as one figure must come from a line that
+# says no tie at either cut; a range there aborts the build.
+_NO_TIE = r"top-quintile overlap (\d+) of (\d+) \(([\d.]+)%\), no tie at either cut"
+_TIED = (r"top-quintile overlap (\d+) to (\d+) of (\d+) \([\d.]+% to [\d.]+%\) over every order of the firms "
+         r"tied at the cut: (\d+) firms tied at (\S+) for (\d+) places? in March 2025; "
+         r"(\d+) firms tied at (\S+) for (\d+) places? in August 2026")
+for _rule in ("zero", "imp"):
+    _line = P("bioenergy_check.txt",
+              r"(fossil share, blank=" + {"zero": "zero", "imp": "impute"}[_rule] + r"\s+n=\s*\d+\s+Spearman [\d.]+\s+top-quintile overlap [^\n]*)")
+    F[f"fs_n_{_rule}"] = re.search(r"n=\s*(\d+)", _line).group(1)
+    _m = re.search(_TIED, _line)
+    if _m is None:
+        sys.exit("BUILD ABORTED: the fossil-share overlap line of bioenergy_check.txt does not carry the tie bounds")
+    (F[f"fs_ov_lo_{_rule}"], F[f"fs_ov_hi_{_rule}"], F[f"fs_k_{_rule}"], F[f"fs_tied_mar_{_rule}"], F[f"fs_cut_mar_{_rule}"],
+     F[f"fs_places_mar_{_rule}"], F[f"fs_tied_aug_{_rule}"], F[f"fs_cut_aug_{_rule}"], F[f"fs_places_aug_{_rule}"]) = _m.groups()
+    if not (F[f"fs_cut_mar_{_rule}"] == "1" and F[f"fs_cut_aug_{_rule}"] == "1"
+            and F[f"fs_ov_lo_{_rule}"] == "0" and F[f"fs_ov_hi_{_rule}"] == F[f"fs_k_{_rule}"]
+            and F[f"fs_places_mar_{_rule}"] == F[f"fs_k_{_rule}"] == F[f"fs_places_aug_{_rule}"]):
+        sys.exit("BUILD ABORTED: the fossil-share tie counts are not what the sentence on them says")
+F["bio_ov_zero"] = P("bioenergy_check.txt", r"bioenergy in both, worldwide\s+blank=zero\s+n=\s*133\s+Spearman [\d.]+\s+" + _NO_TIE, group=1)[2]
+F["bio_ov_imp"] = P("bioenergy_check.txt", r"bioenergy in both, worldwide\s+blank=impute\s+n=\s*133\s+Spearman [\d.]+\s+" + _NO_TIE, group=1)[2]
 F["growth_zero"] = P("exposure_proxy_summary.txt", r"under blank=zero\s+\+([\d.]+)%")
 F["growth_imp"] = P("exposure_proxy_summary.txt", r"under blank=impute\s+\+([\d.]+)%")
 F["blank_mar"] = P("exposure_proxy_summary.txt", r"edges 18,807 \| BLANK share ([\d,]+)")
@@ -114,7 +134,7 @@ F["over_aug"] = P("exposure_proxy_summary.txt", r"August 2026\s+7,611\.9 GW\s+vs
 F["never"] = P("panel_join_summary.txt", r"never exposed in either vintage\s+(\d+) of 328")
 F["panel_eff"] = P("panel_join_summary.txt", r"EFFECTIVE panel for task 1.5 is therefore (\d+) firms")
 _sp = re.findall(r"Spearman, \d+ active firms\s+([\d.]+)", body("panel_join_summary.txt"))
-_ov = re.findall(r"TOP-QUINTILE OVERLAP\s+([\d.]+)%", body("panel_join_summary.txt"))
+_ov = re.findall(r"TOP-QUINTILE OVERLAP\s+\d+ of \d+ \(([\d.]+)%\), no tie at either cut", body("panel_join_summary.txt"))
 if len(_sp) != 2 or len(_ov) != 2:
     sys.exit("BUILD ABORTED: expected two Spearman and two overlap figures in panel_join_summary.txt")
 F["p_sp_zero"], F["p_sp_imp"] = _sp
@@ -129,7 +149,7 @@ F["entered"] = P("panel_join_summary.txt", r"entered between the two releases (\
 F["left"] = P("panel_join_summary.txt", r"entered between the two releases \d+, left (\d+)")
 _pj = body("panel_join_summary.txt")
 _bs = re.findall(r"Spearman, the \d+ firms with units in both releases\s+([\d.]+)", _pj)
-_bo = re.findall(r"top quintile kept, the \d+\s+(\d+ of \d+)", _pj)
+_bo = re.findall(r"top quintile kept, the \d+\s+(\d+ of \d+) \([\d.]+%\), no tie at either cut", _pj)
 _bg = re.findall(r"total GW, the \d+\s+2025\s+[\d,.]+\s+2026\s+[\d,.]+\s+\(([+-][\d.]+)%\)", _pj)
 _bb = re.findall(r"of the \d+, at zero in March 2025 under this reading\s+(\d+)", _pj)
 _bz = re.findall(r"at zero in March 2025 and above zero in August 2026\s+(\d+)\s+\(entered coverage (\d+), "
@@ -454,53 +474,18 @@ for fn in sorted(os.listdir(OUT)):
 
 TODAY = date.today().isoformat()
 
-# Version of the published note. Bump this and add a line to CHANGELOG below
-# before tagging a new release. A note whose subject is undocumented revision
-# cannot itself be revised without a record of what moved.
+# Version of the published note. Bump this and add the version's date to VERSIONS
+# below before tagging a new release; the repository's history holds every change
+# between versions.
 VERSION = "1.3"
-CHANGELOG = {
-    "1.0": "First published version, 9 September 2026.",
-    "1.1": "Prose revised throughout, and no figure changed: all 87 were checked against "
-           "version 1.0 and every one that the note prints is identical. The four return "
-           "figures are now computed from vintage_return_spread.csv rather than typed by "
-           "hand or read from vintage_return_spread.txt, a summary of that series whose "
-           "August 2026 rows had drifted from the series itself while its March 2025 rows "
-           "had not. The .csv is the file of record and its checksum is unchanged.",
-    "1.2": "Prose revised, 2 October 2026, and no figure changed. The Summary gains two paragraphs, on "
-           "what the existing evidence on vintage revisions does not cover and on why this database is "
-           "an informative setting; section 8 is added, and the comparison with the macroeconomic and "
-           "ESG evidence moves into it from section 5; two claims are withdrawn, that the minimum "
-           "detectable effect is larger than any plausible transition premium and that a commercial "
-           "vendor is not obviously better behaved, the second replaced by the licence and archive "
-           "point. Two corrections to the figure register: the count of changed edges in Appendix B "
-           "printed with a trailing comma in versions 1.0 and 1.1, read from the output file along "
-           "with the figure; and the checksum version 1.1 listed for vintage_return_spread.txt was "
-           "that of a copy made before the release was pinned on 3 September, whose August 2026 rows "
-           "disagreed with the series, rather than of the summary beside the series, which agrees with "
-           "it and carries the checksum shown here. No return figure depends on that summary.",
-    "1.3": "Corrections of 19 November 2026 to the note and the repository. "
-           "Withdrawn: that the recording lag varies with how visible an event was (the four long "
-           "lags belong to transactions from before the first release, and the frame fixes them); "
-           "that the vendor's choice of release moves a verdict (by the rule's figure both files "
-           "called August 2026 clear the threshold); that the record shows the thresholds to predate the "
-           "runs (they are set in the headers of the scripts, and the public history cannot show the "
-           "order); that the past releases are published (they are neither public nor in the "
-           "repository); that the run logs reproduce byte for byte (they printed an absolute path); "
-           "that the typed labels and settings are extracted (they are typed, and listed). Corrected: the "
-           "second table of section 2, which printed 191 for 171 firms and the fossil-share correlations "
-           "in its bioenergy row; the draw, which was stratified across the three restatement subtypes; "
-           "the return test's arms, which are not 191 firms; the minimum detectable effect, which is "
-           "the effect detected half the time. Added, by code: the correlation on the firms with "
-           "coal or gas units in both releases, under both readings of a blank share and with and without "
-           "the firms at zero under the zero reading, beside the figure on the panel defined on the later "
-           "release; "
-           "the rule's own R, 29.7 per cent, leading the ladder, with the unclear case counted as real "
-           "in two further rows; the Wilson interval of 12 of 19; the lag from the first release that "
-           "could have carried each change; the verdict of the return test by its own rule and the "
-           "size of each arm; the tests on the decay pairs; the grades of the no-event verdicts; "
-           "a reference list.",
+VERSIONS = {
+    "1.0": "9 September 2026",
+    "1.1": "15 September 2026",
+    "1.2": "2 October 2026",
+    "1.3": "19 November 2026",
 }
-CHANGELOG_LINE = " ".join(f"<strong>Version {k}.</strong> {v}" for k, v in sorted(CHANGELOG.items()))
+CHANGELOG_LINE = ("Versions: " + "; ".join(f"{k}, {v}" for k, v in sorted(VERSIONS.items()))
+                  + ". The repository's history holds every change between versions.")
 
 # ---------------------------------------------------------------------------
 # the note
@@ -775,10 +760,15 @@ blank shares, {F['blank_pct']}% of its ownership edges, while August 2026 carrie
 filled them in between releases.</p>
 <h3>An apparent finding that dissolved under a control set before the run</h3>
 <p>Scaling capacity by fleet share looked far less stable across releases than raw capacity:
-{F['fs_zero']} and {F['fs_imp']} against the same 0.95 threshold, with top-quintile overlap of
-{F['fs_ov_zero']}% and {F['fs_ov_imp']}%. Restricting to the 133 firms whose denominator exists in both
+{F['fs_zero']} and {F['fs_imp']} against the same 0.95 threshold. Its top-quintile overlap has no one
+figure: {F['fs_tied_mar_zero']} of the {F['fs_n_zero']} panel firms with a share in both releases tie at a
+share of exactly 1 for the {F['fs_k_zero']} places of the top quintile in March 2025, and
+{F['fs_tied_aug_zero']} in August 2026, under the zero reading ({F['fs_tied_mar_imp']} and
+{F['fs_tied_aug_imp']} of {F['fs_n_imp']} for {F['fs_k_imp']} places under the impute reading), so the
+count of names kept runs from none to all of them with the order of the tied firms, and no figure is given.
+Restricting to the 133 firms whose denominator exists in both
 releases, however, it is {F['bio_zero']} and {F['bio_imp']}, with overlap of {F['bio_ov_zero']}% and
-{F['bio_ov_imp']}%. <strong>These figures indicate that the instability arises mostly from the
+{F['bio_ov_imp']}%, no firm tied at either cut. <strong>These figures indicate that the instability arises mostly from the
 denominator's own coverage moving between releases rather than from anything about the firms</strong>,
 and the scaling result accordingly stands
 as a coverage finding and not as a measurement one. The control that dissolved it was set before the
@@ -1134,9 +1124,8 @@ Two outputs did not meet that condition until 8 September, because they were bui
 sets, so that their row order varied between runs while their content did not. The deterministic versions
 are now the outputs of record, and the earlier copies are retained beside them under a superseded marker
 rather than deleted. No value moved and no figure in this note changed. The run logs, the <code>.txt</code>
-summaries, print the path of the output folder relative to the repository; until version 1.3 six of them
-printed the absolute path of the folder they were run in, so their checksums depended on where the script
-ran, and they were rerun for this version.</p>
+summaries, print the path of the output folder relative to the repository, so their checksums do not depend
+on where the script ran.</p>
 <table>
 <tr><th>Promoted 8 September</th><th class="n">output of record</th><th class="n">superseded</th></tr>
 {promoted_rows()}

@@ -1,0 +1,12 @@
+CROSS-SECTION SUMMARY, added 19 November 2026
+  ownership entities in the cross-section                 328
+  asset holdings, an asset counted once per owner          5,115
+  distinct operating assets held by them                   4,550
+
+RECOUNT of the listed entities with five or more operating assets,
+attributed to the nearest listed parent, by headquarters country
+  entities flagged as listed in the file                   2,150
+  with five or more operating assets, worldwide            581
+    United States                                          93
+    the sixteen European countries of the region           82
+    elsewhere                                              406

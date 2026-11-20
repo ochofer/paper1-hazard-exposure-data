@@ -303,7 +303,7 @@ def main():
         return
     s.to_csv(out_path, index=False)
     print()
-    print(f"  written to {os.path.relpath(OUT, os.path.join(HERE, ".."))}")
+    print(f"  written to {os.path.relpath(OUT, os.path.join(HERE, '..'))}")
     print()
     print("  NEXT: fill the verdict column with one of")
     print("    REAL      a dated public announcement matches the change")

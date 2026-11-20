@@ -197,7 +197,7 @@ def main():
     flag.to_csv(os.path.join(OUT, "gleif_consolidation_flags.csv"), index=False)
     have.drop(columns=["in_gleif"]).to_csv(
         os.path.join(OUT, "cross_section_gleif_audited.csv"), index=False)
-    print(f"\nwritten to {os.path.relpath(OUT, os.path.join(HERE, ".."))}")
+    print(f"\nwritten to {os.path.relpath(OUT, os.path.join(HERE, '..'))}")
     print("  gleif_consolidation_flags.csv, cross_section_gleif_audited.csv")
 
 

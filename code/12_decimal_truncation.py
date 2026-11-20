@@ -220,7 +220,7 @@ def main():
         extra={"results_pinned": res_v1, "results_v2": res_v2,
                "threshold": THRESHOLD})
     say()
-    say(f"  written to {os.path.relpath(OUT, os.path.join(HERE, ".."))}")
+    say(f"  written to {os.path.relpath(OUT, os.path.join(HERE, '..'))}")
     with open(path, "w") as fh:
         fh.write("\n".join(_lines) + "\n")
 

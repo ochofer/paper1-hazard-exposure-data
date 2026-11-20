@@ -1,5 +1,5 @@
 TASK 1.2  DECAY CURVES ACROSS CONSECUTIVE GEM RELEASES
-  pre-committed prediction: build-out declining, restatement flat,
+  prediction set in the header before the run: build-out declining, restatement flat,
   methodology spiking at specific releases rather than trending
 
   15 releases found:
@@ -56,7 +56,7 @@ PER-MONTH RATES, because the gaps are uneven
   2026-05 to 2026-07        255          170
   2026-07 to 2026-08        395          108
 
-VERDICT AGAINST THE PRE-COMMITTED PREDICTION
+VERDICT AGAINST THE PREDICTION SET IN THE HEADER BEFORE THE RUN
   FLAG-BLIND, comparable across the whole series:
     build-out share:   first half 69.8%  second half 42.4%
     restatement share: first half 26.6%  second half 40.1%
@@ -77,6 +77,11 @@ VERDICT AGAINST THE PRE-COMMITTED PREDICTION
     one-month pairs, Nov-Dec excluded, n=8: build 61.6% to 48.0%
     correlation of build-out share with gap length: +0.51
     Report whichever of these the note quotes, and say which it is.
+
+  WHAT THE EIGHT PAIRS DISTINGUISH, added 19 November 2026
+    Welch t-test, first four pairs against last four: t 1.09, df 4.7, p 0.33
+    straight trend across the eight pairs: slope -2.46 points a pair, t -0.87, p 0.42
+    correlation of build-out share with gap length on 12 pairs: +0.51, p 0.09
 
 METHODOLOGY SPIKES, the datable rule changes
   2025-11 to 2025-12: methodology 96.2% of change (3,853 edges)

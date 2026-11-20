@@ -1,6 +1,6 @@
 TASK 1.1 SUPPLEMENT  RESTRICTED R, RESIDUALS OUT OF BOTH SIDES
   design decision of 7 September 2026
-  reported beside the published 36.0% with the same prominence, as pre-committed
+  reported beside the published 36.0% with the same prominence, as set before the run
 
 NAME JOIN, from both releases
   March 2025     entities  19,412  id column 'Entity ID'  name column 'Name'
@@ -28,7 +28,7 @@ R, PUBLISHED AND RESTRICTED
   residuals out of both sides                  3,923        10,141    38.7%
 
   change in R: +2.7 percentage points
-  pre-committed GO threshold: 25%
+  GO threshold, set in script 06's header: 25%
   as published  clears
   restricted    clears
 
@@ -40,7 +40,7 @@ R, PUBLISHED AND RESTRICTED
   from the denominator than from the numerator, and R RISES.
 
   The working assumption throughout was that excluding residuals would
-  deflate R and put the pre-committed 25% bar at risk. It does the
+  deflate R and put the 25% bar at risk. It does the
   reverse. The restricted measure is the more conservative construction
   and it makes the go decision safer, not thinner.
 
@@ -49,4 +49,4 @@ R, PUBLISHED AND RESTRICTED
   new ownership information either. Growth in residual buckets is not
   growth in coverage.
 
-  written to /root/fp/outputs
+  written to outputs

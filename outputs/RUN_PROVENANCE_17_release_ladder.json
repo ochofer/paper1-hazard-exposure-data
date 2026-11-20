@@ -1,6 +1,6 @@
 {
   "script": "17_release_ladder",
-  "generated_utc": "2026-09-07T14:24:58Z",
+  "generated_utc": "2026-11-19T17:49:04Z",
   "release_pin": {
     "March 2025": "Global-Energy-Ownership-Tracker-March-2025.xlsx",
     "August 2026": "Global-Energy-Ownership-Tracker-August-2026-V1.xlsx",
@@ -35,7 +35,15 @@
   "go_threshold": 0.25,
   "ladder": [
     {
-      "reading": "as published, V not applied",
+      "reading": "by the rule, strict V = 0.316",
+      "V": 0.3158,
+      "R_V1": 0.297157,
+      "R_V2": 0.288874,
+      "verdict_V1": "clears",
+      "verdict_V2": "clears"
+    },
+    {
+      "reading": "before the correction, V not applied",
       "V": 0.0,
       "R_V1": 0.360305,
       "R_V2": 0.353944,
@@ -51,19 +59,27 @@
       "verdict_V2": "clears"
     },
     {
-      "reading": "strict V = 0.316",
-      "V": 0.3158,
-      "R_V1": 0.297157,
-      "R_V2": 0.288874,
-      "verdict_V1": "clears",
-      "verdict_V2": "clears"
-    },
-    {
-      "reading": "worst case, strict V at its 95% upper bound 0.540",
+      "reading": "strict V at its 95% upper bound 0.540, the unclear case counted as not real",
       "V": 0.5399,
       "R_V1": 0.252342,
       "R_V2": 0.242694,
       "verdict_V1": "clears",
+      "verdict_V2": "FAILS"
+    },
+    {
+      "reading": "strict V with the unclear case counted as real, 7 of 19 = 0.368",
+      "V": 0.3684,
+      "R_V1": 0.286632,
+      "R_V2": 0.278029,
+      "verdict_V1": "clears",
+      "verdict_V2": "clears"
+    },
+    {
+      "reading": "strict V with the unclear case counted as real, at its 95% upper bound 0.590",
+      "V": 0.5896,
+      "R_V1": 0.242402,
+      "R_V2": 0.232452,
+      "verdict_V1": "FAILS",
       "verdict_V2": "FAILS"
     }
   ]

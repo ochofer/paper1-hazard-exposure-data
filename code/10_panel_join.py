@@ -66,6 +66,7 @@ import pandas as pd
 
 # Provenance. Scripts 10, 11 and 05 were the last three with no RUN_PROVENANCE
 # record, found by the gate 5 register on 7 September 2026. See _release.py.
+import _overlap
 import _release
 
 
@@ -87,10 +88,15 @@ def spearman(a, b):
 
 
 def overlap(a, b, k):
-    """Share of the top-k set under a that is also in the top-k set under b."""
-    sa = set(a.sort_values(ascending=False).head(k).index)
-    sb = set(b.sort_values(ascending=False).head(k).index)
-    return len(sa & sb) / k, sa, sb
+    """The top-k overlap as the lowest and the highest count that the firms
+    tied at each cut allow, with the tie counts (_overlap, added 19 November
+    2026), and the two top sets where no tie leaves them open. Where a tie
+    does, the sets returned hold the firms surely in the top k, so that a list
+    of movers names only firms that moved whatever the order."""
+    r = _overlap.overlap_bounds(a, b, k)
+    if _overlap.has_ties(r):
+        return r, r["sure_set_a"], r["sure_set_b"]
+    return r, r["sure_set_a"] | r["tied_set_a"], r["sure_set_b"] | r["tied_set_b"]
 
 
 def main():
@@ -166,8 +172,7 @@ def main():
         log(f"    Pearson,  {len(active)} active firms                {A.corr(B):.4f}")
         log(f"    total GW  2025 {A.sum()/1000:>7,.1f}   2026 {B.sum()/1000:>7,.1f}"
             f"   ({(B.sum()/A.sum()-1)*100:+.1f}%)")
-        log(f"    TOP-QUINTILE OVERLAP  {ov*100:.1f}%  "
-            f"({len(sa & sb)} of {k} firms in common)")
+        log(f"    TOP-QUINTILE OVERLAP  {_overlap.overlap_text(ov)}")
         # DETERMINISM, third instance of this trap in this codebase. `sa - sb`
         # is a set difference, and set iteration order for strings varies
         # between processes because string hashing is randomised. The names and
@@ -177,11 +182,12 @@ def main():
         def _ordered(s_):
             return sorted(s_, key=lambda e: (-abs(B.get(e, 0) - A.get(e, 0)), str(e)))
 
-        log(f"    dropped out of the top quintile: {len(sa - sb)}")
+        sure = " surely, whatever the order of the firms tied at the cut" if _overlap.has_ties(ov) else ""
+        log(f"    dropped out of the top quintile{sure}: {len(sa - sb)}")
         for e in _ordered(sa - sb)[:6]:
             log(f"       {str(nm.get(e, e))[:34]:<36} "
                 f"{A.get(e, 0):>9,.0f} -> {B.get(e, 0):>9,.0f} MW")
-        log(f"    entered the top quintile:        {len(sb - sa)}")
+        log(f"    entered the top quintile{sure}:        {len(sb - sa)}")
         for e in _ordered(sb - sa)[:6]:
             log(f"       {str(nm.get(e, e))[:34]:<36} "
                 f"{A.get(e, 0):>9,.0f} -> {B.get(e, 0):>9,.0f} MW")
@@ -206,13 +212,13 @@ def main():
         A = active[f"mw_2025_{r}"]
         B = active[f"mw_2026_{r}"]
         a, b = both_imp[f"mw_2025_{r}"], both_imp[f"mw_2026_{r}"]
-        ovb, sab, sbb = overlap(a, b, kb)
+        ovb, _, _ = overlap(a, b, kb)
         rose = int(((A == 0) & (B > 0)).sum())
         fell = int(((A > 0) & (B == 0)).sum())
         blank_only = int(((A == 0) & (B > 0) & (active.mw_2025_impute > 0)).sum())
         log(f"\n  --- blank={r} ---")
         log(f"    Spearman, the {len(both_imp)} firms with units in both releases   {spearman(a, b):.4f}")
-        log(f"    top quintile kept, the {len(both_imp)}                   {len(sab & sbb)} of {kb} ({ovb*100:.1f}%)")
+        log(f"    top quintile kept, the {len(both_imp)}                   {_overlap.overlap_text(ovb)}")
         log(f"    total GW, the {len(both_imp)}  2025 {a.sum()/1000:>7,.1f}   2026 {b.sum()/1000:>7,.1f}"
             f"   ({(b.sum()/a.sum()-1)*100:+.1f}%)")
         log(f"    of the {len(both_imp)}, at zero in March 2025 under this reading   {int((a == 0).sum())}"
@@ -225,14 +231,12 @@ def main():
         log(f"    of the {len(active)}, above zero in March 2025 and at zero in August 2026   {fell}")
 
     log(f"\n{'='*74}\nHOW MUCH THE BLANK-SHARE CONVENTION ALONE MOVES THE SORT")
-    _, _, sa_z, sb_z = res["zero"]
-    _, _, sa_i, sb_i = res["impute"]
-    log(f"  March 2025 top quintile, zero vs impute: "
-        f"{len(sa_z & sa_i)} of {k} in common "
-        f"({len(sa_z & sa_i)/k*100:.1f}%)")
-    log(f"  August 2026 top quintile, zero vs impute: "
-        f"{len(sb_z & sb_i)} of {k} in common "
-        f"({len(sb_z & sb_i)/k*100:.1f}%)")
+    A_z, B_z, _, _ = res["zero"]
+    A_i, B_i, _, _ = res["impute"]
+    log(f"  March 2025 top quintile, zero vs impute: in common "
+        f"{_overlap.overlap_text(_overlap.overlap_bounds(A_z, A_i, k), 'the zero reading', 'the impute reading')}")
+    log(f"  August 2026 top quintile, zero vs impute: in common "
+        f"{_overlap.overlap_text(_overlap.overlap_bounds(B_z, B_i, k), 'the zero reading', 'the impute reading')}")
     log("  the August figure should be 100%: August 2026 has no blank shares,")
     log("  so the two conventions are identical there. It is a self-check.")
 
@@ -259,7 +263,7 @@ def main():
 
     with open(os.path.join(OUT, "panel_join_summary.txt"), "w") as f:
         f.write("\n".join(lines) + "\n")
-    log(f"\n  written to {os.path.relpath(OUT, os.path.join(HERE, ".."))}")
+    log(f"\n  written to {os.path.relpath(OUT, os.path.join(HERE, '..'))}")
 
 
 if __name__ == "__main__":

@@ -185,7 +185,7 @@ def main():
     with open(os.path.join(OUT, "presigned_source_urls.txt"), "w", encoding="utf-8") as fh:
         fh.write("\n".join(_lines) + "\n")
     say()
-    say(f"  written to {os.path.relpath(OUT, os.path.join(HERE, ".."))}")
+    say(f"  written to {os.path.relpath(OUT, os.path.join(HERE, '..'))}")
 
 
 if __name__ == "__main__":

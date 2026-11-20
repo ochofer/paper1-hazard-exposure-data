@@ -331,7 +331,7 @@ def main():
     with open(os.path.join(OUT, "change_decomposition.txt"), "w") as f:
         f.write("\n".join(lines) + "\n")
     say()
-    say(f"written to {os.path.relpath(OUT, os.path.join(HERE, ".."))}")
+    say(f"written to {os.path.relpath(OUT, os.path.join(HERE, '..'))}")
 
 
 if __name__ == "__main__":

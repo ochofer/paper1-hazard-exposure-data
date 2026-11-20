@@ -402,7 +402,7 @@ def main():
     print("byte grep for ',FI' also returns zero. Finnish and Irish firms therefore")
     print("cannot be resolved through ANNA and need a separate route.")
 
-    print(f"\nwritten to {os.path.relpath(OUT, os.path.join(HERE, ".."))}")
+    print(f"\nwritten to {os.path.relpath(OUT, os.path.join(HERE, '..'))}")
     for f in ["cross_section.csv", "isin_candidates.csv", "lei_not_in_anna.csv",
               "firms_without_lei.csv", "coverage_by_capacity.csv",
               "identifier_survival_by_country.csv", "cross_section_summary.txt"]:

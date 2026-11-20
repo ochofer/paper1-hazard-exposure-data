@@ -437,7 +437,7 @@ def main():
 
     with open(os.path.join(OUT, "exposure_proxy_summary.txt"), "w") as f:
         f.write("\n".join(lines) + "\n")
-    log(f"\n  written to {os.path.relpath(OUT, os.path.join(HERE, ".."))}")
+    log(f"\n  written to {os.path.relpath(OUT, os.path.join(HERE, '..'))}")
 
 
 if __name__ == "__main__":

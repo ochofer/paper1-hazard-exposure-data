@@ -68,6 +68,7 @@ import os
 
 import pandas as pd
 
+import _overlap
 import _release
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -111,11 +112,11 @@ def spearman(a, b):
 
 
 def quintile_overlap(s_old, s_new, n=5):
-    """Share of the top-quintile names common to both, on the union index."""
+    """The top-quintile overlap as the lowest and the highest count that the
+    firms tied at each cut allow, with the tie counts (_overlap, added
+    19 November 2026): one figure where no tie leaves the top set open."""
     k = max(1, int(round(len(s_old) / n)))
-    top_old = set(s_old.sort_values(ascending=False).head(k).index)
-    top_new = set(s_new.sort_values(ascending=False).head(k).index)
-    return len(top_old & top_new) / k, k, len(top_old & top_new)
+    return _overlap.overlap_bounds(s_old, s_new, k)
 
 
 def main():
@@ -232,10 +233,10 @@ def main():
                 continue
             aa, bb = a.loc[common], b.loc[common]
             rho = spearman(aa, bb)
-            ov, k, hit = quintile_overlap(aa, bb)
+            ov = quintile_overlap(aa, bb)
             flag = "footnote" if rho > FOOTNOTE_SPEARMAN else "reportable"
-            say(f"      blank={rule:<7} n={len(common):>4}  Spearman {rho:.4f}  "
-                f"top-quintile overlap {100*ov:.1f}% ({hit} of {k})  -> {flag}")
+            say(f"      blank={rule:<7} n={len(common):>4}  Spearman {rho:.4f}  -> {flag}")
+            say(f"        top-quintile overlap {_overlap.overlap_text(ov)}")
             if measure != "fossil_mw":
                 # Same firms, unscaled. A scaled measure is undefined where the
                 # denominator is zero, so the firms that enter or leave the
@@ -246,10 +247,10 @@ def main():
                     .set_index("entity_id")["fossil_mw"].loc[common]
                 rb = allf[(allf.vintage == "August 2026") & (allf.blank_rule == rule)] \
                     .set_index("entity_id")["fossil_mw"].loc[common]
-                rov, rk, rhit = quintile_overlap(ra, rb)
+                rov = quintile_overlap(ra, rb)
                 say(f"        like-for-like, RAW fossil MW on those same {len(common)} "
                     f"firms: Spearman {spearman(ra, rb):.4f}, "
-                    f"top-quintile overlap {100*rov:.1f}% ({rhit} of {rk})")
+                    f"top-quintile overlap {_overlap.overlap_text(rov)}")
 
     path = os.path.join(OUT, "scaling_second_column.txt")
     _release.write_provenance(
@@ -261,7 +262,7 @@ def main():
                                 "footnote_spearman": FOOTNOTE_SPEARMAN},
                "degeneracy_verdicts": {f"{k[0]}|{k[1]}": bool(v) for k, v in verdicts.items()}})
     say()
-    say(f"  written to {os.path.relpath(OUT, os.path.join(HERE, ".."))}")
+    say(f"  written to {os.path.relpath(OUT, os.path.join(HERE, '..'))}")
     with open(path, "w") as fh:
         fh.write("\n".join(_lines) + "\n")
 

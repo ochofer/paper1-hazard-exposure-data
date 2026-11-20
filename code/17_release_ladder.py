@@ -221,7 +221,7 @@ def main():
         extra={"n_sample": n, "v_in_window": in_window, "v_strict": strict,
                "wilson_z": Z, "go_threshold": GO_THRESHOLD, "ladder": rows})
     say()
-    say(f"  written to {os.path.relpath(OUT, os.path.join(HERE, ".."))}")
+    say(f"  written to {os.path.relpath(OUT, os.path.join(HERE, '..'))}")
     with open(os.path.join(OUT, "release_ladder.txt"), "w") as fh:
         fh.write("\n".join(_lines) + "\n")
 

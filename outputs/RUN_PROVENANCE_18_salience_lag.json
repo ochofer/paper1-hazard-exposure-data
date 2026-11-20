@@ -1,6 +1,6 @@
 {
   "script": "18_salience_lag",
-  "generated_utc": "2026-09-07T14:28:00Z",
+  "generated_utc": "2026-11-19T17:49:04Z",
   "release_pin": {
     "March 2025": "Global-Energy-Ownership-Tracker-March-2025.xlsx",
     "August 2026": "Global-Energy-Ownership-Tracker-August-2026-V1.xlsx",
@@ -23,6 +23,31 @@
   "fast_threshold_days": 120,
   "n_fast": 2,
   "n_slow": 4,
+  "releases_held": [
+    "2025-03",
+    "2025-05",
+    "2025-07",
+    "2025-08",
+    "2025-09",
+    "2025-10",
+    "2025-11",
+    "2025-12",
+    "2026-01",
+    "2026-02",
+    "2026-03",
+    "2026-05",
+    "2026-07",
+    "2026-08"
+  ],
+  "base_release": "2025-03",
+  "days_after_first_possible": {
+    "19": 0,
+    "11": 61,
+    "1": 457,
+    "7": 426,
+    "17": 457,
+    "10": 457
+  },
   "lag_days": {
     "19": 12,
     "11": 71,

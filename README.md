@@ -44,7 +44,8 @@ into building that bridge and then attempting to prove it wrong.
 
 **Current state of the sample:** 328 ownership entities resolve to the US and
 developed-Europe listed universe, 302 of them to a tradeable listing, and all 328
-together hold 5,115 asset holdings, an asset owned by two of the 328 counted in each. The price panel holds
+together hold 4,550 distinct operating assets in 5,115 asset holdings, an asset owned by two of the 328
+counted in each (`outputs/cross_section_summary.txt`). The price panel holds
 1,122,798 daily rows across 304 symbols, being those 302 companies plus two benchmarks,
 on a single total-return convention, and passes 16 of 16 integrity checks.
 
@@ -89,8 +90,8 @@ note.
   developed-Europe listed universe; there are 328.
 - **priceable**: a listed parent whose shares resolve to a tradeable listing in the price
   panel; there are 302.
-- **tracked asset**: an operating unit in the ownership data; the 328 hold 5,115 asset
-  holdings, an asset owned by two of the 328 counted in each. Global Energy Monitor's own
+- **tracked asset**: an operating unit in the ownership data; the 328 hold 4,550 distinct
+  assets in 5,115 asset holdings, an asset owned by two of the 328 counted in each. Global Energy Monitor's own
   words *unit* and *plant* appear where its fields are named.
 - **build-out, restatement, methodology change**: the three causes into which a vintage
   difference is decomposed. *Revision* is not a fourth category and keeps its ordinary

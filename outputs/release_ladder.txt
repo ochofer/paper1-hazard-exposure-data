@@ -8,12 +8,14 @@ V, DERIVED FROM THE VERDICTS IN event_validation_sample.csv
     NO EVENT                                         12
     UNCLEAR                                          1
 
-  V, in-window only       2/19 = 0.105   95% Wilson 0.029 to 0.314
-  V, strict literal       6/19 = 0.316   95% Wilson 0.154 to 0.540
+  V, in-window only           2/19 = 0.105   95% Wilson 0.029 to 0.314
+  V, strict literal           6/19 = 0.316   95% Wilson 0.154 to 0.540
+  V, strict, unclear as real  7/19 = 0.368   95% Wilson 0.191 to 0.590
+  NO EVENT share, same interval 12/19 = 0.632   95% Wilson 0.410 to 0.809
 
-  Both intervals straddle a pre-committed branch boundary. At n = 19 the
-  sample cannot separate the branches, and V is never quoted without its
-  interval.
+  Both intervals of V straddle a branch boundary of the rule in script 08's
+  header. At n = 19 the sample cannot separate the branches, and V is
+  never quoted without its interval.
 
 ==============================================================================
 THE BUCKETS, RECOMPUTED PER RELEASE THROUGH SCRIPT 06'S OWN CODE PATH
@@ -24,18 +26,22 @@ THE BUCKETS, RECOMPUTED PER RELEASE THROUGH SCRIPT 06'S OWN CODE PATH
 
 ==============================================================================
 THE LADDER. R = (restatement + methodology) / total, restatement revised
-down by V. Pre-committed GO bar 25%.
+down by V. The 25% bar is set in script 06's header; the rule
+revising R by V is in script 08's header. The rule's own row leads.
 
-  reading                                            V1 (PINNED)     V2_External
-  as published, V not applied                        36.0% clears     35.4% clears
-  in-window V = 0.105                                33.9% clears     33.2% clears
-  strict V = 0.316                                   29.7% clears     28.9% clears
-  worst case, strict V at its 95% upper bound 0.540     25.2% clears     24.3% FAILS 
+  reading                                                                    V1 (PINNED)     V2_External
+  by the rule, strict V = 0.316                                              29.7% clears     28.9% clears
+  before the correction, V not applied                                       36.0% clears     35.4% clears
+  in-window V = 0.105                                                        33.9% clears     33.2% clears
+  strict V at its 95% upper bound 0.540, the unclear case counted as not real     25.2% clears     24.3% FAILS 
+  strict V with the unclear case counted as real, 7 of 19 = 0.368            28.7% clears     27.8% clears
+  strict V with the unclear case counted as real, at its 95% upper bound 0.590     24.2% FAILS      23.2% FAILS 
 
-  THE LINE THAT MATTERS. At the worst defensible reading the pre-committed
-  decision clears on V1 at 25.2% and FAILS on V2 at 24.3%.
+  THE LINE THAT MATTERS. At the upper bound of V's interval the decision
+  clears on V1 at 25.2% and FAILS on V2 at 24.3% with the unclear case counted as not real,
+  and FAILS on V1 at 24.2% and FAILS on V2 at 23.2% with it counted as real.
   Both files are called August 2026 and neither is marked as a version.
   The endpoint is pinned to V1 because the 328-firm cross-section is itself
   a V1 artefact, never because V1 clears the bar.
 
-  written to /root/pv/outputs
+  written to outputs

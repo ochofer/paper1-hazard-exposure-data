@@ -32,7 +32,7 @@ DOES THE SORT MOVE? 5-QUANTILE PORTFOLIOS
     Spearman, 191 active firms                0.7309
     Pearson,  191 active firms                0.9078
     total GW  2025   515.1   2026   618.2   (+20.0%)
-    TOP-QUINTILE OVERLAP  86.8%  (33 of 38 firms in common)
+    TOP-QUINTILE OVERLAP  33 of 38 (86.8%), no tie at either cut
     dropped out of the top quintile: 5
        Carlyle Group Inc                        7,724 ->     3,269 MW
        EDP SA                                   4,600 ->     3,142 MW
@@ -51,7 +51,7 @@ DOES THE SORT MOVE? 5-QUANTILE PORTFOLIOS
     Spearman, 191 active firms                0.7749
     Pearson,  191 active firms                0.9152
     total GW  2025   553.3   2026   618.2   (+11.7%)
-    TOP-QUINTILE OVERLAP  92.1%  (35 of 38 firms in common)
+    TOP-QUINTILE OVERLAP  35 of 38 (92.1%), no tie at either cut
     dropped out of the top quintile: 3
        Carlyle Group Inc                        9,094 ->     3,269 MW
        EDP SA                                   4,600 ->     3,142 MW
@@ -62,9 +62,35 @@ DOES THE SORT MOVE? 5-QUANTILE PORTFOLIOS
        KKR & Co. Inc                            3,153 ->     3,716 MW
 
 ==========================================================================
+FIRMS WITH EXPOSURE IN BOTH RELEASES, added 19 November 2026
+  the panel is defined on the later release, so the figures above mix
+  firms whose capacity moved with firms the earlier release did not cover
+  of the 191 firms with exposure in either release:
+    coal or gas units in both releases                       152
+    in one release only                                       39   (entered between the two releases 36, left 3)
+
+  --- blank=zero ---
+    Spearman, the 152 firms with units in both releases   0.8957
+    top quintile kept, the 152                   28 of 30 (93.3%), no tie at either cut
+    total GW, the 152  2025   514.4   2026   582.1   (+13.2%)
+    of the 152, at zero in March 2025 under this reading   9   (every edge they have carrying a blank share)
+    Spearman, the 143 of them above zero in March 2025 under both readings   0.9571
+    of the 191, at zero in March 2025 and above zero in August 2026   45   (entered coverage 36, covered in March 2025 with blank shares only 9)
+    of the 191, above zero in March 2025 and at zero in August 2026   2
+
+  --- blank=impute ---
+    Spearman, the 152 firms with units in both releases   0.9661
+    top quintile kept, the 152                   28 of 30 (93.3%), no tie at either cut
+    total GW, the 152  2025   552.4   2026   582.1   (+5.4%)
+    of the 152, at zero in March 2025 under this reading   0
+    Spearman, the 143 of them above zero in March 2025 under both readings   0.9689
+    of the 191, at zero in March 2025 and above zero in August 2026   36   (entered coverage 36, covered in March 2025 with blank shares only 0)
+    of the 191, above zero in March 2025 and at zero in August 2026   3
+
+==========================================================================
 HOW MUCH THE BLANK-SHARE CONVENTION ALONE MOVES THE SORT
-  March 2025 top quintile, zero vs impute: 36 of 38 in common (94.7%)
-  August 2026 top quintile, zero vs impute: 38 of 38 in common (100.0%)
+  March 2025 top quintile, zero vs impute: in common 36 of 38 (94.7%), no tie at either cut
+  August 2026 top quintile, zero vs impute: in common 38 of 38 (100.0%), no tie at either cut
   the August figure should be 100%: August 2026 has no blank shares,
   so the two conventions are identical there. It is a self-check.
 

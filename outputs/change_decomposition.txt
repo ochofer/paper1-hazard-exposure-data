@@ -1,7 +1,7 @@
 TASK 1.1  DECOMPOSITION OF APPARENT OWNERSHIP CHANGE
   old: Global-Energy-Ownership-Tracker-March-2025.xlsx
   new: Global-Energy-Ownership-Tracker-August-2026-V1.xlsx
-  pre-committed GO threshold: restatement + methodology >= 25%
+  GO threshold, set in this script's header before the run: restatement + methodology >= 25%
 
   remapping sheet loaded: 4,196 entities GEM deleted as duplicates
 
@@ -24,15 +24,15 @@ APPARENT CHANGE, DECOMPOSED
 
   total apparent change 12,717, unchanged edges 14,017
 
-VERDICT AGAINST THE PRE-COMMITTED RULE
+VERDICT AGAINST THE RULE SET IN THE HEADER BEFORE THE RUN
   build-out                     8,135   64.0%   decays with maturity
   restatement                   2,543   20.0%   does not decay
   methodology change            2,039   16.0%   does not decay
   R = restatement + methodology = 36.0%
 
   GO. R of 36.0% clears the 25% bar set before running.
-  The age objection is answered on the data: a majority of apparent
-  change is NOT explained by a young database adding coverage.
+  The age objection is answered on the data: 36.0% of apparent change
+  is restatement or methodology rather than the database adding coverage.
 SENSITIVITY: crediting the maximum plausible number of real events
   edges present in both releases                  16,954
   real ownership churn measured over 18 months      5.2%

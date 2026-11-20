@@ -262,7 +262,7 @@ def main():
     out.to_csv(os.path.join(OUT, "vintage_return_spread.csv"))
     with open(os.path.join(OUT, "vintage_return_spread.txt"), "w") as f:
         f.write("\n".join(lines) + "\n")
-    log(f"\n  written to {os.path.relpath(OUT, os.path.join(HERE, ".."))}")
+    log(f"\n  written to {os.path.relpath(OUT, os.path.join(HERE, '..'))}")
 
 
 if __name__ == "__main__":

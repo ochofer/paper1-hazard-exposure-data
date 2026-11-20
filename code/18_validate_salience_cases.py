@@ -240,7 +240,7 @@ def main():
                                              for _, r in ev.iterrows()},
                "lag_days": {str(r['case']): int(r['lag_days']) for _, r in ev.iterrows()}})
     say()
-    say(f"  written to {os.path.relpath(OUT, os.path.join(HERE, ".."))}")
+    say(f"  written to {os.path.relpath(OUT, os.path.join(HERE, '..'))}")
     with open(os.path.join(OUT, "salience_lag.txt"), "w") as fh:
         fh.write("\n".join(_lines) + "\n")
 

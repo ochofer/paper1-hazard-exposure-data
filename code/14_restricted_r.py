@@ -204,7 +204,7 @@ def main():
                "R_restricted": round(R_restricted, 6),
                "go_threshold": GO_THRESHOLD})
     say()
-    say(f"  written to {os.path.relpath(OUT, os.path.join(HERE, ".."))}")
+    say(f"  written to {os.path.relpath(OUT, os.path.join(HERE, '..'))}")
     with open(os.path.join(OUT, "restricted_r.txt"), "w") as fh:
         fh.write("\n".join(_lines) + "\n")
 

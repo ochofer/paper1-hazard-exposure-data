@@ -43,7 +43,12 @@ They run in numerical order and each reads the outputs of the ones before it. `_
 holds the release pin: the exact filenames of the GEM releases used, resolved by an explicit
 name rather than by a glob, so a script fails rather than silently picking up a different
 file. Two files I hold carry August 2026, one of them sent to me on 26 August 2026, and
-nothing inside either marks it as a version, which is why the pin exists.
+nothing inside either marks it as a version, which is why the pin exists. `_overlap.py`,
+added 19 November 2026, gives a top-quintile overlap as the lowest and the highest count
+that the firms tied at each cut allow, with the tie counts, so that scripts 10, 13 and 15
+print one figure only where no tie leaves the top set open; `tests/test_overlap.py` checks
+the two bounds against every order on made-up cases (`python3 -m pytest tests` from the
+repository root, or `python3 code/_overlap.py` for the same check without a test runner).
 
 | Script | What it does |
 |---|---|
@@ -77,15 +82,14 @@ of reading them from the source, and getting all twelve wrong.
 
 **Every data output is deterministic.** Each is sorted before it is written, so a reader who
 reruns a script against the pinned release gets the same bytes and therefore the same
-checksum; the run logs print the output path relative to the repository (until version 1.3
-six of them printed the absolute path of the folder they were run in). Two outputs did not meet that until 8 September 2026: they were built by iterating
-Python sets, and Python randomises string hashing per process, so their row order varied
-between runs while their content did not. Both scripts now sort before writing. The
-deterministic versions are the outputs of record, the earlier copies are kept beside them
-under a `_SUPERSEDED_` marker and are never deleted, and
+checksum; the run logs print the output path relative to the repository, so their checksums do
+not depend on where the script ran. Two of the outputs are built by iterating Python sets,
+whose order differs from one process to the next because Python randomises string hashing,
+so the two scripts sort their rows before writing and the bytes are the same on every run.
+Those sorted files are the outputs of record; the copies beside them under a `_SUPERSEDED_`
+marker hold the same rows in another order, and
 [`../outputs/PROMOTION_2026-09-08.txt`](../outputs/PROMOTION_2026-09-08.txt) records the
-checksums on both sides with the row count and header shown unchanged. No value moved and no
-figure in the note changed.
+checksums of both with the row count and header.
 
 A checksum on a file whose bytes move between runs is not an audit record, which is the
 subject of the note itself. Any output that cannot meet this rule says so in its own

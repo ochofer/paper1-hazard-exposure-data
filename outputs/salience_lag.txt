@@ -25,22 +25,25 @@ of endpoint moves the number.
   fast, within four months: 2 cases, 12 to 71 days
   slow, beyond four months: 4 cases, 670 to 1,674 days (1.8 to 4.6 years)
 
-  A PHRASING CORRECTION FOR THE NOTE. The slow group has been described as
-  'two to four and a half years'. The shortest of the four is 670 days,
-  which is 1.8 years, not two. The accurate phrase is
-  '1.8 to 4.6 years', or the days themselves.
+==============================================================================
+WHAT THE FRAME FIXES, added 19 November 2026. A change sampled from the
+difference between March 2025 and August 2026 cannot be carried before May
+2025, the first release after March, nor after August 2026.
 
-  The two fast cases are the recent, heavily covered transactions: a
-  statutory disclosure by a listed Japanese issuer, and a 1.9bn USD
-  acquisition by a listed US utility. The four slow ones are older or reach
-  the affected entity only through a perimeter. Salience note per case is in
-  the evidence file.
+  case transaction  frame            first release that could carry  carried   days after it  position
+  19   2025-09-19   at most 316      2025-10                         2025-10               0         1
+  11   2025-10-22   at most 283      2025-11                         2026-01              61         3
+  1    2024-09-30   at least 213     2025-05                         2026-08             457        13
+  7    2023-04-24   at least 738     2025-05                         2026-07             426        12
+  17   2023-05-17   at least 715     2025-05                         2026-08             457        13
+  10   2021-12-31   at least 1,217   2025-05                         2026-08             457        13
 
-  WHAT THIS IS NOT. Six cases cannot establish a correlation. The claim the
-  note makes is that the lag is not a constant, which one fast case and one
-  slow case would establish, and that its variation lines up with salience,
-  which is offered as the reading of six hand-checked cases and labelled as
-  such. An offset cannot fix a lag that is not constant, and that is the
-  consequence that matters.
+  the 4 cases with transactions before March 2025, December 2021 to September 2024: carried 426 to 457 days after the first release that
+  could have carried them, May 2025, in July 2026 and August 2026; their lags could not be under 213 to 1,217 days
+  the 2 cases with transactions inside the window: carried in the first and third release after the transaction; their lags could not exceed 283 and 316 days
 
-  written to /sessions/rcw-01x512ciuk9onswtpod4uzve/mnt/Projects/Finance Project A/outputs
+  Six cases cannot establish a correlation, and every case from before the
+  first release is also a less visible one, so whether the lag varies with
+  how visible the event was cannot be told from them.
+
+  written to outputs

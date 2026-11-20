@@ -30,6 +30,15 @@ outputs/vintage_return_spread.txt
 .public_text_terms
 .public_text_allow
 
-# The releases of the ownership tracker and the price archive, which the scripts read from
-# Data/ beside code/ when a run is made inside the repository; never committed.
+# The data folders the scripts read from Data/ beside code/ when a run is made inside the
+# repository (the ownership tracker's releases, the GLEIF files, the price archive and the
+# others); never committed. On a case-insensitive file system Data/ and data/ are one folder,
+# so the run links each of them inside data/.
 Data/
+data/Climate TRACE v5.10.0
+data/FMP Panel B archive
+data/FMP extraction 2026-09
+data/GEM Data
+data/GLEIF Data
+data/WRDS extraction 2026-09
+data/derived
