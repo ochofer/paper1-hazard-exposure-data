@@ -64,7 +64,7 @@ DOES THE SORT MOVE? 5-QUANTILE PORTFOLIOS
 ==========================================================================
 FIRMS WITH EXPOSURE IN BOTH RELEASES, added 19 November 2026
   the panel is defined on the later release, so the figures above mix
-  firms whose capacity moved with firms the earlier release did not cover
+  firms whose capacity moved with firms that enter the panel between the releases
   of the 191 firms with exposure in either release:
     coal or gas units in both releases                       152
     in one release only                                       39   (entered between the two releases 36, left 3)
@@ -73,9 +73,9 @@ FIRMS WITH EXPOSURE IN BOTH RELEASES, added 19 November 2026
     Spearman, the 152 firms with units in both releases   0.8957
     top quintile kept, the 152                   28 of 30 (93.3%), no tie at either cut
     total GW, the 152  2025   514.4   2026   582.1   (+13.2%)
-    of the 152, at zero in March 2025 under this reading   9   (every edge they have carrying a blank share)
+    of the 152, at zero in March 2025 under this reading   9   (every path from them to a unit crosses a blank share)
     Spearman, the 143 of them above zero in March 2025 under both readings   0.9571
-    of the 191, at zero in March 2025 and above zero in August 2026   45   (entered coverage 36, covered in March 2025 with blank shares only 9)
+    of the 191, at zero in March 2025 and above zero in August 2026   45   (entered the panel 36; at zero in March 2025 under this reading because every path from them to a unit crosses a blank share 9)
     of the 191, above zero in March 2025 and at zero in August 2026   2
 
   --- blank=impute ---
@@ -84,7 +84,7 @@ FIRMS WITH EXPOSURE IN BOTH RELEASES, added 19 November 2026
     total GW, the 152  2025   552.4   2026   582.1   (+5.4%)
     of the 152, at zero in March 2025 under this reading   0
     Spearman, the 143 of them above zero in March 2025 under both readings   0.9689
-    of the 191, at zero in March 2025 and above zero in August 2026   36   (entered coverage 36, covered in March 2025 with blank shares only 0)
+    of the 191, at zero in March 2025 and above zero in August 2026   36   (entered the panel 36; at zero in March 2025 under this reading because every path from them to a unit crosses a blank share 0)
     of the 191, above zero in March 2025 and at zero in August 2026   3
 
 ==========================================================================

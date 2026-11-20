@@ -81,26 +81,52 @@ F["restatement_n"] = P("change_decomposition.txt",
                        r"-- RESTATEMENT TOTAL\s+([\d,]+)")
 # conventions
 # U3's count and the three-universe table's bioenergy row are read from the
-# file since 19 November 2026; until then 191 was typed over two figures the
-# file gives for 171 firms, and the bioenergy row read the fossil-share lines.
+# file.
 F["u3_n"] = P("bioenergy_check.txt", r"U3, (\d+) panel firms\s+[\d.]+\s+[\d.]+")
 F["u3_zero"] = P("bioenergy_check.txt", r"U3, \d+ panel firms\s+([\d.]+)\s")
 F["u3_imp"] = P("bioenergy_check.txt", r"U3, \d+ panel firms\s+[\d.]+\s+([\d.]+)")
 F["u3_fossil_both_zero"] = P("bioenergy_check.txt", r"coal or gas capacity above zero in both, blank=zero\s+(\d+)")
 F["u3_fossil_both_imp"] = P("bioenergy_check.txt", r"coal or gas capacity above zero in both, blank=impute\s+(\d+)")
-F["u3_bio_alone"] = P("bioenergy_check.txt", r"bioenergy alone in at least one release, blank=impute\s+(\d+)")
+F["u3_bio_alone"] = P("bioenergy_check.txt", r"bioenergy alone in both releases, blank=impute\s+(\d+)")
 F["bio_n"] = P("bioenergy_check.txt", r"(\d+) firms with bioenergy in both\s+[\d.]+\s+[\d.]+")
 F["bio_raw_zero"] = P("bioenergy_check.txt", r"\d+ firms with bioenergy in both\s+([\d.]+)\s+[\d.]+")
 F["bio_raw_imp"] = P("bioenergy_check.txt", r"\d+ firms with bioenergy in both\s+[\d.]+\s+([\d.]+)")
 F["u2_zero"] = P("bioenergy_check.txt", r"U2, as defined\s+blank=zero\s+n=\s*604\s+Spearman ([\d.]+)")
 F["u2_imp"] = P("bioenergy_check.txt", r"U2, as defined\s+blank=impute\s+n=\s*604\s+Spearman ([\d.]+)")
-F["bio_zero"] = P("bioenergy_check.txt", r"bioenergy in both, worldwide\s+blank=zero\s+n=\s*133\s+Spearman ([\d.]+)")
-F["bio_imp"] = P("bioenergy_check.txt", r"bioenergy in both, worldwide\s+blank=impute\s+n=\s*133\s+Spearman ([\d.]+)")
-F["n_zerocap"] = P("bioenergy_check.txt", r"Under blank=zero, (\d+) of the March 2025 firms")
+F["bio_zero"] = P("bioenergy_check.txt", r"bioenergy in both, worldwide\s+blank=zero\s+n=\s*\d+\s+Spearman ([\d.]+)")
+F["bio_imp"] = P("bioenergy_check.txt", r"bioenergy in both, worldwide\s+blank=impute\s+n=\s*\d+\s+Spearman ([\d.]+)")
+F["n_zerocap"] = P("bioenergy_check.txt", r"Under blank=zero, (\d+) of the \d+ March 2025 firms")
+F["n_march"] = P("bioenergy_check.txt", r"Under blank=zero, \d+ of the (\d+) March 2025 firms")
+# the 576 of the 604 above zero in both releases with a blank share read as zero, under both readings, and
+# the 28 at zero (added 20 November 2026); the 145 firms with bioenergy in both releases under the imputed
+# reading (added 20 November 2026); the pair on the 34 panel firms with bioenergy in both
+F["u2_zero576"] = P("bioenergy_check.txt", r"of the 604, at zero in March 2025 with a blank share read as zero\s+(\d+)")
+F["u2_pos_n"] = P("bioenergy_check.txt", r"above zero in both under the zero reading\s+blank=zero\s+n=\s*(\d+)")
+F["u2_pos_zero"] = P("bioenergy_check.txt", r"above zero in both under the zero reading\s+blank=zero\s+n=\s*\d+\s+Spearman ([\d.]+)")
+F["u2_pos_imp"] = P("bioenergy_check.txt", r"above zero in both under the zero reading\s+blank=impute\s+n=\s*\d+\s+Spearman ([\d.]+)")
+F["bio_imp_n"] = P("bioenergy_check.txt", r"bioenergy above zero in both releases with blanks imputed: (\d+) firms")
+F["bio_imp_fs"] = P("bioenergy_check.txt", r"bioenergy in both \(imputed\), worldwide blank=impute\s+n=\s*\d+\s+Spearman ([\d.]+)")
+F["bio_imp_raw"] = P("bioenergy_check.txt", r"bioenergy in both \(imputed\), worldwide blank=impute\s+n=\s*\d+\s+Spearman [\d.]+\s+top-quintile overlap [^\n]*\n\s+like-for-like, RAW fossil MW, same firms\s+n=\s*\d+\s+Spearman ([\d.]+)")
+F["bio34_n"] = P("bioenergy_check.txt", r"bioenergy in both, the 328 panel blank=zero\s+n=\s*(\d+)")
+F["bio34_zero"] = P("bioenergy_check.txt", r"bioenergy in both, the 328 panel blank=zero\s+n=\s*\d+\s+Spearman ([\d.]+)")
+F["bio34_imp"] = P("bioenergy_check.txt", r"bioenergy in both, the 328 panel blank=impute\s+n=\s*\d+\s+Spearman ([\d.]+)")
+# the entrants, from script 25 (added 20 November 2026): their August 2026 capacity split unit by unit
+# by what the March 2025 file held of each unit, a measure set after the script's first run
+F["ent_n"] = P("panel_entrants.txt", r"entrants (\d+) \| August 2026 capacity")
+F["ent_mw"] = P("panel_entrants.txt", r"\| August 2026 capacity ([\d,.]+) MW, split unit by unit")
+F["ent_i_mw"], F["ent_i_pc"] = P("panel_entrants.txt",
+                                 r"the entrant not then listed and identified\s+([\d,.]+) MW, ([\d.]+) per cent")
+F["ent_ii_mw"], F["ent_ii_pc"] = P("panel_entrants.txt",
+                                   r"the rest of the units the March 2025 file carried\s+([\d,.]+) MW, ([\d.]+) per cent")
+F["ent_iii_mw"], F["ent_iii_pc"] = P("panel_entrants.txt",
+                                     r"units the March 2025 file did not carry\s+([\d,.]+) MW, ([\d.]+) per cent")
+(F["ent_top1"], _, F["ent_top1_pc"], F["ent_top2"], _, F["ent_top2_pc"]) = P(
+    "panel_entrants.txt", r"of \(i\), the two largest: (.+?) ([\d,.]+) MW, ([\d.]+) per cent of \(i\); "
+                          r"(.+?) ([\d,.]+) MW, ([\d.]+) per cent of \(i\)\n")
 F["fs_zero"] = P("bioenergy_check.txt", r"fossil share, blank=zero\s+n=\s*\d+\s+Spearman ([\d.]+)")
 F["fs_imp"] = P("bioenergy_check.txt", r"fossil share, blank=impute\s+n=\s*\d+\s+Spearman ([\d.]+)")
 # The top-quintile overlap of fossil share on the panel has no one figure: since
-# 19 November 2026 the scripts print the lowest and the highest count that the
+# 20 November 2026 the scripts print the lowest and the highest count that the
 # firms tied at each cut allow, with the tie counts, and the note reads the
 # counts. An overlap the note gives as one figure must come from a line that
 # says no tie at either cut; a range there aborts the build.
@@ -121,8 +147,8 @@ for _rule in ("zero", "imp"):
             and F[f"fs_ov_lo_{_rule}"] == "0" and F[f"fs_ov_hi_{_rule}"] == F[f"fs_k_{_rule}"]
             and F[f"fs_places_mar_{_rule}"] == F[f"fs_k_{_rule}"] == F[f"fs_places_aug_{_rule}"]):
         sys.exit("BUILD ABORTED: the fossil-share tie counts are not what the sentence on them says")
-F["bio_ov_zero"] = P("bioenergy_check.txt", r"bioenergy in both, worldwide\s+blank=zero\s+n=\s*133\s+Spearman [\d.]+\s+" + _NO_TIE, group=1)[2]
-F["bio_ov_imp"] = P("bioenergy_check.txt", r"bioenergy in both, worldwide\s+blank=impute\s+n=\s*133\s+Spearman [\d.]+\s+" + _NO_TIE, group=1)[2]
+F["bio_ov_zero"] = P("bioenergy_check.txt", r"bioenergy in both, worldwide\s+blank=zero\s+n=\s*\d+\s+Spearman [\d.]+\s+" + _NO_TIE, group=1)[2]
+F["bio_ov_imp"] = P("bioenergy_check.txt", r"bioenergy in both, worldwide\s+blank=impute\s+n=\s*\d+\s+Spearman [\d.]+\s+" + _NO_TIE, group=1)[2]
 F["growth_zero"] = P("exposure_proxy_summary.txt", r"under blank=zero\s+\+([\d.]+)%")
 F["growth_imp"] = P("exposure_proxy_summary.txt", r"under blank=impute\s+\+([\d.]+)%")
 F["blank_mar"] = P("exposure_proxy_summary.txt", r"edges 18,807 \| BLANK share ([\d,]+)")
@@ -152,8 +178,9 @@ _bs = re.findall(r"Spearman, the \d+ firms with units in both releases\s+([\d.]+
 _bo = re.findall(r"top quintile kept, the \d+\s+(\d+ of \d+) \([\d.]+%\), no tie at either cut", _pj)
 _bg = re.findall(r"total GW, the \d+\s+2025\s+[\d,.]+\s+2026\s+[\d,.]+\s+\(([+-][\d.]+)%\)", _pj)
 _bb = re.findall(r"of the \d+, at zero in March 2025 under this reading\s+(\d+)", _pj)
-_bz = re.findall(r"at zero in March 2025 and above zero in August 2026\s+(\d+)\s+\(entered coverage (\d+), "
-                 r"covered in March 2025 with blank shares only (\d+)\)", _pj)
+_bz = re.findall(r"at zero in March 2025 and above zero in August 2026\s+(\d+)\s+\(entered the panel (\d+); "
+                 r"at zero in March 2025 under this reading because every path from them to a unit crosses "
+                 r"a blank share (\d+)\)", _pj)
 if any(len(x) != 2 for x in (_bs, _bo, _bg, _bb, _bz)):
     sys.exit("BUILD ABORTED: expected one block per blank-share reading in panel_join_summary.txt")
 F["both_sp_zero"], F["both_sp_imp"] = _bs
@@ -168,14 +195,20 @@ F["pos_n"] = _bp[0][0]; F["pos_sp_zero"], F["pos_sp_imp"] = _bp[0][1], _bp[1][1]
 F["gap_both"] = f"{float(F['both_sp_imp']) - float(F['both_sp_zero']):.3f}"
 F["gap_pos"] = f"{float(F['pos_sp_imp']) - float(F['pos_sp_zero']):.3f}"
 _i = lambda x: int(str(x).replace(",", ""))
+_f = lambda x: float(str(x).replace(",", ""))
 if not (F["both_units"] == F["u3_fossil_both_imp"]
         and _i(F["u3_n"]) == _i(F["u3_fossil_both_imp"]) + _i(F["u3_bio_alone"])
         and _i(F["panel_eff"]) == _i(F["both_units"]) + _i(F["one_only"])
         and _i(F["one_only"]) == _i(F["entered"]) + _i(F["left"])
         and _i(F["rose_zero"]) == _i(F["rose_entered_zero"]) + _i(F["rose_blank_zero"])
         and F["both_blank_zero"] == F["rose_blank_zero"] and F["both_blank_imp"] == "0"
-        and _i(F["pos_n"]) == _i(F["both_units"]) - _i(F["both_blank_zero"])):
-    sys.exit("BUILD ABORTED: the counts of scripts 10 and 15 do not reconcile")
+        and _i(F["pos_n"]) == _i(F["both_units"]) - _i(F["both_blank_zero"])
+        and F["ent_n"] == F["entered"]
+        and abs(sum(_f(F[k]) for k in ("ent_i_mw", "ent_ii_mw", "ent_iii_mw")) - _f(F["ent_mw"])) < 0.05
+        and abs(sum(_f(F[k]) for k in ("ent_i_pc", "ent_ii_pc", "ent_iii_pc")) - 100.0) < 0.05
+        and _f(F["ent_top1_pc"]) >= _f(F["ent_top2_pc"]) and _f(F["ent_top1_pc"]) + _f(F["ent_top2_pc"]) <= 100.05
+        and _i(F["u2_pos_n"]) == 604 - _i(F["u2_zero576"])):
+    sys.exit("BUILD ABORTED: the counts of scripts 10, 15 and 25 do not reconcile")
 # The turnover of the extreme portfolio on the wider panel, from the overlaps.
 _turn = sorted(100 - float(x) for x in (F["p_ov_zero"], F["p_ov_imp"]))
 F["turn_lo"], F["turn_hi"] = f"{_turn[0]:.0f}", f"{_turn[1]:.0f}"
@@ -238,6 +271,18 @@ def _return_figures(fn="vintage_return_spread.csv", lag=6):
         out[f"rule_d_{rule}"] = f"{diff / pooled:.2f}"
         out[f"rule_c_{rule}"] = f"{corr:.4f}"
         out[f"rule_v_{rule}"] = verdict.lower()
+        # The Newey-West standard error of the difference of the two monthly series, with the same
+        # kernel and lags, and the difference over it: added 20 November 2026 after the results were
+        # known, in no verdict; computed here as script 11 computes it.
+        dser = (both.iloc[:, 1] - both.iloc[:, 0]).to_numpy()
+        ed = dser - dser.mean()
+        nd = len(ed)
+        sd_ = (ed @ ed) / nd
+        for l in range(1, lag + 1):
+            sd_ += 2 * (1 - l / (lag + 1)) * ((ed[l:] @ ed[:-l]) / nd)
+        nw_d = (sd_ / nd) ** 0.5
+        out[f"dse_{rule}"] = f"{nw_d * 12 * 100:.2f}"
+        out[f"dt_{rule}"] = f"{abs(dser.mean()) / nw_d:.2f}"
     if out["rule_v_zero"] == out["rule_v_impute"]:
         out["rule_phrase"] = f"{out['rule_v_zero']} under both readings of a blank share"
     else:
@@ -247,6 +292,10 @@ def _return_figures(fn="vintage_return_spread.csv", lag=6):
 
 
 F.update(_return_figures())
+# The months of the power calculation, from script 05 (computed there since 20 November 2026).
+F["pw_months"] = P("power_comparison.txt", r"months needed to detect a 2.0%/year premium at t=3.0: ([\d,]+)")
+F["pw_months_1pct"] = P("power_comparison.txt", r"at a monthly standard deviation of 1% instead: ([\d,]+)")
+F["pw_months_80"] = P("power_comparison.txt", r"at 80 per cent power, t=3.0 plus 0.84: ([\d,]+)")
 # The size of each arm, from the run log of script 11. The log is withheld with
 # the series, and the counts are not price data.
 for _v, _r, _k in (("2025", "zero", "arm_25z"), ("2025", "impute", "arm_25i"),
@@ -473,16 +522,19 @@ for fn in sorted(os.listdir(OUT)):
             prov[fn] = (rec.get("kind", "no data inputs"), "")
 
 TODAY = date.today().isoformat()
+TODAY_WORDS = date.today().strftime("%d %B %Y").lstrip("0")
 
 # Version of the published note. Bump this and add the version's date to VERSIONS
 # below before tagging a new release; the repository's history holds every change
-# between versions.
+# between versions. The current version carries the day of the build, which is
+# the day of the commit that is tagged, so that the version line, the byline and
+# the file's name give one date.
 VERSION = "1.3"
 VERSIONS = {
     "1.0": "9 September 2026",
     "1.1": "15 September 2026",
     "1.2": "2 October 2026",
-    "1.3": "19 November 2026",
+    "1.3": TODAY_WORDS,
 }
 CHANGELOG_LINE = ("Versions: " + "; ".join(f"{k}, {v}" for k, v in sorted(VERSIONS.items()))
                   + ". The repository's history holds every change between versions.")
@@ -615,7 +667,7 @@ of events.</p>
 <p><strong>What the existing evidence does not cover.</strong> Vintage instability is documented in
 macroeconomic series revised by statistical agencies (Goes, 2023) and in a commercial ESG rating (Berg,
 Fabisik and Sautner, 2021). Neither checks a revision against a dated event case by case: Goes (2023)
-compares releases of the World Development Indicators and replicates three articles across them, and
+compares releases of the World Development Indicators and replicates three articles across data sources and releases, and
 Berg, Fabisik and Sautner (2021) report that rewritten ESG scores relate to returns where the original
 scores do not. An ownership change is different in that respect: it either happened or it did not, and
 the transaction behind it sits on the public record, so a difference can be checked case by case.</p>
@@ -624,10 +676,12 @@ from the {F['restatement_n']} edges classed as restatement, of the {F['chg_total
 of the same database differ, and I searched for the transaction behind each one in exchange filings,
 company statements, press releases and, where no filing could be found, market-data sites and the
 vendor's own wiki and later file. One reader, myself, gave every verdict knowing the thresholds, and no
-second reading is recorded. The file grades {F['n_graded_w']} of the {F['n_noevent_w']} no-event verdicts
-by the kind of evidence they rest on, {F['n_strong_w']} as the strong kind, a positive finding that the
-relationship still exists, and {F['n_weak_w']} as the weak kind, an absence of evidence; the other
-{F['n_ungraded_w']} carry no grade, and Appendix C prints the file's words.</p>
+second reading is recorded; the file's note on case 13 says that its verdict was written down in project
+documents outside the repository before the case was checked. The file grades {F['n_graded_w']} of the
+{F['n_noevent_w']} no-event verdicts by one of two phrases, "strong kind", a positive finding that the
+relationship still exists ({F['n_strong_w']}), and "weak kind: absence of evidence" ({F['n_weak_w']}); the
+other {F['n_ungraded_w']} carry neither phrase, one of them, case 8, calling its verdict strong in other
+words, and Appendix C prints the file's words.</p>
 <p><strong>Why this database is an informative setting.</strong> The tracker is free and published under
 CC BY 4.0, a licence that permits publishing the inputs beside the result, and this note does not
 publish them. The fourteen past releases it compares were supplied by the vendor on request and are
@@ -653,21 +707,30 @@ from when it happened.</p>
 <p><strong>What it costs a book.</strong> On the {F['panel_eff']} firms in the cross-section with any coal
 or gas exposure in either release, the rank correlation between the two releases is {F['p_sp_zero']} under
 one blank-share convention and {F['p_sp_imp']} under the other; on the {F['both_units']} firms with coal
-or gas units in both releases it is {F['both_sp_zero']} with a blank share read as zero and
-{F['both_sp_imp']} with blanks imputed. The gap between the two pairs is firms entering coverage: the panel
-is defined on the later release, {F['entered']} firms entered between the two releases and {F['left']}
-left. Under the zero reading {F['both_blank_zero']} of the {F['both_units']} are at zero in March 2025, every
-edge they have carrying a blank share; on the {F['pos_n']} others the two readings give {F['pos_sp_zero']} and
+or gas units in both releases it is {F['both_sp_zero']} with a blank share read as zero, below the 0.95
+line of section 2, and {F['both_sp_imp']} with blanks imputed. The gap between the two pairs is firms that
+enter the panel between the two releases: the panel is defined on the later release, {F['entered']} firms
+entered and {F['left']} left. Of the {F['ent_mw']} MW the {F['entered']} hold in August 2026,
+{F['ent_i_mw']} MW, {F['ent_i_pc']} per cent, is in units the March 2025 file attributed to a listed entity
+that owns the entrant in August 2026, the entrant not then a listed and identified entity: subsidiaries
+that gained a listed flag, the mechanism of section 3. Under the zero reading {F['both_blank_zero']} of the {F['both_units']} are at zero in March 2025 because every path
+from them to a unit crosses a blank share; set aside, the {F['pos_n']} others give {F['pos_sp_zero']} and
 {F['pos_sp_imp']}, a gap of {F['gap_pos']} against {F['gap_both']} on the {F['both_units']}. What a release
-costs a book built on this measure is therefore mostly the arrival of firms the earlier file did not cover,
-and among the firms both files cover the ranking moves little.</p>
+costs a book built on this measure is therefore mostly firms arriving in the panel, and
+{F['ent_i_pc']} per cent of their capacity is in plants the earlier file held under a listed parent; among the firms both files cover the ranking is {F['both_sp_zero']} with a blank
+read as zero, below the line, and {F['pos_sp_zero']} once the {F['both_blank_zero']} firms with blank
+shares alone are set aside.</p>
 <p><strong>The return test, read by its rule.</strong> The rule set before the run, in the header of
 script 11, asks whether the two releases give the same answer: robust if the two quintile spreads differ
 by less than one standard error and the two monthly series correlate above 0.95, fragile if they differ
 by more or correlate below 0.90, mixed otherwise. The two spreads differ by {F['rule_d_zero']} and
-{F['rule_d_impute']} standard errors under the two readings of a blank share and the two series correlate
-at {F['rule_c_zero']} and {F['rule_c_impute']}, so the verdict is {F['rule_phrase']}. Beside it, every
-t-statistic is below {F['t_max']}, the Newey-West standard errors are {F['se_lo']}% to {F['se_hi']}% a
+{F['rule_d_impute']} standard errors of the larger of the two spreads under the two readings of a blank
+share, the rule's measure and not the standard error of their difference, and the two series correlate at
+{F['rule_c_zero']} and {F['rule_c_impute']}, so the verdict is {F['rule_phrase']}. The Newey-West standard
+error of the difference of the two monthly series, added on 20 November 2026 after the results were known
+and in no verdict, is {F['dse_zero']}% and {F['dse_impute']}% a year, and the difference over it
+{F['dt_zero']} and {F['dt_impute']}. Beside it, every t-statistic is at most {F['t_max']}, the Newey-West
+standard errors are {F['se_lo']}% to {F['se_hi']}% a
 year, and the effect at which the expected t-statistic reaches the Harvey, Liu and Zhu hurdle of 3.0 is
 {F['mde_lo']}% to {F['mde_hi']}% a year across the arms, an effect detected half the time; at a power of
 80 per cent it is {F['mde80_lo']}% to {F['mde80_hi']}%. The test corroborates nothing in either
@@ -714,7 +777,7 @@ share lies between 0.25 and 0.50 (it is {F['V_k']} of {F['n_cases']}, {F['V_stri
 correction the figure is {F['R_before']}%, and the threshold of 25% is set before the run in the header
 of script 06. The public history cannot show the order, since the scripts and their results entered the
 repository in one commit of 8 September 2026, and the decomposition behind R stood in the findings file
-of 22 August. Section 4 sets out every construction of that figure.</p>
+at the commit of 22 August 2026, b012207. Section 4 sets out every construction of that figure.</p>
 <p class="src">Sources: <code>outputs/salience_lag.txt</code>, <code>outputs/event_validation_sample.csv</code>,
 <code>evidence/salience_lag_cases.csv</code>, <code>outputs/restricted_r.txt</code>,
 <code>outputs/release_ladder.txt</code>, <code>outputs/change_decomposition.txt</code></p>
@@ -738,19 +801,24 @@ opposite sides of that line depending only on the reading.</p>
 <tr><td>{F['bio_n']} firms with bioenergy in both releases</td><td class="n">{F['bio_raw_zero']}</td><td class="n">{F['bio_raw_imp']}</td></tr>
 <tr class="rule"><td>threshold set before the run, in the script's header</td><td class="n">0.95</td><td class="n">0.95</td></tr>
 </table>
-<p><strong>The flip is general rather than a property of the regional panel.</strong> It reproduces on 604
-matched firms worldwide, at {F['u2_zero']} and {F['u2_imp']}, straddling the same cut as the {F['u3_n']}
-regional firms present in both releases, and in the same direction. The reading that a straddle would
-count as general was set before the run, in the header of script 15, which is the only reason it counts
-for anything, since a result that would have been explained either way explains nothing. On the
-{F['bio_n']} firms with bioenergy in both releases, by contrast, raw capacity does not flip, and that is
-the stated limit of the claim; those three universes are not nested. The {F['u3_n']} are the panel firms
-with coal, gas or bioenergy units in both releases: {F['u3_fossil_both_imp']} of them have coal or gas
-capacity above zero in both, and {F['u3_bio_alone']} have bioenergy alone in at least one; section 4
+<p><strong>The flip on the 604 matched firms worldwide.</strong> It reproduces there, at {F['u2_zero']} and
+{F['u2_imp']}, straddling the same cut as the {F['u3_n']} regional firms present in both releases, and in
+the same direction. The reading that a straddle on the 604 would carry is written in a sentence script 15
+prints in its body, dated 7 September 2026, and not in its header; the same sentence records that a first
+run, on the firms above zero in both releases, took the other branch. Without the firms at zero in March
+2025 with a blank share read as zero, {F['u2_zero576']} of the 604 and {F['both_blank_zero']} of the
+{F['both_units']} regional firms with coal or gas units in both releases, both readings clear the line on
+both universes: {F['u2_pos_zero']} and {F['u2_pos_imp']} on
+the {F['u2_pos_n']}, {F['pos_sp_zero']} and {F['pos_sp_imp']} on the {F['pos_n']}. On both universes the
+flip is those firms. On the {F['bio_n']} firms with bioenergy in both releases, by contrast, raw capacity
+does not flip, and that is the stated limit of the claim; those three universes are not nested. The
+{F['u3_n']} are the panel firms with coal, gas or bioenergy units in both releases: {F['u3_fossil_both_imp']}
+of them have coal or gas units in both, and {F['u3_bio_alone']} have bioenergy alone in both; section 4
 returns to the {F['u3_fossil_both_imp']}.</p>
 <p><strong>Why the convention carries that much force.</strong> Under the naive reading, {F['n_zerocap']}
-firms carry attributable capacity of exactly zero in March 2025, because every ownership edge they have
-has a blank share and a blank multiplied by zero is nothing; under imputation none do. The convention
+of the {F['n_march']} listed firms with exposure in March 2025 carry attributable capacity of exactly
+zero, because every path from them to a unit crosses a blank share and a blank read as zero is nothing;
+under imputation none do. The convention
 therefore decides whether a firm registers as having any exposure at all, which is a membership decision
 rather than a measurement one.</p>
 <p>The same choice roughly halves measured growth: on the 604 firms present in both releases, attributable
@@ -766,9 +834,14 @@ share of exactly 1 for the {F['fs_k_zero']} places of the top quintile in March 
 {F['fs_tied_aug_zero']} in August 2026, under the zero reading ({F['fs_tied_mar_imp']} and
 {F['fs_tied_aug_imp']} of {F['fs_n_imp']} for {F['fs_k_imp']} places under the impute reading), so the
 count of names kept runs from none to all of them with the order of the tied firms, and no figure is given.
-Restricting to the 133 firms whose denominator exists in both
-releases, however, it is {F['bio_zero']} and {F['bio_imp']}, with overlap of {F['bio_ov_zero']}% and
-{F['bio_ov_imp']}%, no firm tied at either cut. <strong>These figures indicate that the instability arises mostly from the
+Those two pairs are on the panel firms with a share in both releases, {F['fs_n_zero']} and
+{F['fs_n_imp']}. On the {F['bio_n']} firms worldwide whose denominator exists in both releases, chosen
+with a blank share read as zero and then taken under both readings, it is {F['bio_zero']} and
+{F['bio_imp']}, with overlap of {F['bio_ov_zero']}% and {F['bio_ov_imp']}%, no firm tied at either cut; on
+the {F['bio34_n']} of them in the panel it is {F['bio34_zero']} and {F['bio34_imp']}; and with the firms
+chosen under the imputed reading instead, {F['bio_imp_n']} worldwide, it is {F['bio_imp_fs']}, against
+{F['bio_imp_raw']} for raw capacity on the same firms, so the control clears under either choice of the
+firms. <strong>These figures indicate that the instability arises mostly from the
 denominator's own coverage moving between releases rather than from anything about the firms</strong>,
 and the scaling result accordingly stands
 as a coverage finding and not as a measurement one. The control that dissolved it was set before the
@@ -821,20 +894,31 @@ firms.</p>
 {F['turn_lo']}% to {F['turn_hi']}% of its names between the two releases, against rank correlations of
 {F['p_sp_zero']} and {F['p_sp_imp']}; on the {F['both_units']} firms with coal or gas units in both
 releases the correlations are {F['both_sp_zero']} with a blank share read as zero and {F['both_sp_imp']}
-with blanks imputed, and the top quintile keeps {F['both_ov_zero']} and {F['both_ov_imp']} names. The
-difference between the two panels is firms entering coverage in a panel defined on the later release
-({F['entered']} entered and {F['left']} left between the two files), the same control section 2 applies to
-the scaling result: the {F['panel_eff']} of this section are the {F['both_units']} firms with coal or gas
-units in both releases plus the {F['one_only']} present in one release only, and the {F['u3_n']} of
-section 2 are those {F['both_units']} plus {F['u3_bio_alone']} firms whose units in one of the releases are
-bioenergy alone. Under the first reading {F['both_blank_zero']} of the {F['both_units']} are at zero in March
-2025, every edge they have carrying a blank share; on the {F['pos_n']} others the two readings give
+with blanks imputed, the first below the 0.95 line of section 2, and the top quintile keeps
+{F['both_ov_zero']} and {F['both_ov_imp']} names. The difference between the two panels is firms that enter
+the panel between the two releases, the panel being defined on the later release: {F['entered']} entered
+and {F['left']} left. The {F['ent_mw']} MW the {F['entered']} hold in August 2026 split, unit by unit, into
+three parts: {F['ent_i_mw']} MW, {F['ent_i_pc']} per cent, in units the March 2025 file attributed to a
+listed entity that owns the entrant in August 2026, the entrant not then a listed and identified entity,
+the mechanism of section 3; {F['ent_ii_mw']} MW, {F['ent_ii_pc']} per cent, in the rest of the units the
+March 2025 file carried; and {F['ent_iii_mw']} MW, {F['ent_iii_pc']} per cent, in units it did not carry.
+{F['ent_top1']} and {F['ent_top2']} carry {F['ent_top1_pc']} and {F['ent_top2_pc']} per cent of the first
+part. The measure is by the capacity of units and was set on 20 November 2026, after the first run of
+script 25 (<code>outputs/panel_entrants.txt</code>). The {F['panel_eff']} of this section are the {F['both_units']}
+firms with coal or gas units in both releases plus the {F['one_only']} present in one release only, and the
+{F['u3_n']} of section 2 are those {F['both_units']} plus {F['u3_bio_alone']} firms with bioenergy alone in
+both releases. The figures on the {F['both_units']} and on the {F['pos_n']} below were added on 19 November
+2026, after the results were known (Appendix D); the control of section 2 was set before its run. Under the
+first reading {F['both_blank_zero']} of the {F['both_units']} are at zero in March 2025 because every path
+from them to a unit crosses a blank share; on the {F['pos_n']} others the two readings give
 {F['pos_sp_zero']} and {F['pos_sp_imp']}, a gap of {F['gap_pos']} against {F['gap_both']} on the
 {F['both_units']}. Of the {F['rose_zero']} firms at zero in March 2025 and above it in August 2026 under the
-first reading, {F['rose_entered_zero']} entered coverage and {F['rose_blank_zero']} were covered in March
-2025 with blank shares only. For a signal rebalanced on vendor releases, the turnover
-on the wider panel is paid for firms the earlier file did not cover, and on the firms both files cover the
-ranking is largely kept.</p>
+first reading, {F['rose_entered_zero']} entered the panel and {F['rose_blank_zero']} are at zero in the
+March 2025 file under that reading because every path from them to a unit crosses a blank share. For a
+signal rebalanced on vendor releases, the turnover on the wider panel is paid for firms that enter the
+panel; among the firms both files cover the ranking is {F['both_sp_zero']} with a blank read as zero, below
+the line of section 2, and {F['pos_sp_zero']} once the {F['both_blank_zero']} firms with blank shares alone
+are set aside.</p>
 <h3>R, every construction</h3>
 <p>R is the share of apparent ownership change that is not the database growing. Because the construction
 of that share involves several defensible choices, every construction is set out in one table rather than
@@ -890,17 +974,21 @@ rule was set before the run, in the header of script 11, on the firms with expos
 release and a price series ({F['arm_25']} firms in the March 2025 arm and {F['arm_26']} in the August
 2026 arm), equal-weighted, in local currency, run monthly to December 2025, asks whether the two releases
 give the same answer. The two spreads differ by {F['rule_d_zero']} and {F['rule_d_impute']} standard
-errors under the two readings of a blank share and the two monthly series correlate at
-{F['rule_c_zero']} and {F['rule_c_impute']}, so the verdict is {F['rule_phrase']}. The test returns every
-t-statistic below {F['t_max']}, with Newey-West standard errors of {F['se_lo']}% to {F['se_hi']}% a year;
+errors of the larger of the two spreads under the two readings of a blank share, the rule's measure and
+not the standard error of their difference, and the two monthly series correlate at {F['rule_c_zero']}
+and {F['rule_c_impute']}, so the verdict is {F['rule_phrase']}; the Newey-West standard error of the
+difference of the two series, added on 20 November 2026 after the results were known and in no verdict,
+is {F['dse_zero']}% and {F['dse_impute']}% a year, the difference over it {F['dt_zero']} and
+{F['dt_impute']}. The test returns every t-statistic at most {F['t_max']}, with Newey-West standard errors
+of {F['se_lo']}% to {F['se_hi']}% a year;
 the effect at which the expected t-statistic reaches the Harvey, Liu and Zhu hurdle of 3.0 is
 {F['mde_lo']}% to {F['mde_hi']}% a year across the arms, an effect detected half the time, and at a power
 of 80 per cent it is {F['mde80_lo']}% to {F['mde80_hi']}%. An effect smaller than that is detected less
 than half the time, so the null is a statement about the power of the test rather than about the world. A
 null quoted without a minimum detectable effect reads as evidence of absence. A cross-sectional
-Fama-MacBeth design was set aside before it ran, on a power calculation requiring 1,296 monthly
-observations at an assumed monthly standard deviation of 2 per cent (324 at 1 per cent; 2,125 at 80 per
-cent power), in <code>outputs/power_comparison.txt</code>.</p>
+Fama-MacBeth design was set aside before it ran, on a power calculation requiring {F['pw_months']} monthly
+observations at an assumed monthly standard deviation of 2 per cent ({F['pw_months_1pct']} at 1 per cent;
+{F['pw_months_80']} at 80 per cent power), in <code>outputs/power_comparison.txt</code>.</p>
 <p><strong>Both return arms contain look-ahead, deliberately and identically</strong>, so they are
 comparable with each other and neither is a return prediction.</p>
 <p><strong>Prices.</strong> Returns use <code>adjClose</code> from Financial Modeling Prep's
@@ -956,7 +1044,7 @@ them; what the edges that appear contain was not verified. For a signal built on
 estimates in section 4 suggest that a single release re-draws the ranking at rank correlations of
 {F['p_sp_zero']} and {F['p_sp_imp']} on the panel defined on the later release, and at
 {F['both_sp_zero']} and {F['both_sp_imp']} under the two readings of a blank share on the firms both
-releases cover, so that most of the movement is firms entering coverage.</p>
+releases cover, so that most of the movement is firms that enter the panel between the two releases.</p>
 <p>The limits that bear on that claim are set out in section 6. The one that bounds it most is that
 nineteen cases were drawn once from one bucket, in proportion across its three subtypes, so how the
 verdicts divide by subtype, or in the build-out and methodology buckets, is a question these data cannot
@@ -966,7 +1054,7 @@ release history covering several years would show whether R decays as the layer 
 releases across eighteen months cannot; and a sample large enough within each bucket and subtype would
 give verdict shares by mechanism rather than in aggregate.</p>
 <p>Against this evidence, the claim here is narrow. A difference between two vintages of this file in the
-restatement bucket records, for the most part, the file being edited. Where it records an event, it can
+restatement bucket recorded, in {F['n_noevent']} of the {F['n_cases']} cases sampled, the file being edited. Where it records an event, it can
 do so years late, and in the six cases dated the four longest delays belong to transactions that predate
 the first release the layer had. And an undocumented convention, the analyst's reading of a blank share,
 moves a verdict whose threshold was set before the run, in the header of the script; by the rule's figure
@@ -991,7 +1079,7 @@ from the verified case verdicts, and its Wilson interval is computed rather than
 at the bound apply the upper end of that interval ({F['V_hi']} with {F['V_k']} of {F['n_cases']} real,
 {F['V_all_hi']} with {F['V_all_k']}) rather than a pessimistic figure chosen by hand; the rule's own
 figure, strict V at its point value, clears on both files.</p>
-<p><strong>The endpoint is pinned to V1</strong> because the 328-firm cross-section is itself a V1
+<p><strong>The endpoint is pinned to V1</strong> because the cross-section of 328 ownership entities is itself a V1
 artefact, having been built from that file before the second one arrived; it is not pinned because
 V1 clears the threshold. Had the cross-section been built on V2, the pin would have gone to V2, and at the
 upper bound of V's interval the figure on that file falls below the threshold set in the header of
@@ -1052,8 +1140,9 @@ it follows that a user comparing two naive sums measures the growth of the doubl
 growth of the fleet.</li>
 <li><strong>The blank-share convention.</strong> This one is the analyst's and not the vendor's. Reading
 blanks as zero rather than imputing them moves measured growth from {F['growth_imp']}% to
-{F['growth_zero']}%, and puts {F['n_zerocap']} firms at exactly zero attributable capacity in March
-2025.</li>
+{F['growth_zero']}%, and puts {F['n_zerocap']} of the {F['n_march']} listed firms with exposure in March
+2025 at exactly zero attributable capacity, because every path from them to a unit crosses a blank
+share.</li>
 <li><strong>Coverage moving inside a denominator.</strong> Any measure scaled by fleet share inherits the
 coverage change in its denominator, which is what dissolved the scaling result in section 2.</li>
 <li><strong>Two files carrying the same month.</strong> Two files are called August 2026 and nothing inside
@@ -1087,8 +1176,9 @@ coming.</p>
 {case_rows()}
 </table>
 <p>One reader gave every verdict. The grade column prints the file's own words where it grades a no-event
-verdict by the kind of evidence it rests on, and "not graded" otherwise; no grade was added for this
-version. Where the evidence is the vendor's own material, the column says so.</p>
+verdict by one of two phrases, "strong kind" or "weak kind: absence of evidence", and "not graded"
+otherwise; case 8's note calls its verdict strong in other words and is printed as not graded; no grade
+was added for this version. Where the evidence is the vendor's own material, the column says so.</p>
 <h3>The six datable cases and their lags</h3>
 <p>Lag is measured from the transaction date to the first day of the month of the first release carrying
 the change. Because the dates were read by hand from the sources linked, the file behind this table,
@@ -1107,9 +1197,11 @@ case is the reporting date of a 13G filing as listed by an aggregator.</p>
 <code>code/19_build_note.py</code>, which extracts each result figure from those files at build time and
 aborts if a pattern is absent or matches more than once, so no result figure here was typed by hand. The
 labels and settings are typed: the universe count 604 in a table's label and the 328 and 302 of the
-cross-section, the thresholds 0.95, 25% and 0.06, the sample's 1,296 months with the 2 per cent behind
-them, n = 8 and the 1.9bn USD of one case; the register of script 16 checks that a string is present in a
-file and cannot tell that a number is correct. That check exists because I had previously typed twelve
+cross-section, the thresholds 0.95, 25% and 0.06, the bounds 0.25 and 0.50 of script 08's rule, the 0.90 of
+script 11's rule and its hurdle of 3.0 standard errors, the 2 per cent behind the power calculation, n = 8
+and the 1.9bn USD of one case, and the counts written as words, fourteen releases, thirteen pairs, eighteen
+months and six questions; the register of script 16 checks that a string is present in a file and cannot
+tell that a number is correct. That check exists because I had previously typed twelve
 entity identifiers into an evidence file from memory instead of reading them from the source, and got all
 twelve wrong.</p>
 <table>
@@ -1117,17 +1209,27 @@ twelve wrong.</p>
 {prov_rows()}
 </table>
 
+<h3>What was added after the results were known</h3>
+<p>Added on 19 November 2026, after the results of the earlier versions were known: the figures on the
+{F['both_units']} firms both releases cover and on the {F['pos_n']} above zero under both readings (script
+10), the count of the {F['u3_n']} (script 15), the two ladder rows with the unclear case counted as real
+and the interval of the {F['n_noevent']} of {F['n_cases']} (script 17), the frame of the lags (script 18), the three
+tests on the decay (script 07) and the effect at a power of 80 per cent (script 11). Added on 20 November
+2026: the bounds of an overlap under ties (scripts 10, 13 and 15), the pair on the {F['u2_pos_n']} and the
+pair on the firms with bioenergy in both releases under the imputed reading (script 15), the units of the
+firms that enter the panel and the measure of their capacity by units, set after the script's first run
+(script 25), the months of the power calculation (script 05) and the standard
+error of the difference of the two return series (script 11). Each carries its date where it is printed.</p>
 <h3>Two conventions this register runs on</h3>
 <p><strong>Every data output is deterministic.</strong> Each is sorted before it is written, so a reader
 who reruns the script against the pinned release obtains the same bytes and therefore the same checksum.
-Two outputs did not meet that condition until 8 September, because they were built by iterating Python
-sets, so that their row order varied between runs while their content did not. The deterministic versions
-are now the outputs of record, and the earlier copies are retained beside them under a superseded marker
-rather than deleted. No value moved and no figure in this note changed. The run logs, the <code>.txt</code>
+Two outputs are built from Python sets, whose order differs from one process to the next, and the two
+scripts sort their rows before writing; the sorted files are the outputs of record, and the copies beside
+them under a superseded marker hold the same rows in another order. The run logs, the <code>.txt</code>
 summaries, print the path of the output folder relative to the repository, so their checksums do not depend
 on where the script ran.</p>
 <table>
-<tr><th>Promoted 8 September</th><th class="n">output of record</th><th class="n">superseded</th></tr>
+<tr><th>Two outputs and their earlier copies</th><th class="n">output of record</th><th class="n">earlier copy</th></tr>
 {promoted_rows()}
 </table>
 <p><strong>Two outputs are withheld.</strong> Because the return arm is computed from a licensed price

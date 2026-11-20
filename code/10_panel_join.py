@@ -4,7 +4,7 @@ TASK 1.5 SETUP: JOIN THE EXPOSURE PROXY TO THE REGIONAL CROSS-SECTION
 WHY THIS IS A SEPARATE SCRIPT
 ------------------------------
 09_exposure_proxy.py measures attributable operating coal and gas capacity for
-every listed firm in the world: 666 firms in March 2025, 765 in August 2026.
+every listed firm in the world: 666 firms in March 2025, 762 in August 2026.
 That is the right universe for describing the dataset, but it is not the panel
 the paper is about. The paper's cross-section is 328 ownership entities that the
 tracker flags as listed, headquartered in Ken French's developed Europe plus the
@@ -56,7 +56,7 @@ RUN
 
 Reads:  outputs/cross_section.csv
         outputs/exposure_proxy_by_firm.csv
-Writes: outputs/panel_exposure.csv        328 firms x vintage x blank rule
+Writes: outputs/panel_exposure.csv        328 entities x vintage x blank rule
         outputs/panel_join_summary.txt    the run log
 """
 
@@ -89,7 +89,7 @@ def spearman(a, b):
 
 def overlap(a, b, k):
     """The top-k overlap as the lowest and the highest count that the firms
-    tied at each cut allow, with the tie counts (_overlap, added 19 November
+    tied at each cut allow, with the tie counts (_overlap, added 20 November
     2026), and the two top sets where no tie leaves them open. Where a tie
     does, the sets returned hold the firms surely in the top k, so that a list
     of movers names only firms that moved whatever the order."""
@@ -196,7 +196,7 @@ def main():
     # its figures from the same frame the sort above uses.
     log(f"\n{'='*74}\nFIRMS WITH EXPOSURE IN BOTH RELEASES, added 19 November 2026")
     log("  the panel is defined on the later release, so the figures above mix")
-    log("  firms whose capacity moved with firms the earlier release did not cover")
+    log("  firms whose capacity moved with firms that enter the panel between the releases")
     both_imp = active[(active.mw_2025_impute > 0) & (active.mw_2026_impute > 0)]
     entered = int(((active.mw_2025_impute == 0) & (active.mw_2026_impute > 0)).sum())
     left = int(((active.mw_2025_impute > 0) & (active.mw_2026_impute == 0)).sum())
@@ -222,12 +222,12 @@ def main():
         log(f"    total GW, the {len(both_imp)}  2025 {a.sum()/1000:>7,.1f}   2026 {b.sum()/1000:>7,.1f}"
             f"   ({(b.sum()/a.sum()-1)*100:+.1f}%)")
         log(f"    of the {len(both_imp)}, at zero in March 2025 under this reading   {int((a == 0).sum())}"
-            + ("   (every edge they have carrying a blank share)" if int((a == 0).sum()) else ""))
+            + ("   (every path from them to a unit crosses a blank share)" if int((a == 0).sum()) else ""))
         log(f"    Spearman, the {len(both_pos)} of them above zero in March 2025 under both readings   "
             f"{spearman(both_pos[f'mw_2025_{r}'], both_pos[f'mw_2026_{r}']):.4f}")
         log(f"    of the {len(active)}, at zero in March 2025 and above zero in August 2026   {rose}"
-            f"   (entered coverage {rose - blank_only}, covered in March 2025 with "
-            f"blank shares only {blank_only})")
+            f"   (entered the panel {rose - blank_only}; at zero in March 2025 under this "
+            f"reading because every path from them to a unit crosses a blank share {blank_only})")
         log(f"    of the {len(active)}, above zero in March 2025 and at zero in August 2026   {fell}")
 
     log(f"\n{'='*74}\nHOW MUCH THE BLANK-SHARE CONVENTION ALONE MOVES THE SORT")

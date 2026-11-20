@@ -31,7 +31,7 @@ CHOICES SET ON 2 SEPTEMBER 2026, BEFORE ANYTHING RAN
 
     attribution  nearest listed parent, depth cap 12, cycle-safe. Same rule as
                  00_coverage_and_crosswalk.py, so the firm panel is comparable
-                 to the 328-firm cross-section.
+                 to the cross-section of 328 ownership entities.
 
     listed       PubliclyListed is true AND an LEI or PermID is present.
 
@@ -290,7 +290,10 @@ def make_parents(edges, rule):
     return parents
 
 
-def build(label, V, rule, log):
+def build(label, V, rule, log, keep_units=None, keep_unit_mw=None):
+    """With `keep_units` a dict, it is filled with the set of GEM unit IDs attributed to each listed
+    firm; with `keep_unit_mw` a dict, with the megawatts attributed to each listed firm from each of
+    those units (both added 20 November 2026 for 25_panel_entrants.py; the outputs do not change)."""
     listed, units = V["listed"], V["units"]
     parents = make_parents(V["edges"], rule)
     memo = {}
@@ -314,12 +317,14 @@ def build(label, V, rule, log):
         return memo[key]
 
     unit_cap, firm_mw, firm_units = {}, defaultdict(float), defaultdict(set)
+    unit_mw = defaultdict(lambda: defaultdict(float))
     for (u, own), (cap, hop, sector) in units.items():
         unit_cap[u] = (cap, sector)
         contrib = {own: 1.0} if own in listed else nearest(own, 0, frozenset())
         for a, v in contrib.items():
             firm_mw[a] += hop * v * cap
             firm_units[a].add(u)
+            unit_mw[a][u] += hop * v * cap
 
     by_sector = defaultdict(float)
     for u, (cap, sector) in unit_cap.items():
@@ -335,6 +340,10 @@ def build(label, V, rule, log):
         f"({attributable/fleet*100:.1f}% of fleet)")
     log(f"    listed firms with exposure  {len(firm_mw):>9,}")
 
+    if keep_units is not None:
+        keep_units.update({a: set(us) for a, us in firm_units.items()})
+    if keep_unit_mw is not None:
+        keep_unit_mw.update({a: dict(m) for a, m in unit_mw.items()})
     rows = [{"vintage": label, "blank_rule": rule, "entity_id": a,
              "name": V["name"].get(a, ""), "hq_country": V["hq"].get(a, ""),
              "attributable_mw": round(v, 2), "units": len(firm_units[a])}

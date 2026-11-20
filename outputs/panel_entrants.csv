@@ -1,0 +1,37 @@
+entity_id,name,august_2026_mw,august_2026_units,units_in_march_2025_file,march_2025_listed_holders,listed_and_identified_in_march_2025,owned_in_august_2026_by_a_march_2025_holder,units_part_i,mw_part_i_held_under_a_listed_owner,mw_part_ii_rest_carried_in_march_2025,mw_part_iii_not_carried_in_march_2025
+E100000002988,Entergy Louisiana LLC,11121.40,27,26,E100000001163 Cleco Corporate Holdings; E100000001209 Entergy,False,True,26,10529.60,0.00,591.80
+E100000004265,Union Electric Co,6991.20,42,42,E100000001139 Ameren,False,True,42,6991.20,0.00,0.00
+E100002016384,Bridgepoint Group PLC,3367.50,54,50,E100000001158 Blackstone,False,False,0,0.00,3306.75,60.75
+E100000152192,Partners Group Holding AG,2171.00,18,18,E100000001173 Carlyle Group,False,False,0,0.00,2171.00,0.00
+E100002021926,City of Vienna ,1775.00,5,5,,False,False,0,0.00,1775.00,0.00
+E100000003769,Pacific Gas and Electric Co,1499.00,3,3,,False,False,0,0.00,1499.00,0.00
+E100001016064,Cheniere Energy Partners LP,1249.20,6,0,,True,False,0,0.00,0.00,1249.20
+E100000001303,TexGen Power LLC,853.00,3,3,,False,False,0,0.00,853.00,0.00
+E100000001005,UBS Group AG,733.09,35,34,E100000000641 J-POWER; E100000000651 Mitsui &; E100000001030 Gulf Energy Development; E100000001636 RATCH Group; E100000002135 WHA Utilities and Power; E100000003831 Power and Water Utility Company for Jubail and Yanbu,False,False,0,0.00,698.45,34.64
+E100000001271,Olin Corp,678.00,2,2,,False,False,0,0.00,678.00,0.00
+E100000003523,Mainova AG,665.98,18,18,E100000000457 Uniper; E100000001454 E.ON,False,False,0,0.00,665.98,0.00
+E100001000636,Alcoa Corp,661.30,4,1,E100000001177 CenterPoint Energy,True,False,0,0.00,161.50,499.80
+E100000001586,Motor Oil Hellas SA,591.31,2,1,E100000000475 Metlen Energy & Metals,False,False,0,0.00,152.81,438.50
+E100000000051,Tessenderlo Group ,422.00,1,1,,False,False,0,0.00,422.00,0.00
+E100000001906,enercity AG,415.86,14,14,E100000000457 Uniper; E100000001454 E.ON; E100002001024 Porsche Automobil Holding,False,False,0,0.00,415.86,0.00
+E100002016305,BKV Corp,401.50,2,2,,False,False,0,0.00,401.50,0.00
+E100002016955,DigitalBridge Group Inc,292.00,2,2,,False,False,0,0.00,292.00,0.00
+E100000001114,Mondi PLC,279.30,8,8,,False,False,0,0.00,279.30,0.00
+E100002017821,Banco Santander SA,266.00,1,1,,False,False,0,0.00,266.00,0.00
+E100000000991,BKW AG,263.65,2,2,E100000000619 Hera,False,False,0,0.00,263.65,0.00
+E100001000937,Microsoft Corp,197.30,2,0,,False,False,0,0.00,0.00,197.30
+E100002004300,Brookfield Asset Management Ltd,155.50,3,3,E100000000104 Brookfield,False,True,1,123.00,32.50,0.00
+E100002007946,Excelerate Energy Inc,150.00,1,1,E100000001265 New Fortress Energy,True,False,0,0.00,150.00,0.00
+E100000001713,The Navigator Co,147.00,2,2,E100000000838 Semapa - Sociedade de Investimento e Gestão,False,True,2,147.00,0.00,0.00
+E100000001122,SDCL Energy Efficiency Income Trust PLC,145.00,2,2,,False,False,0,0.00,145.00,0.00
+E100002018551,GE Vernova Inc,135.00,1,1,E100000001223 General Electric,False,False,0,0.00,135.00,0.00
+E100000188948,AXA SA,129.18,4,3,,False,False,0,0.00,62.88,66.30
+E100002016367,Greenidge Generation Holdings Inc,112.00,1,1,,False,False,0,0.00,112.00,0.00
+E100000000025,Lenzing AG,99.97,2,0,,False,False,0,0.00,0.00,99.97
+E100002006770,UBS Fund Management (Switzerland) AG,57.24,18,18,E100000000102 AltaGas; E100000001173 Carlyle Group,False,False,0,0.00,57.24,0.00
+E100002024593,Braunschweig Beteiligungen GmbH,45.68,4,4,E100000000388 Veolia Environnement,False,False,0,0.00,45.68,0.00
+E100002000725,Starwood Real Estate Income Trust Inc,30.00,1,0,,False,False,0,0.00,0.00,30.00
+E100000000397,Bertelsmann SE & Co KGaA,25.00,1,1,,False,False,0,0.00,25.00,0.00
+E100000001215,FMC Corp,25.00,1,1,,False,False,0,0.00,25.00,0.00
+E100001011247,ConocoPhillips Corp,5.17,1,1,E100000001270 Occidental Petroleum,True,False,0,0.00,5.17,0.00
+E100001010596,State Street Corp,1.15,5,5,E100000001157 Black Hills; E100000001250 MDU Resources Group; E100000150310 NorthWestern Energy Group; E100002007932 Otter Tail,True,False,0,0.00,1.15,0.00

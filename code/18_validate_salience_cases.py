@@ -185,9 +185,8 @@ def main():
         f"{slow.lag_days.min():,} to {slow.lag_days.max():,} days "
         f"({slow.lag_days.min()/365.25:.1f} to {slow.lag_days.max()/365.25:.1f} years)")
 
-    # Added 19 November 2026, after the results were known. The paragraphs printed here
-    # until then read the two groups as the visible and the less visible events;
-    # the frame fixes the groups, as the figures below show.
+    # Added 19 November 2026, after the results were known. The frame fixes the
+    # groups, as the figures below show.
     say()
     say("=" * 78)
     say("WHAT THE FRAME FIXES, added 19 November 2026. A change sampled from the")

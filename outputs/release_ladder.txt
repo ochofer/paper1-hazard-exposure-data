@@ -10,8 +10,8 @@ V, DERIVED FROM THE VERDICTS IN event_validation_sample.csv
 
   V, in-window only           2/19 = 0.105   95% Wilson 0.029 to 0.314
   V, strict literal           6/19 = 0.316   95% Wilson 0.154 to 0.540
-  V, strict, unclear as real  7/19 = 0.368   95% Wilson 0.191 to 0.590
-  NO EVENT share, same interval 12/19 = 0.632   95% Wilson 0.410 to 0.809
+  V, strict, unclear as real  7/19 = 0.368   95% Wilson 0.191 to 0.590   (added 19 November 2026, after the results were known)
+  NO EVENT share, same interval 12/19 = 0.632   95% Wilson 0.410 to 0.809   (added 19 November 2026, after the results were known)
 
   Both intervals of V straddle a branch boundary of the rule in script 08's
   header. At n = 19 the sample cannot separate the branches, and V is
@@ -41,7 +41,7 @@ revising R by V is in script 08's header. The rule's own row leads.
   clears on V1 at 25.2% and FAILS on V2 at 24.3% with the unclear case counted as not real,
   and FAILS on V1 at 24.2% and FAILS on V2 at 23.2% with it counted as real.
   Both files are called August 2026 and neither is marked as a version.
-  The endpoint is pinned to V1 because the 328-firm cross-section is itself
+  The endpoint is pinned to V1 because the cross-section of 328 entities is itself
   a V1 artefact, never because V1 clears the bar.
 
   written to outputs

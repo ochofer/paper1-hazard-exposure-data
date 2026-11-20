@@ -21,8 +21,8 @@ note with the minimum detectable effect that makes it readable.
 
 That note is published as *What a vintage difference measures*, a hand verification of
 ownership changes in a public asset-level database. It is the tagged release
-`note-v1.2`, at
-https://github.com/ochofer/paper1-hazard-exposure-data/releases/tag/note-v1.2, and
+`note-v1.3`, at
+https://github.com/ochofer/paper1-hazard-exposure-data/releases/tag/note-v1.3, and
 every figure in it resolves to a named output file under `outputs/`.
 
 ---
@@ -313,10 +313,10 @@ the release and its checksum.
 
 Every data output is sorted before it is written, so that rerunning a script against the
 pinned release reproduces its checksum exactly; the run logs print the output path relative
-to the repository. Files carrying a `_SUPERSEDED_` marker are earlier
-copies of two outputs whose row order varied between runs before that rule was enforced, and
-they are kept rather than deleted; `outputs/PROMOTION_2026-09-08.txt` records the checksums
-on both sides and shows the row count and header unchanged. No value moved.
+to the repository. Files carrying a `_SUPERSEDED_` marker are copies of two outputs
+that hold the same rows in another order, kept beside the outputs of record;
+`outputs/PROMOTION_2026-09-08.txt` records the checksums of both with the row count and
+header.
 
 **The hazard exposure variable.** This is not built and not started. The ownership dataset
 carries no asset coordinates, so building it would require the separate sector datasets
@@ -389,7 +389,7 @@ Data sources: [Kenneth R. French Data Library](https://mba.tuck.dartmouth.edu/pa
 
 **Stock-level index tracking: a point-in-time benchmark, a long-only mandate, and its performance attribution by sector.** A point-in-time S&P 500 universe from CRSP and Compustat, a long-only mandate held close to its cap-weighted benchmark, and an attribution of its active return by sector. Under the mandate, simulated from 1999 to 2024, four covariance estimators realise 78.9 to 83.6 basis points a year of tracking error, and each forecast understates it: realised over forecast is 1.48 to 1.85. Index changes force 11.4 per cent of the turnover on the Ledoit-Wolf estimator, and no active return is distinguishable from zero. [Page](https://www.carlohofer.com/projects/stock-level-tracking/), [dashboard](https://www.carlohofer.com/stock-level-tracking/dashboard/), [note](https://www.carlohofer.com/stock-level-tracking/note/stock-level-tracking_note_2026-11.pdf), [code](https://github.com/ochofer/stock-level-tracking)
 
-**Rules-based portfolio.** Runs a real-money portfolio under rules published before the first order: two UCITS ETFs at 70/30, a monthly cycle with pre-trade checks, look-through exposure and ex-ante risk on a public dashboard. [Page](https://www.carlohofer.com/projects/rules-based-portfolio/), [dashboard](https://www.carlohofer.com/rules-based-portfolio/), [guide](https://www.carlohofer.com/rules-based-portfolio/guide/guide.pdf), [code](https://github.com/ochofer/rules-based-portfolio)
+**Rules-based portfolio.** Runs a real-money portfolio under rules published before the first order, with every later change dated in the repository: two UCITS ETFs at 70/30, a monthly cycle with pre-trade checks, look-through exposure and ex-ante risk on a public dashboard. [Page](https://www.carlohofer.com/projects/rules-based-portfolio/), [dashboard](https://www.carlohofer.com/rules-based-portfolio/), [guide](https://www.carlohofer.com/rules-based-portfolio/guide/guide.pdf), [code](https://github.com/ochofer/rules-based-portfolio)
 
 ---
 

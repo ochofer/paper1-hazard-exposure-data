@@ -25,9 +25,9 @@ APPARENT CHANGE, DECOMPOSED
   total apparent change 12,717, unchanged edges 14,017
 
 VERDICT AGAINST THE RULE SET IN THE HEADER BEFORE THE RUN
-  build-out                     8,135   64.0%   decays with maturity
-  restatement                   2,543   20.0%   does not decay
-  methodology change            2,039   16.0%   does not decay
+  build-out                     8,135   64.0%   expected to decay with maturity (script 07 tests it)
+  restatement                   2,543   20.0%   expected not to decay
+  methodology change            2,039   16.0%   expected not to decay
   R = restatement + methodology = 36.0%
 
   GO. R of 36.0% clears the 25% bar set before running.

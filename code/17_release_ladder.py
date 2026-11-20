@@ -4,9 +4,9 @@ BOTH RELEASES SIDE BY SIDE: THE V-REVISED R LADDER, COMPUTED NOT TRANSCRIBED
 WHY THIS EXISTS
 ---------------
 The design decision of 6 September requires a section reporting both August 2026 releases
-side by side, with R and the worst case for each in the same table as the
+side by side, with R and the reading at the upper bound of V's interval for each in the same table as the
 25% bar set in script 06's header. The gate 5 register of 7 September found that three of
-those numbers, R on V2 and the worst-case pair 25.2% and 24.3%, existed only in
+those numbers, R on V2 and the pair 25.2% and 24.3% at the upper bound, existed only in
 RELEASE_COMPARISON_outputs_2026-09-02.txt, a hand-assembled bundle rather than a
 script output, with no provenance record behind them. A headline of the section
 cannot rest on a file somebody typed.
@@ -43,7 +43,7 @@ WHAT IT DELIBERATELY DOES NOT DO
 --------------------------------
 It does not choose between the readings and it does not decide which release the
 note leads with. Both are settled: the endpoint is V1, and both columns are
-reported including the worst case that fails on V2. This script exists so those
+reported including the reading at the upper bound that fails on V2. This script exists so those
 numbers have a provenance record, not to reopen the decision.
 
 Run:  python 17_release_ladder.py
@@ -146,7 +146,7 @@ def main():
     k_all = strict + unclear
     lo_a, hi_a = wilson(k_all, n)
     say(f"  V, {'strict, unclear as real':<24} {k_all}/{n} = {k_all/n:.3f}   "
-        f"95% Wilson {lo_a:.3f} to {hi_a:.3f}")
+        f"95% Wilson {lo_a:.3f} to {hi_a:.3f}   (added 19 November 2026, after the results were known)")
     readings.append((f"strict V with the unclear case counted as real, "
                      f"{k_all} of {n} = {k_all/n:.3f}", k_all / n))
     readings.append((f"strict V with the unclear case counted as real, "
@@ -154,7 +154,7 @@ def main():
     noev = int((v == "NO EVENT").sum())
     lo_e, hi_e = wilson(noev, n)
     say(f"  NO EVENT share, {'same interval':<12} {noev}/{n} = {noev/n:.3f}   "
-        f"95% Wilson {lo_e:.3f} to {hi_e:.3f}")
+        f"95% Wilson {lo_e:.3f} to {hi_e:.3f}   (added 19 November 2026, after the results were known)")
     say()
     say("  Both intervals of V straddle a branch boundary of the rule in script 08's")
     say("  header. At n = 19 the sample cannot separate the branches, and V is")
@@ -208,7 +208,7 @@ def main():
     say(f"  and {up_real['verdict_V1']} on V1 at {up_real['R_V1']*100:.1f}% and "
         f"{up_real['verdict_V2']} on V2 at {up_real['R_V2']*100:.1f}% with it counted as real.")
     say("  Both files are called August 2026 and neither is marked as a version.")
-    say("  The endpoint is pinned to V1 because the 328-firm cross-section is itself")
+    say("  The endpoint is pinned to V1 because the cross-section of 328 entities is itself")
     say("  a V1 artefact, never because V1 clears the bar.")
 
     pd.DataFrame(rows).to_csv(os.path.join(OUT, "release_ladder.csv"), index=False)

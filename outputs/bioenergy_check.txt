@@ -14,6 +14,8 @@ WHY THE ORIGINAL SPECIFICATION WAS REPLACED, counted rather than argued
 
 ==============================================================================
 (a) THE CHECK. Fossil share on firms whose denominator exists in both vintages
+  the 133 firms are those with bioenergy above zero in both releases with a blank share read as zero;
+  both readings are then taken on them
     fossil share, bioenergy in both, worldwide   blank=zero    n= 133  Spearman 0.9643  top-quintile overlap 26 of 27 (96.3%), no tie at either cut
       like-for-like, RAW fossil MW, same firms                 n= 133  Spearman 0.9747  top-quintile overlap 25 of 27 (92.6%), no tie at either cut
     fossil share, bioenergy in both, worldwide   blank=impute  n= 133  Spearman 0.9656  top-quintile overlap 27 of 27 (100.0%), no tie at either cut
@@ -23,6 +25,10 @@ WHY THE ORIGINAL SPECIFICATION WAS REPLACED, counted rather than argued
       like-for-like, RAW fossil MW, same firms                 n=  34  Spearman 0.9973  top-quintile overlap 7 of 7 (100.0%), no tie at either cut
     fossil share, bioenergy in both, the 328 panel blank=impute  n=  34  Spearman 0.9980  top-quintile overlap 6 of 7 (85.7%), no tie at either cut
       like-for-like, RAW fossil MW, same firms                 n=  34  Spearman 0.9966  top-quintile overlap 7 of 7 (100.0%), no tie at either cut
+
+  chosen under the imputed reading instead, bioenergy above zero in both releases with blanks imputed: 145 firms (added 20 November 2026)
+    fossil share, bioenergy in both (imputed), worldwide blank=impute  n= 145  Spearman 0.9681  top-quintile overlap 29 of 29 (100.0%), no tie at either cut
+      like-for-like, RAW fossil MW, same firms                 n= 145  Spearman 0.9784  top-quintile overlap 28 of 29 (96.6%), no tie at either cut
 
   For reference, the unrestricted figures of script 13, panel firms:
     fossil share, blank=zero    n= 159  Spearman 0.8107  top-quintile overlap 0 to 32 of 32 (0.0% to 100.0%) over every order of the firms tied at the cut: 125 firms tied at 1 for 32 places in March 2025; 105 firms tied at 1 for 32 places in August 2026
@@ -42,14 +48,15 @@ U2, THE 604 MATCHED FIRMS WORLDWIDE. Does the convention flip generalise?
   not the project's definition, and it decided a branch set before the run. Both
   are reported below so the difference is visible rather than a choice.
     U2, as defined      blank=zero    n= 604  Spearman 0.9076  top-quintile overlap 109 of 121 (90.1%), no tie at either cut
-    positive in both    blank=zero    n= 576  Spearman 0.9603  top-quintile overlap 102 of 115 (88.7%), no tie at either cut
     U2, as defined      blank=impute  n= 604  Spearman 0.9625  top-quintile overlap 111 of 121 (91.7%), no tie at either cut
-    positive in both    blank=impute  n= 604  Spearman 0.9625  top-quintile overlap 111 of 121 (91.7%), no tie at either cut
+    of the 604, at zero in March 2025 with a blank share read as zero   28
+    above zero in both under the zero reading    blank=zero    n= 576  Spearman 0.9603  top-quintile overlap 102 of 115 (88.7%), no tie at either cut
+    above zero in both under the zero reading    blank=impute  n= 576  Spearman 0.9689  top-quintile overlap 105 of 115 (91.3%), no tie at either cut
 
   WHY THE TWO DIFFER, and it is the conventions section's own point.
-  Under blank=zero, 33 of the March 2025 firms carry attributable
-  capacity of exactly zero, because every ownership edge they have has a
-  blank share and a blank multiplied by zero is nothing. Under blank=impute
+  Under blank=zero, 33 of the 666 March 2025 firms carry attributable
+  capacity of exactly zero, because every path from them to a unit crosses a
+  blank share and a blank read as zero is nothing. Under blank=impute
   that count is 0. So the convention does not only change the values, it
   decides whether a firm registers as having exposure at all. Those tied
   zeros are what drag the blank=zero rank correlation down. Filtering them
@@ -66,7 +73,7 @@ U2, THE 604 MATCHED FIRMS WORLDWIDE. Does the convention flip generalise?
     panel firms with coal, gas or bioenergy units in both releases   171
     of which coal or gas capacity above zero in both, blank=zero    143
     of which coal or gas capacity above zero in both, blank=impute  152
-    of which bioenergy alone in at least one release, blank=impute  19
+    of which bioenergy alone in both releases, blank=impute        19
 
   U2 STRADDLES THE CUT. The convention flip is GENERAL, not an artefact
   of the regional panel, and the note says so. It reproduces on 604

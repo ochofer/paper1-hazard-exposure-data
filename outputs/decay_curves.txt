@@ -68,8 +68,9 @@ VERDICT AGAINST THE PREDICTION SET IN THE HEADER BEFORE THE RUN
     methodology share: first half 1.3%  second half 18.9%
 
 
-  Build-out share DECLINED as predicted.
-  Restatement share is flat or rising (+13.5 points), as predicted.
+  Build-out share is lower in the second half than in the first, the direction
+  expected; whether the decline is shown is the tests' question below.
+  Restatement share is flat or rising (+13.5 points), the direction expected.
 
   SENSITIVITY, flag-blind throughout
     excluding the Nov-Dec 2025 pair: build 72.4% to 51.3%

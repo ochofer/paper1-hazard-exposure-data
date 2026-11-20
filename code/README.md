@@ -2,10 +2,10 @@
 
 Everything that runs outside the notebook. The ownership data is free and openly licensed,
 and the price series is licensed and withheld, as noted at the end. The fourteen past
-releases of the ownership tracker that scripts 04, 06 to 10, 12 to 15 and 17 read were
+releases of the ownership tracker that scripts 04, 06 to 09, 12 to 15, 17 and 25 read were
 supplied by the vendor on request and are neither on the vendor's site nor in this
-repository, so those scripts cannot be rerun from what is published; scripts 05, 16 and 18
-read committed files alone and can.
+repository, so those scripts cannot be rerun from what is published; scripts 05, 10, 16 and
+18 read committed files alone and can, and so does `check_provenance.py`.
 
 The first two build the company universe. The numbered scripts from `04` onward are the
 vintage and measurement work behind the note on what a vintage difference measures.
@@ -44,7 +44,7 @@ holds the release pin: the exact filenames of the GEM releases used, resolved by
 name rather than by a glob, so a script fails rather than silently picking up a different
 file. Two files I hold carry August 2026, one of them sent to me on 26 August 2026, and
 nothing inside either marks it as a version, which is why the pin exists. `_overlap.py`,
-added 19 November 2026, gives a top-quintile overlap as the lowest and the highest count
+added 20 November 2026, gives a top-quintile overlap as the lowest and the highest count
 that the firms tied at each cut allow, with the tie counts, so that scripts 10, 13 and 15
 print one figure only where no tie leaves the top set open; `tests/test_overlap.py` checks
 the two bounds against every order on made-up cases (`python3 -m pytest tests` from the
@@ -64,9 +64,11 @@ repository root, or `python3 code/_overlap.py` for the same check without a test
 | `13_scaling_second_column.py` | The same measure scaled by fleet share |
 | `14_restricted_r.py` | R with residual counterparties removed from both sides |
 | `15_bioenergy_check.py` | The control on the scaling result, set in its header before the run |
-| `16_figure_register.py` | Holds every figure the note prints against the output file that should contain it, and reports anything untraceable |
+| `16_figure_register.py` | Holds the figures of the note's running order against the output file that should contain each, and reports anything untraceable |
 | `17_release_ladder.py` | Both August 2026 releases side by side, with V derived from the verdicts and its Wilson interval computed |
 | `18_validate_salience_cases.py` | Validates the hand-collected evidence file against the verified sample and computes the recording lags |
+| `25_panel_entrants.py` | For the firms that enter the panel between the two releases, splits their August 2026 capacity unit by unit by what the March 2025 file held of each unit and under which listed entity: units held under a listed entity that owns the entrant, the rest of what the file carried, units it did not carry. Added 20 November 2026; the measure by the capacity of units set after the script's first run |
+| `check_provenance.py` | Compares every hash the provenance records hold with its file; `tests/test_provenance.py` runs it. Added 20 November 2026 |
 | `19_build_note.py` | Builds the note, extracting every figure from an output file at build time |
 | `classify_outputs.py` | Classifies every output by what its script consumed, so nothing derived from licensed data is published by accident |
 | `promote_outputs.py` | The one-off promotion of 8 September 2026, recorded below |

@@ -56,8 +56,7 @@ KNOWN LIMITATIONS, STATED RATHER THAN HIDDEN
 2. EQUAL WEIGHTED, not value weighted. We have no market-cap series. Equal
    weighting overweights small firms, which is the standard critique.
 3. Each arm holds the firms with exposure above zero in that release and a
-   price series; the run log prints the size of each arm and of its quintile
-   (corrected 19 November 2026: this line stated one count for all four arms).
+   price series; the run log prints the size of each arm and of its quintile.
 4. Newey-West standard errors, 6 lags, computed here rather than via statsmodels
    which is not installed and cannot be (no egress). The implementation is the
    textbook Bartlett-kernel form and is checked against the plain OLS standard
@@ -121,6 +120,21 @@ def newey_west_t(x, lags=NW_LAGS):
     se_nw = np.sqrt(s / n)
     se_ols = np.sqrt(g0 / (n - 1))
     return mu, mu / se_ols, mu / se_nw
+
+
+def newey_west_se(x, lags=NW_LAGS):
+    """The Newey-West standard error of the mean of x, the kernel and lags of
+    newey_west_t. Added 20 November 2026 for the difference of two series."""
+    x = np.asarray(x, dtype=float)
+    x = x[~np.isnan(x)]
+    n = len(x)
+    if n < 3:
+        return np.nan
+    e = x - x.mean()
+    s = (e @ e) / n
+    for L in range(1, min(lags, n - 1) + 1):
+        s += 2.0 * (1.0 - L / (lags + 1.0)) * ((e[L:] @ e[:-L]) / n)
+    return np.sqrt(max(s, 1e-18) / n)
 
 
 def main():
@@ -228,6 +242,17 @@ def main():
         verdict = ("ROBUST" if (within and corr > 0.95) else
                    "FRAGILE" if ((not within) or corr < 0.90) else "MIXED")
         log(f"    VERDICT BY THE RULE IN THE HEADER: {verdict}")
+        # Added 20 November 2026, after the results were known: the Newey-West
+        # standard error of the difference of the two monthly series, the same
+        # kernel and lags, and the difference over it. The rule above measures
+        # the difference in the larger of the two spreads' own standard errors;
+        # this line enters no verdict.
+        dser = B["ls"][idx] - A["ls"][idx]
+        se_d = newey_west_se(dser)
+        log(f"    added 20 November 2026, in no verdict:")
+        log(f"    NW standard error of the difference of the two series (annualised)   "
+            f"{se_d*12*100:>7.2f}%")
+        log(f"    difference over it                      {abs(dser.mean())/se_d:>7.2f}")
 
     log(f"\n{'='*74}\nAND HOW MUCH IS THE BLANK-SHARE CONVENTION ALONE?")
     for vint in ("2025", "2026"):

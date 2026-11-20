@@ -16,21 +16,20 @@ Nothing failed. The pipeline simply split: scripts 00, 04, 06 and 07 had
 already run against V1, while 08 and 09 ran against V2, and 10 and 11 joined a
 V1 cross-section to a V2 exposure measure.
 
-The measured cost of that split is in RELEASE_SPLIT_MEASUREMENT_2026-09-02.html.
-The short version is that R is 36.0% on V1 and 35.4% on V2, and the reading of
+The measured cost of that split: R is 36.0% on V1 and 35.4% on V2, and the reading of
 the 25% threshold at the upper bound of V's interval clears on one file and
 fails on the other. A resolution rule that depends on the contents of a directory is not a
 reproducible input, whatever the rule is.
 
 THE DECISION IT ENFORCES
 ------------------------
-I pinned V1 on 3 September 2026. The binding reason is that the 328-firm
-cross-section is itself a V1 artefact, script 00 having been hardcoded to V1
+I pinned V1 on 3 September 2026. The binding reason is that the cross-section of
+328 ownership entities is itself a V1 artefact, script 00 having been hardcoded to V1
 and run on 19 August, and 328 is fixed in public documents.
 
 V2_External is deliberately still listed below under its own key. It is
-reported alongside V1 in the note as a second column, including the worst case
-that fails on it. It is not the default for anything.
+reported alongside V1 in the note as a second column, including the reading at the
+upper bound that fails on it. It is not the default for anything.
 
 Nothing here chooses a release at runtime. Changing an endpoint means editing
 RELEASES, which shows up in a diff.

@@ -254,16 +254,13 @@ def main():
     R = (rest + meth) / total_change
 
     say("VERDICT AGAINST THE RULE SET IN THE HEADER BEFORE THE RUN")
-    say(f"  build-out                  {build:>8,}  {build/total_change*100:>5.1f}%   decays with maturity")
-    say(f"  restatement                {rest:>8,}  {rest/total_change*100:>5.1f}%   does not decay")
-    say(f"  methodology change         {meth:>8,}  {meth/total_change*100:>5.1f}%   does not decay")
+    say(f"  build-out                  {build:>8,}  {build/total_change*100:>5.1f}%   expected to decay with maturity (script 07 tests it)")
+    say(f"  restatement                {rest:>8,}  {rest/total_change*100:>5.1f}%   expected not to decay")
+    say(f"  methodology change         {meth:>8,}  {meth/total_change*100:>5.1f}%   expected not to decay")
     say(f"  R = restatement + methodology = {R:.1%}")
     say()
     if R >= GO_THRESHOLD:
         say(f"  GO. R of {R:.1%} clears the {GO_THRESHOLD:.0%} bar set before running.")
-        # Corrected 19 November 2026: at R = 36.0% the
-        # majority of apparent change IS the database adding coverage, and the
-        # sentence printed here until then said the opposite.
         say(f"  The age objection is answered on the data: {R:.1%} of apparent change")
         say("  is restatement or methodology rather than the database adding coverage.")
     elif R < NOGO_THRESHOLD:

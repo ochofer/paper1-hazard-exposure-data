@@ -12,7 +12,7 @@ overlap_bounds gives the lowest and the highest overlap that the ties at the two
 cuts allow, counting the ties in both releases, with the number of firms tied at
 each cut and the places they compete for. Where the two bounds are equal the
 overlap is one figure. The bounds are exact: test_overlap.py checks them against
-every order on made-up cases. Added 19 November 2026, after the results were
+every order on made-up cases. Added 20 November 2026, after the results were
 known; the scripts that print an overlap (10, 13 and 15) print these bounds.
 """
 

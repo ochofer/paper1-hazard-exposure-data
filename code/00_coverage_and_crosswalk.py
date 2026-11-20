@@ -299,12 +299,11 @@ def main():
           f"{((~cs.has_lei) & (~cs.has_cik)).sum():,}")
     cs.to_csv(os.path.join(OUT, "cross_section.csv"), index=False)
 
-    # Added 19 November 2026, after the results were known: the asset counts of the
-    # cross-section sum to 5,115 with an asset owned by two of the 328 counted
-    # in each, and the number of distinct assets was not printed anywhere; the
-    # count of listed entities with five or more operating assets, by region,
-    # was given in FINDINGS_2026-08-21.md as 918 = 112 + 111 + 689, which does
-    # not add up. Both are printed here from the same frame.
+    # Added 19 November 2026, after the results were known: the number of distinct
+    # assets (the asset counts of the cross-section sum to 5,115, an asset owned
+    # by two of the 328 counted in each) and the count of listed entities with
+    # five or more operating assets, by region, both printed from the frame the
+    # cross-section is built from.
     distinct = set().union(*reg.values()) if reg else set()
     holdings = sum(len(s) for s in reg.values())
     five = {a: s for a, s in firm_assets.items() if len(s) >= 5}

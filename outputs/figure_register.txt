@@ -4,128 +4,144 @@ SHIPPING GATE 5  FIGURE REGISTER
   is found while it is still cheap to fix.
 
 --- lead ---
-  [OK] restatement bucket the sample was drawn from                                    2,543              restricted_r.txt
-  [OK] R as published                                                                  36.0%              change_decomposition.txt
-  [OK] the 25% bar, set in script 06's header                                          25%                change_decomposition.txt
-  [OK] generous bound on R                                                             29.1%              change_decomposition.txt
-  [OK] 19 cases verified                                                               19                 event_validation_sample.csv
-  [OK] recording lag, the two cases inside the window                                  12 to 71 days      salience_lag.txt
-  [OK] recording lag, the four cases from before the first release                     670 to 1,674 days  salience_lag.txt
-  [OK] recording lag, datable cases in the evidence file                               6                  salience_lag.txt
-  [OK] days after the first release that could have carried the four                   426 to 457 days    salience_lag.txt
-  [OK] R by the rule, strict V applied, V1                                             29.7%              release_ladder.txt
-  [OK] R by the rule, strict V applied, V2                                             28.9%              release_ladder.txt
-  [OK] NO EVENT share, lower bound of its Wilson interval                              0.410              release_ladder.txt
-  [OK] NO EVENT share, upper bound of its Wilson interval                              0.809              release_ladder.txt
+  [OK] restatement bucket the sample was drawn from                                               2,543              restricted_r.txt
+  [OK] R as published                                                                             36.0%              change_decomposition.txt
+  [OK] the 25% bar, set in script 06's header                                                     25%                change_decomposition.txt
+  [OK] generous bound on R                                                                        29.1%              change_decomposition.txt
+  [OK] 19 cases verified                                                                          19                 event_validation_sample.csv
+  [OK] recording lag, the two cases inside the window                                             12 to 71 days      salience_lag.txt
+  [OK] recording lag, the four cases from before the first release                                670 to 1,674 days  salience_lag.txt
+  [OK] recording lag, datable cases in the evidence file                                          6                  salience_lag.txt
+  [OK] days after the first release that could have carried the four                              426 to 457 days    salience_lag.txt
+  [OK] R by the rule, strict V applied, V1                                                        29.7%              release_ladder.txt
+  [OK] R by the rule, strict V applied, V2                                                        28.9%              release_ladder.txt
+  [OK] NO EVENT share, lower bound of its Wilson interval                                         0.410              release_ladder.txt
+  [OK] NO EVENT share, upper bound of its Wilson interval                                         0.809              release_ladder.txt
 --- conventions ---
-  [OK] raw MW Spearman, blank=zero                                                     0.9146             scaling_second_column.txt
-  [OK] raw MW Spearman, blank=impute                                                   0.9761             scaling_second_column.txt
-  [OK] exposure growth U2, blank=zero                                                  +9.8%              exposure_proxy_summary.txt
-  [OK] exposure growth U2, blank=impute                                                +5.0%              exposure_proxy_summary.txt
-  [OK] U2 convention flip, blank=zero                                                  0.9076             bioenergy_check.txt
-  [OK] U2 convention flip, blank=impute                                                0.9625             bioenergy_check.txt
-  [OK] U2 firms with zero attributable capacity in March 2025                          33                 bioenergy_check.txt
-  [OK] bioenergy control, blank=zero                                                   0.9643             bioenergy_check.txt
-  [OK] bioenergy control, blank=impute                                                 0.9656             bioenergy_check.txt
-  [OK] coal share, blank=zero                                                          0.9652             bioenergy_check.txt
+  [OK] raw MW Spearman, blank=zero                                                                0.9146             scaling_second_column.txt
+  [OK] raw MW Spearman, blank=impute                                                              0.9761             scaling_second_column.txt
+  [OK] exposure growth U2, blank=zero                                                             +9.8%              exposure_proxy_summary.txt
+  [OK] exposure growth U2, blank=impute                                                           +5.0%              exposure_proxy_summary.txt
+  [OK] U2 convention flip, blank=zero                                                             0.9076             bioenergy_check.txt
+  [OK] U2 convention flip, blank=impute                                                           0.9625             bioenergy_check.txt
+  [OK] listed firms of March 2025 at zero attributable capacity with a blank share read as zero   33                 bioenergy_check.txt
+  [OK] bioenergy control, blank=zero                                                              0.9643             bioenergy_check.txt
+  [OK] bioenergy control, blank=impute                                                            0.9656             bioenergy_check.txt
+  [OK] coal share, blank=zero                                                                     0.9652             bioenergy_check.txt
 --- mechanisms ---
-  [OK] ancestor over-count, March 2025                                                 1.55x              exposure_proxy_summary.txt
-  [OK] ancestor over-count, August 2026                                                1.76x              exposure_proxy_summary.txt
-  [OK] Ameren and Union Electric capacity                                              6,991.2 MW         exposure_proxy_by_firm.csv
-  [OK] Entergy Corp, August 2026                                                       8,720.92 MW        exposure_proxy_by_firm.csv
-  [OK] Entergy Louisiana, August 2026                                                  11,121.4 MW        exposure_proxy_by_firm.csv
+  [OK] ancestor over-count, March 2025                                                            1.55x              exposure_proxy_summary.txt
+  [OK] ancestor over-count, August 2026                                                           1.76x              exposure_proxy_summary.txt
+  [OK] Ameren and Union Electric capacity                                                         6,991.2 MW         exposure_proxy_by_firm.csv
+  [OK] Entergy Corp, August 2026                                                                  8,720.92 MW        exposure_proxy_by_firm.csv
+  [OK] Entergy Louisiana, August 2026                                                             11,121.4 MW        exposure_proxy_by_firm.csv
 --- portfolio ---
-  [OK] never exposed in either release, of the 328-firm cross-section                  137                panel_join_summary.txt
-  [OK] effective panel                                                                 191                panel_join_summary.txt
-  [OK] Spearman 191 active, blank=zero                                                 0.7309             panel_join_summary.txt
-  [OK] Spearman 191 active, blank=impute                                               0.7749             panel_join_summary.txt
-  [OK] top-quintile overlap, blank=zero                                                86.8%              panel_join_summary.txt
-  [OK] top-quintile overlap, blank=impute                                              92.1%              panel_join_summary.txt
-  [OK] U3 exposure growth, blank=zero                                                  +20.0%             panel_join_summary.txt
-  [OK] U3 exposure growth, blank=impute                                                +11.7%             panel_join_summary.txt
-  [OK] firms with coal or gas units in both releases                                   152                panel_join_summary.txt
-  [OK] Spearman on the 152 firms with units in both releases, blank=zero               0.8957             panel_join_summary.txt
-  [OK] Spearman on the 152 firms with units in both releases, blank=impute             0.9661             panel_join_summary.txt
-  [OK] top quintile kept on the 152, under both readings                               28 firms           panel_join_summary.txt
-  [OK] growth on the 152, blank=zero                                                   +13.2%             panel_join_summary.txt
-  [OK] growth on the 152, blank=impute                                                 +5.4%              panel_join_summary.txt
-  [OK] of the 152, at zero in March 2025 with blanks read as zero                      9                  panel_join_summary.txt
-  [OK] Spearman on the 143 above zero in March 2025 under both readings, blank=zero    0.9571             panel_join_summary.txt
-  [OK] Spearman on the 143 above zero in March 2025 under both readings, blank=impute  0.9689             panel_join_summary.txt
-  [OK] firms that entered coverage between the two releases                            36                 panel_join_summary.txt
+  [OK] never exposed in either release, of the cross-section of 328 entities                      137                panel_join_summary.txt
+  [OK] effective panel                                                                            191                panel_join_summary.txt
+  [OK] Spearman 191 active, blank=zero                                                            0.7309             panel_join_summary.txt
+  [OK] Spearman 191 active, blank=impute                                                          0.7749             panel_join_summary.txt
+  [OK] top-quintile overlap, blank=zero                                                           86.8%              panel_join_summary.txt
+  [OK] top-quintile overlap, blank=impute                                                         92.1%              panel_join_summary.txt
+  [OK] exposure growth on the 191 firms with exposure in either release, blank=zero               +20.0%             panel_join_summary.txt
+  [OK] exposure growth on the 191 firms with exposure in either release, blank=impute             +11.7%             panel_join_summary.txt
+  [OK] firms with coal or gas units in both releases                                              152                panel_join_summary.txt
+  [OK] Spearman on the 152 firms with units in both releases, blank=zero                          0.8957             panel_join_summary.txt
+  [OK] Spearman on the 152 firms with units in both releases, blank=impute                        0.9661             panel_join_summary.txt
+  [OK] top quintile kept on the 152, under both readings                                          28 firms           panel_join_summary.txt
+  [OK] growth on the 152, blank=zero                                                              +13.2%             panel_join_summary.txt
+  [OK] growth on the 152, blank=impute                                                            +5.4%              panel_join_summary.txt
+  [OK] of the 152, at zero in March 2025 with blanks read as zero                                 9                  panel_join_summary.txt
+  [OK] Spearman on the 143 above zero in March 2025 under both readings, blank=zero               0.9571             panel_join_summary.txt
+  [OK] Spearman on the 143 above zero in March 2025 under both readings, blank=impute             0.9689             panel_join_summary.txt
+  [OK] firms that entered the panel between the two releases                                      36                 panel_join_summary.txt
 --- conventions ---
-  [OK] U3, panel firms with units in both releases                                     171                bioenergy_check.txt
-  [OK] U3 firms with bioenergy alone in at least one release                           19                 bioenergy_check.txt
---- releases ---
-  [OK] R on V1                                                                         36.0%              change_decomposition.txt
-  [OK] R on V2                                                                         35.4%              release_ladder.txt
-  [OK] strict V at its upper bound, the unclear case not real, V1                      25.2%              release_ladder.txt
-  [OK] strict V at its upper bound, the unclear case not real, V2                      24.3%              release_ladder.txt
-  [OK] strict V with the unclear case counted as real, V1                              28.7%              release_ladder.txt
-  [OK] strict V with the unclear case counted as real, V2                              27.8%              release_ladder.txt
-  [OK] strict V with the unclear case counted as real, at its upper bound, V1          24.2%              release_ladder.txt
-  [OK] strict V with the unclear case counted as real, at its upper bound, V2          23.2%              release_ladder.txt
-  [OK] restricted R                                                                    38.7%              restricted_r.txt
-  [OK] decimal truncation, V1                                                          80.0%              decimal_truncation.txt
-  [OK] decimal truncation, count                                                       3,561              decimal_truncation.txt
-  [OK] decimal truncation, V2                                                          78.5%              decimal_truncation.txt
-  [OK] decay, preferred cut n=8                                                        61.6% to 48.0%     decay_curves.txt
-  [OK] decay, gap-length correlation                                                   +0.51              decay_curves.txt
-  [OK] decay, Welch p-value on the eight pairs                                         0.33               decay_curves.txt
-  [OK] decay, trend p-value on the eight pairs                                         0.42               decay_curves.txt
-  [OK] decay, gap-length correlation p-value on 12 pairs                               0.09               decay_curves.txt
---- age ---
-  [OK] December 2025 methodology share                                                 96.2%              decay_curves.txt
-  [OK] number of adjacent release pairs                                                13                 decay_curves.txt
---- limitations ---
-  [OK] priceable firms in the 2026 arm                                                 173                vintage_return_spread.txt
-  [OK] largest t statistic                                                             0.60               vintage_return_spread.txt
-  [OK] Newey-West SE, low                                                              3.29%              vintage_return_spread.txt
-  [OK] Newey-West SE, high                                                             3.44%              vintage_return_spread.txt
-  [OK] MDE at t=3.0                                                                    9.87%              vintage_return_spread.txt
-  [OK] Fama-MacBeth requirement                                                        1,296              power_comparison.txt
---- appendix B ---
-  [OK] build-out, new entity brought into coverage                                     6,183              change_decomposition.txt
-  [OK] build-out, new entity, share                                                    48.6%              change_decomposition.txt
-  [OK] build-out, new link between covered entities                                    1,744              change_decomposition.txt
-  [OK] build-out, new link, share                                                      13.7%              change_decomposition.txt
-  [OK] build-out, blank filled by research                                             208                change_decomposition.txt
-  [OK] build-out, blank filled by research, share                                      1.6%               change_decomposition.txt
-  [OK] build-out total                                                                 8,135              change_decomposition.txt
-  [OK] build-out total, share                                                          64.0%              change_decomposition.txt
-  [OK] restatement, link removed                                                       1,710              change_decomposition.txt
-  [OK] restatement, link removed, share                                                13.4%              change_decomposition.txt
-  [OK] restatement, share revised material                                             533                change_decomposition.txt
-  [OK] restatement, share revised material, share                                      4.2%               change_decomposition.txt
-  [OK] restatement, share revised small                                                300                change_decomposition.txt
-  [OK] restatement, share revised small, share                                         2.4%               change_decomposition.txt
-  [OK] restatement total, share                                                        20.0%              change_decomposition.txt
-  [OK] methodology, imputation rule introduced after Mar 2025                          1,842              change_decomposition.txt
-  [OK] methodology, imputation rule, share                                             14.5%              change_decomposition.txt
-  [OK] methodology, entity deduplicated per remapping sheet                            143                change_decomposition.txt
-  [OK] methodology, deduplicated, share                                                1.1%               change_decomposition.txt
-  [OK] methodology, imputed share moved, share                                         0.4%               change_decomposition.txt
-  [OK] methodology total                                                               2,039              change_decomposition.txt
-  [OK] methodology total, share                                                        16.0%              change_decomposition.txt
-  [OK] total apparent change                                                           12,717             change_decomposition.txt
-  [OK] unchanged edges                                                                 14,017             change_decomposition.txt
-  [OK] entities on the remapping sheet                                                 4,196              change_decomposition.txt
-  [OK] share of lost entities the remapping sheet accounts for                         11.5%              change_decomposition.txt
-  [OK] edges present in both releases                                                  16,954             change_decomposition.txt
-  [OK] real churn over eighteen months                                                 5.2%               change_decomposition.txt
-  [OK] ceiling on genuine corporate events                                             881                change_decomposition.txt
-  [OK] edges GEM flags as imputed, Aug 2026                                            4,392              exposure_proxy_summary.txt
-  [OK] edges GEM flags as imputed, share                                               17.7%              exposure_proxy_summary.txt
---- appendix B, held ---
-  [OK] release files carrying presigned source citations, of the 17 held               17                 presigned_source_urls.txt
-  [OK] shortest declared expiry, seconds                                               60 seconds         presigned_source_urls.txt
+  [OK] U3, panel firms with units in both releases                                                171                bioenergy_check.txt
+  [OK] U3 firms with bioenergy alone in both releases                                             19                 bioenergy_check.txt
+  [OK] of the 604, at zero in March 2025 with a blank share read as zero                          28                 bioenergy_check.txt
+  [OK] Spearman on the 576 above zero in both under the zero reading, blank=zero                  0.9603             bioenergy_check.txt
+  [OK] Spearman on the 576 above zero in both under the zero reading, blank=impute                0.9689             bioenergy_check.txt
+  [OK] fossil share on the 34 panel firms with bioenergy in both, blank=zero                      0.9949             bioenergy_check.txt
+  [OK] fossil share on the 34 panel firms with bioenergy in both, blank=impute                    0.9980             bioenergy_check.txt
+  [OK] firms with bioenergy in both releases, chosen with blanks imputed                          145                bioenergy_check.txt
+  [OK] fossil share on the 145, blank=impute                                                      0.9681             bioenergy_check.txt
+  [OK] raw capacity on the 145, blank=impute                                                      0.9784             bioenergy_check.txt
 --- portfolio ---
-  [OK] panel firms with exposure in August 2026, of the 191-firm effective panel       188                panel_join_summary.txt
+  [OK] August 2026 capacity of the 36 entrants                                                    36,157.5 MW        panel_entrants.txt
+  [OK] entrants' capacity in units the March 2025 file held under a listed entity that owns them  17,790.8 MW        panel_entrants.txt
+  [OK] entrants' capacity in the rest of the units the March 2025 file carried                    15,098.4 MW        panel_entrants.txt
+  [OK] entrants' capacity in units the March 2025 file did not carry                              3,268.3 MW         panel_entrants.txt
+--- age ---
+  [OK] months needed at a monthly standard deviation of 1 per cent                                324                power_comparison.txt
+  [OK] months needed at 80 per cent power                                                         2,123              power_comparison.txt
+--- releases ---
+  [OK] R on V1                                                                                    36.0%              change_decomposition.txt
+  [OK] R on V2                                                                                    35.4%              release_ladder.txt
+  [OK] strict V at its upper bound, the unclear case not real, V1                                 25.2%              release_ladder.txt
+  [OK] strict V at its upper bound, the unclear case not real, V2                                 24.3%              release_ladder.txt
+  [OK] strict V with the unclear case counted as real, V1                                         28.7%              release_ladder.txt
+  [OK] strict V with the unclear case counted as real, V2                                         27.8%              release_ladder.txt
+  [OK] strict V with the unclear case counted as real, at its upper bound, V1                     24.2%              release_ladder.txt
+  [OK] strict V with the unclear case counted as real, at its upper bound, V2                     23.2%              release_ladder.txt
+  [OK] restricted R                                                                               38.7%              restricted_r.txt
+  [OK] decimal truncation, V1                                                                     80.0%              decimal_truncation.txt
+  [OK] decimal truncation, count                                                                  3,561              decimal_truncation.txt
+  [OK] decimal truncation, V2                                                                     78.5%              decimal_truncation.txt
+  [OK] decay, preferred cut n=8                                                                   61.6% to 48.0%     decay_curves.txt
+  [OK] decay, gap-length correlation                                                              +0.51              decay_curves.txt
+  [OK] decay, Welch p-value on the eight pairs                                                    0.33               decay_curves.txt
+  [OK] decay, trend p-value on the eight pairs                                                    0.42               decay_curves.txt
+  [OK] decay, gap-length correlation p-value on 12 pairs                                          0.09               decay_curves.txt
+--- age ---
+  [OK] December 2025 methodology share                                                            96.2%              decay_curves.txt
+  [OK] number of adjacent release pairs                                                           13                 decay_curves.txt
+--- limitations ---
+  [OK] priceable firms in the 2026 arm                                                            173                vintage_return_spread.txt
+  [OK] largest t statistic                                                                        0.60               vintage_return_spread.txt
+  [OK] Newey-West SE, low                                                                         3.29%              vintage_return_spread.txt
+  [OK] Newey-West SE, high                                                                        3.44%              vintage_return_spread.txt
+  [OK] MDE at t=3.0                                                                               9.87%              vintage_return_spread.txt
+  [OK] Fama-MacBeth requirement                                                                   1,296              power_comparison.txt
+--- appendix B ---
+  [OK] build-out, new entity brought into coverage                                                6,183              change_decomposition.txt
+  [OK] build-out, new entity, share                                                               48.6%              change_decomposition.txt
+  [OK] build-out, new link between covered entities                                               1,744              change_decomposition.txt
+  [OK] build-out, new link, share                                                                 13.7%              change_decomposition.txt
+  [OK] build-out, blank filled by research                                                        208                change_decomposition.txt
+  [OK] build-out, blank filled by research, share                                                 1.6%               change_decomposition.txt
+  [OK] build-out total                                                                            8,135              change_decomposition.txt
+  [OK] build-out total, share                                                                     64.0%              change_decomposition.txt
+  [OK] restatement, link removed                                                                  1,710              change_decomposition.txt
+  [OK] restatement, link removed, share                                                           13.4%              change_decomposition.txt
+  [OK] restatement, share revised material                                                        533                change_decomposition.txt
+  [OK] restatement, share revised material, share                                                 4.2%               change_decomposition.txt
+  [OK] restatement, share revised small                                                           300                change_decomposition.txt
+  [OK] restatement, share revised small, share                                                    2.4%               change_decomposition.txt
+  [OK] restatement total, share                                                                   20.0%              change_decomposition.txt
+  [OK] methodology, imputation rule introduced after Mar 2025                                     1,842              change_decomposition.txt
+  [OK] methodology, imputation rule, share                                                        14.5%              change_decomposition.txt
+  [OK] methodology, entity deduplicated per remapping sheet                                       143                change_decomposition.txt
+  [OK] methodology, deduplicated, share                                                           1.1%               change_decomposition.txt
+  [OK] methodology, imputed share moved, share                                                    0.4%               change_decomposition.txt
+  [OK] methodology total                                                                          2,039              change_decomposition.txt
+  [OK] methodology total, share                                                                   16.0%              change_decomposition.txt
+  [OK] total apparent change                                                                      12,717             change_decomposition.txt
+  [OK] unchanged edges                                                                            14,017             change_decomposition.txt
+  [OK] entities on the remapping sheet                                                            4,196              change_decomposition.txt
+  [OK] share of lost entities the remapping sheet accounts for                                    11.5%              change_decomposition.txt
+  [OK] edges present in both releases                                                             16,954             change_decomposition.txt
+  [OK] real churn over eighteen months                                                            5.2%               change_decomposition.txt
+  [OK] ceiling on genuine corporate events                                                        881                change_decomposition.txt
+  [OK] edges GEM flags as imputed, Aug 2026                                                       4,392              exposure_proxy_summary.txt
+  [OK] edges GEM flags as imputed, share                                                          17.7%              exposure_proxy_summary.txt
+--- appendix B, held ---
+  [OK] release files carrying presigned source citations, of the 17 held                          17                 presigned_source_urls.txt
+  [OK] shortest declared expiry, seconds                                                          60 seconds         presigned_source_urls.txt
+--- portfolio ---
+  [OK] panel firms with exposure in August 2026, of the 191-firm effective panel                  188                panel_join_summary.txt
 
 ==============================================================================
-  OK           107
+  OK           121
 
-  VALUE-SHAPE AUDIT: all 107 value cells hold a value and each is the
+  VALUE-SHAPE AUDIT: all 121 value cells hold a value and each is the
   number its output file carries, reformatted rather than restated.
 
   PROVENANCE RECORDS PRESENT
@@ -136,6 +152,7 @@ SHIPPING GATE 5  FIGURE REGISTER
     RUN_PROVENANCE_08_event_validation_sample.json   Global-Energy-Ownership-Tracker-August-2026-V1.xlsx  sha 1494cd6aed8220bd
     RUN_PROVENANCE_09_exposure_proxy.json            upstream chain: August 2026, March 2025
     RUN_PROVENANCE_09_exposure_proxy.json            upstream chain: August 2026, March 2025
+    RUN_PROVENANCE_25_panel_entrants.json            Global-Energy-Ownership-Tracker-August-2026-V1.xlsx  sha 1494cd6aed8220bd
     RUN_PROVENANCE_10_panel_join.json                upstream chain: exposure, panel, upstream_provenance_09
     RUN_PROVENANCE_05_power_comparison.json          no data inputs (closed-form power calculation, no dataset read)
     RUN_PROVENANCE_23_presigned_source_urls.json     Global-Energy-Ownership-Tracker-August-2026-V1.xlsx  sha 1494cd6aed8220bd

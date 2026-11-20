@@ -1,0 +1,57 @@
+THE FIRMS THAT ENTER THE PANEL BETWEEN THE TWO RELEASES, added 20 November 2026
+  entrants: panel firms at zero attributable capacity in March 2025 with blanks imputed
+  and above zero in August 2026, as script 10 counts them
+  measure: their August 2026 capacity, unit by unit, by what the March 2025 file held of each unit;
+  set on 20 November 2026, after the script's first run
+  entrants counted from panel_exposure.csv   36
+
+  entrant                                   Aug 2026 MW  units  in March file listed Mar owned Aug     (i) MW    (ii) MW   (iii) MW  March 2025 listed holder
+  Entergy Louisiana LLC                        11,121.4     27             26      False      True   10,529.6        0.0      591.8  E100000001163 Cleco Corporate Holdings; E100000001209 Entergy
+  Union Electric Co                             6,991.2     42             42      False      True    6,991.2        0.0        0.0  E100000001139 Ameren
+  Bridgepoint Group PLC                         3,367.5     54             50      False     False        0.0    3,306.8       60.8  E100000001158 Blackstone
+  Partners Group Holding AG                     2,171.0     18             18      False     False        0.0    2,171.0        0.0  E100000001173 Carlyle Group
+  City of Vienna                                1,775.0      5              5      False     False        0.0    1,775.0        0.0  
+  Pacific Gas and Electric Co                   1,499.0      3              3      False     False        0.0    1,499.0        0.0  
+  Cheniere Energy Partners LP                   1,249.2      6              0       True     False        0.0        0.0    1,249.2  
+  TexGen Power LLC                                853.0      3              3      False     False        0.0      853.0        0.0  
+  UBS Group AG                                    733.1     35             34      False     False        0.0      698.4       34.6  E100000000641 J-POWER; E100000000651 Mitsui &; E100000001030 Gulf Energy Development; E100000001636 RATCH Group; E100000002135 WHA Utilities and Power; E100000003831 Power and Water Utility Company for Jubail and Yanbu
+  Olin Corp                                       678.0      2              2      False     False        0.0      678.0        0.0  
+  Mainova AG                                      666.0     18             18      False     False        0.0      666.0        0.0  E100000000457 Uniper; E100000001454 E.ON
+  Alcoa Corp                                      661.3      4              1       True     False        0.0      161.5      499.8  E100000001177 CenterPoint Energy
+  Motor Oil Hellas SA                             591.3      2              1      False     False        0.0      152.8      438.5  E100000000475 Metlen Energy & Metals
+  Tessenderlo Group                               422.0      1              1      False     False        0.0      422.0        0.0  
+  enercity AG                                     415.9     14             14      False     False        0.0      415.9        0.0  E100000000457 Uniper; E100000001454 E.ON; E100002001024 Porsche Automobil Holding
+  BKV Corp                                        401.5      2              2      False     False        0.0      401.5        0.0  
+  DigitalBridge Group Inc                         292.0      2              2      False     False        0.0      292.0        0.0  
+  Mondi PLC                                       279.3      8              8      False     False        0.0      279.3        0.0  
+  Banco Santander SA                              266.0      1              1      False     False        0.0      266.0        0.0  
+  BKW AG                                          263.6      2              2      False     False        0.0      263.6        0.0  E100000000619 Hera
+  Microsoft Corp                                  197.3      2              0      False     False        0.0        0.0      197.3  
+  Brookfield Asset Management Ltd                 155.5      3              3      False      True      123.0       32.5        0.0  E100000000104 Brookfield
+  Excelerate Energy Inc                           150.0      1              1       True     False        0.0      150.0        0.0  E100000001265 New Fortress Energy
+  The Navigator Co                                147.0      2              2      False      True      147.0        0.0        0.0  E100000000838 Semapa - Sociedade de Investimento e Gestão
+  SDCL Energy Efficiency Income Trust PLC         145.0      2              2      False     False        0.0      145.0        0.0  
+  GE Vernova Inc                                  135.0      1              1      False     False        0.0      135.0        0.0  E100000001223 General Electric
+  AXA SA                                          129.2      4              3      False     False        0.0       62.9       66.3  
+  Greenidge Generation Holdings Inc               112.0      1              1      False     False        0.0      112.0        0.0  
+  Lenzing AG                                      100.0      2              0      False     False        0.0        0.0      100.0  
+  UBS Fund Management (Switzerland) AG             57.2     18             18      False     False        0.0       57.2        0.0  E100000000102 AltaGas; E100000001173 Carlyle Group
+  Braunschweig Beteiligungen GmbH                  45.7      4              4      False     False        0.0       45.7        0.0  E100000000388 Veolia Environnement
+  Starwood Real Estate Income Trust Inc            30.0      1              0      False     False        0.0        0.0       30.0  
+  Bertelsmann SE & Co KGaA                         25.0      1              1      False     False        0.0       25.0        0.0  
+  FMC Corp                                         25.0      1              1      False     False        0.0       25.0        0.0  
+  ConocoPhillips Corp                               5.2      1              1       True     False        0.0        5.2        0.0  E100000001270 Occidental Petroleum
+  State Street Corp                                 1.1      5              5       True     False        0.0        1.1        0.0  E100000001157 Black Hills; E100000001250 MDU Resources Group; E100000150310 NorthWestern Energy Group; E100002007932 Otter Tail
+
+entrants 36 | August 2026 capacity 36,157.5 MW, split unit by unit into three parts
+  (i) units the March 2025 file attributed to a listed entity that owns the entrant in August 2026, the entrant not then listed and identified   17,790.8 MW, 49.2 per cent
+  (ii) the rest of the units the March 2025 file carried   15,098.4 MW, 41.8 per cent
+  (iii) units the March 2025 file did not carry   3,268.3 MW, 9.0 per cent
+  the three parts add up to   36,157.5 MW, 100.0 per cent
+  entrants with capacity in (i) 4; of (i), the two largest: Entergy Louisiana LLC 10,529.6 MW, 59.2 per cent of (i); Union Electric Co 6,991.2 MW, 39.3 per cent of (i)
+  Entergy Louisiana LLC: 26 of 27 units, 10,529.6 of 11,121.4 MW in (i), held in March 2025 by E100000001163 Cleco Corporate Holdings; E100000001209 Entergy
+  Union Electric Co: 42 of 42 units, 6,991.2 of 6,991.2 MW in (i), held in March 2025 by E100000001139 Ameren
+  The Navigator Co: 2 of 2 units, 147.0 of 147.0 MW in (i), held in March 2025 by E100000000838 Semapa - Sociedade de Investimento e Gestão
+  Brookfield Asset Management Ltd: 1 of 3 units, 123.0 of 155.5 MW in (i), held in March 2025 by E100000000104 Brookfield
+
+  written to outputs

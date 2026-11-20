@@ -114,7 +114,7 @@ def spearman(a, b):
 def quintile_overlap(s_old, s_new, n=5):
     """The top-quintile overlap as the lowest and the highest count that the
     firms tied at each cut allow, with the tie counts (_overlap, added
-    19 November 2026): one figure where no tie leaves the top set open."""
+    20 November 2026): one figure where no tie leaves the top set open."""
     k = max(1, int(round(len(s_old) / n)))
     return _overlap.overlap_bounds(s_old, s_new, k)
 

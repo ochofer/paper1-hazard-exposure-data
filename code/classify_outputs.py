@@ -336,7 +336,7 @@ def main():
     gem = len(buckets.get("GEM-only", []))
     say(f"  total          {total:>4}")
     if total:
-        say(f"  share reproducible from free data alone: {100*gem/total:.1f}%")
+        say(f"  share computed from the tracker's releases alone, held and not published: {100*gem/total:.1f}%")
 
     if mismatch:
         say()

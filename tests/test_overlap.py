@@ -1,6 +1,6 @@
 """The bounds of a top-k overlap under ties, against every order.
 
-Run from the repository root: python3 -m pytest tests. Added 19 November 2026.
+Run from the repository root: python3 -m pytest tests. Added 20 November 2026.
 """
 import os
 import random

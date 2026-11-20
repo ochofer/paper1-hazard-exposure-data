@@ -417,7 +417,8 @@ def main():
         say()
         say()
         if h2["build_pct_blind"].mean() < h1["build_pct_blind"].mean():
-            say("  Build-out share DECLINED as predicted.")
+            say("  Build-out share is lower in the second half than in the first, the direction")
+            say("  expected; whether the decline is shown is the tests' question below.")
         else:
             say("  Build-out share did NOT decline. Report this plainly. Eighteen")
             say("  months may be too short a window, which is a limitation and")
@@ -429,7 +430,7 @@ def main():
         delta = h2["restate_pct_blind"].mean() - h1["restate_pct_blind"].mean()
         if delta >= -5:
             say(f"  Restatement share is flat or rising ({delta:+.1f} points), "
-                "as predicted.")
+                "the direction expected.")
         else:
             say(f"  Restatement share FELL by {-delta:.1f} points, against the "
                 "prediction. Investigate before writing.")

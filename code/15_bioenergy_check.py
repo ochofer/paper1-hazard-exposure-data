@@ -7,7 +7,7 @@ Script 13 found that the scaled exposure measure, fossil share of GEM-tracked
 thermal capacity, is far less stable across vintages than raw megawatts on the
 same firms: Spearman 0.81 and 0.85 against 0.97. Its top-quintile overlap has no
 one figure, because more than a hundred of the panel firms tie at a share of 1
-for about thirty places at the cut (script 13's test 2, since 19 November 2026
+for about thirty places at the cut (script 13's test 2, since 20 November 2026
 printed as the bounds the ties allow); raw megawatts tie nowhere at the cut.
 
 It also found a contamination. Bioenergy is the entire non-fossil part of that
@@ -91,14 +91,13 @@ def spearman(a, b):
 def quintile_overlap(s_old, s_new, n=5):
     """The top-quintile overlap as the lowest and the highest count that the
     firms tied at each cut allow, with the tie counts (_overlap, added
-    19 November 2026): one figure where no tie leaves the top set open."""
+    20 November 2026): one figure where no tie leaves the top set open."""
     k = max(1, int(round(len(s_old) / n)))
     return _overlap.overlap_bounds(s_old, s_new, k)
 
 
 # The raw-capacity correlation of each comparison, kept so that the table of
-# the three universes prints what this script computes. Until 19 November 2026
-# four of its cells were typed literals equal to the computed values.
+# the three universes prints what this script computes.
 RAW = {}
 
 
@@ -161,6 +160,8 @@ def main():
     say("=" * 78)
     say("(a) THE CHECK. Fossil share on firms whose denominator exists in both vintages")
     a_res = {}
+    say(f"  the {len(bio_both)} firms are those with bioenergy above zero in both releases with a blank share read as zero;")
+    say("  both readings are then taken on them")
     for rule in ("zero", "impute"):
         a_res[rule] = compare(d, rule, bio_both, "fossil_share",
                               "fossil share, bioenergy in both, worldwide")
@@ -168,6 +169,14 @@ def main():
     for rule in ("zero", "impute"):
         compare(d, rule, [e for e in bio_both if e in panel], "fossil_share",
                 "fossil share, bioenergy in both, the 328 panel")
+    # The same check with the firms chosen under the imputed reading (added 20 November 2026,
+    # after the results were known): bioenergy above zero in both releases with blanks imputed.
+    im = d[d.blank_rule == "impute"]
+    ai, bi = im[im.vintage == OLD].set_index("entity_id"), im[im.vintage == NEW].set_index("entity_id")
+    bio_both_imp = [e for e in ai.index.intersection(bi.index) if ai.loc[e, "bio_mw"] > 0 and bi.loc[e, "bio_mw"] > 0]
+    say()
+    say(f"  chosen under the imputed reading instead, bioenergy above zero in both releases with blanks imputed: {len(bio_both_imp)} firms (added 20 November 2026)")
+    compare(d, "impute", bio_both_imp, "fossil_share", "fossil share, bioenergy in both (imputed), worldwide")
 
     # The unrestricted figures of script 13's test 2, computed here from
     # scaling_by_firm.csv on the same firms as script 13 computes them: the
@@ -212,10 +221,20 @@ def main():
         u2_res[rule] = rho
         say(f"    U2, as defined      blank={rule:<7} n={len(keep):>4}  Spearman {rho:.4f}"
             f"  top-quintile overlap {_overlap.overlap_text(ov)}")
-        nz = [e for e in keep if av[e] > 0 and bv[e] > 0]
-        an, bn = av[nz], bv[nz]
+    # The firms above zero in both releases with a blank share read as zero, 576 of the 604, under both
+    # readings; the first attempt's universe. The 28 others are at zero in March 2025 under that reading.
+    qz = ep[ep.blank_rule == "zero"]
+    avz = qz[qz.vintage == OLD].set_index("entity_id")["attributable_mw"]
+    bvz = qz[qz.vintage == NEW].set_index("entity_id")["attributable_mw"]
+    keep = sorted(set(avz.index) & set(bvz.index))
+    nz = [e for e in keep if avz[e] > 0 and bvz[e] > 0]
+    say(f"    of the {len(keep)}, at zero in March 2025 with a blank share read as zero   {len(keep) - len(nz)}")
+    for rule in ("zero", "impute"):
+        q = ep[ep.blank_rule == rule]
+        an = q[q.vintage == OLD].set_index("entity_id")["attributable_mw"][nz]
+        bn = q[q.vintage == NEW].set_index("entity_id")["attributable_mw"][nz]
         ov2 = quintile_overlap(an, bn)
-        say(f"    positive in both    blank={rule:<7} n={len(nz):>4}  Spearman {spearman(an, bn):.4f}"
+        say(f"    above zero in both under the zero reading    blank={rule:<7} n={len(nz):>4}  Spearman {spearman(an, bn):.4f}"
             f"  top-quintile overlap {_overlap.overlap_text(ov2)}")
 
     say()
@@ -224,17 +243,17 @@ def main():
                   ["attributable_mw"] <= 0).sum())
     n_imp = int((ep[(ep.blank_rule == "impute") & (ep.vintage == OLD)]
                  ["attributable_mw"] <= 0).sum())
-    say(f"  Under blank=zero, {n_zero} of the March 2025 firms carry attributable")
-    say(f"  capacity of exactly zero, because every ownership edge they have has a")
-    say(f"  blank share and a blank multiplied by zero is nothing. Under blank=impute")
+    n_march = int(((ep.blank_rule == "zero") & (ep.vintage == OLD)).sum())
+    say(f"  Under blank=zero, {n_zero} of the {n_march} March 2025 firms carry attributable")
+    say(f"  capacity of exactly zero, because every path from them to a unit crosses a")
+    say(f"  blank share and a blank read as zero is nothing. Under blank=impute")
     say(f"  that count is {n_imp}. So the convention does not only change the values, it")
     say("  decides whether a firm registers as having exposure at all. Those tied")
     say("  zeros are what drag the blank=zero rank correlation down. Filtering them")
     say("  out removes the convention's effect, which is the thing being measured.")
 
     # U3, the panel firms with a row in both vintages, computed here from
-    # scaling_by_firm.csv as script 13 computes it. Until 19 November 2026 its
-    # count and its two correlations were typed literals in this table.
+    # scaling_by_firm.csv as script 13 computes it.
     u3 = [e for e in both if e in panel]
     u3_res, u3_fossil_both = {}, {}
     for rule in ("zero", "impute"):
@@ -263,7 +282,7 @@ def main():
     for rule in ("zero", "impute"):
         say(f"    of which coal or gas capacity above zero in both, blank={rule:<7} "
             f"{u3_fossil_both[rule]}")
-    say(f"    of which bioenergy alone in at least one release, blank=impute  "
+    say(f"    of which bioenergy alone in both releases, blank=impute        "
         f"{len(u3) - u3_fossil_both['impute']}")
 
     say()

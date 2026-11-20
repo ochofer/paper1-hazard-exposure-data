@@ -1,6 +1,6 @@
 {
   "script": "11_vintage_return_spread",
-  "generated_utc": "2026-11-19T17:46:55Z",
+  "generated_utc": "2026-11-20T16:50:00Z",
   "release_pin": {
     "March 2025": "Global-Energy-Ownership-Tracker-March-2025.xlsx",
     "August 2026": "Global-Energy-Ownership-Tracker-August-2026-V1.xlsx",
@@ -25,7 +25,7 @@
     "upstream_provenance_10": {
       "filename": "RUN_PROVENANCE_10_panel_join.json",
       "bytes": 993,
-      "sha256": "fd5fca3889649a7ddd220eaeec841bbdb69c06a46251dcf5504ebacaee642e90"
+      "sha256": "d462e098a4181fa202f27c690ab551b19647b0b76bbd92b9e88d469738749b4b"
     }
   },
   "price_convention": "adjClose from FMP historical-price-eod/dividend-adjusted, pulled 2026-08-21. Vendor back-adjustment for dividends AND splits. No unadjusted close is archived alongside.",

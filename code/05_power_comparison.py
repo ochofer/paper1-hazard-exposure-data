@@ -132,7 +132,7 @@ def main():
         n = yrs * 12
         m = mde(T_HURDLE, SD_GAMMA_MONTHLY, n)
         ratio = m / (PLAUSIBLE_PREMIUM_ANNUAL / 12)
-        verdict = "can detect" if ratio <= 1 else "CANNOT detect"
+        verdict = "detected at least half the time" if ratio <= 1 else "detected less than half the time"
         say(f"  {str(yrs)+' years':>10} {n:>7} {m:>11.3f} {m*12:>10.2f} "
             f"{ratio:>12.1f}  {verdict}")
 
@@ -141,6 +141,13 @@ def main():
     say(f"  months needed to detect a {PLAUSIBLE_PREMIUM_ANNUAL}%/year premium "
         f"at t={T_HURDLE}: {need:,.0f}")
     say(f"  which is {need/12:,.0f} years.")
+    # Added 20 November 2026, after the results were known: the two companion figures the note quotes,
+    # the months at a monthly standard deviation of 1 per cent, and at 80 per cent power, where the
+    # hurdle is t plus 0.84, the normal quantile the other scripts use.
+    need_1 = (T_HURDLE * 1.0 / (PLAUSIBLE_PREMIUM_ANNUAL / 12)) ** 2
+    need_80 = ((T_HURDLE + 0.84) * SD_GAMMA_MONTHLY / (PLAUSIBLE_PREMIUM_ANNUAL / 12)) ** 2
+    say(f"  at a monthly standard deviation of 1% instead: {need_1:,.0f}")
+    say(f"  at 80 per cent power, t={T_HURDLE} plus 0.84: {need_80:,.0f}")
 
     # -- Design B ------------------------------------------------------------
     say()
@@ -151,7 +158,7 @@ def main():
     for n in (20, 30, 50, 75, 100, 150, 200):
         m = mde(T_HURDLE, SD_CAR_PER_EVENT, n)
         ratio = m / PLAUSIBLE_CAR_PER_EVENT
-        verdict = "can detect" if ratio <= 1 else "CANNOT detect"
+        verdict = "detected at least half the time" if ratio <= 1 else "detected less than half the time"
         say(f"  {n:>10} {m:>11.3f} {ratio:>12.1f}  {verdict}")
 
     need_ev = (T_HURDLE * SD_CAR_PER_EVENT / PLAUSIBLE_CAR_PER_EVENT) ** 2
@@ -186,10 +193,11 @@ def main():
         f"roughly {a10:.0f}x.")
     say(f"  Design B at 75 events: power ratio {b75:.1f}.")
     if b75 <= 1 < a10:
-        say("  The event study can detect a plausible effect on this data. The")
-        say("  cross-sectional premium cannot, and would need decades to.")
+        say("  An effect of plausible size is detected at least half the time by the event")
+        say("  study and less than half the time by the cross-sectional premium, which")
+        say(f"  would need {need:,.0f} months, {need/12:,.0f} years, to detect it half the time.")
     say()
-    say("  Both use the same 328 firms and the same exposure measure, so this")
+    say("  Both use the same 328 ownership entities and the same exposure measure, so this")
     say("  is a change of question rather than a change of dataset.")
 
     # -----------------------------------------------------------------------
@@ -201,7 +209,7 @@ def main():
     #
     # Measured firm counts from the GEM cross-section, running the traversal
     # over every country:
-    #     Europe 16 plus US ....... 328 firms, 175 with five or more assets
+    #     Europe 16 plus US ....... 328 entities, 175 with five or more assets
     #     Ken French Developed 23 . 541 firms, 266 with five or more assets
     #
     # The optimistic bound is that ALL of sd(gamma) is diversifiable, so it
@@ -212,9 +220,9 @@ def main():
     say()
     say("DOES A BIGGER CROSS-SECTION RESCUE DESIGN A?")
     say("  measured firm counts, from running the traversal over every country:")
-    say("    Europe 16 + US ......... 328 firms, 175 with 5+ assets, 5,115 assets")
-    say("    Ken French Developed ... 541 firms, 266 with 5+ assets, 7,695 assets")
-    say("    excluded rest of world . 960 firms, 315 with 5+ assets, 8,997 assets")
+    say("    Europe 16 + US ......... 328 entities, 175 with 5+ assets, 5,115 asset holdings")
+    say("    Ken French Developed ... 541 entities, 266 with 5+ assets, 7,695 asset holdings")
+    say("    excluded rest of world . 960 entities, 315 with 5+ assets, 8,997 asset holdings")
     say()
     shrink = math.sqrt(328 / 541)
     say(f"  optimistic bound: sd(gamma) falls by at most a factor of "

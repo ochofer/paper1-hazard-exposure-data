@@ -5,28 +5,30 @@ DESIGN A. Cross-sectional premium, Fama-MacBeth
   plausible true effect: 2.0%/year = 0.167%/month
 
       sample  months   MDE %/mth   MDE %/yr  power ratio  verdict
-     5 years      60       0.775       9.30          4.6  CANNOT detect
-     8 years      96       0.612       7.35          3.7  CANNOT detect
-    10 years     120       0.548       6.57          3.3  CANNOT detect
-    12 years     144       0.500       6.00          3.0  CANNOT detect
-    15 years     180       0.447       5.37          2.7  CANNOT detect
-    20 years     240       0.387       4.65          2.3  CANNOT detect
-    30 years     360       0.316       3.79          1.9  CANNOT detect
+     5 years      60       0.775       9.30          4.6  detected less than half the time
+     8 years      96       0.612       7.35          3.7  detected less than half the time
+    10 years     120       0.548       6.57          3.3  detected less than half the time
+    12 years     144       0.500       6.00          3.0  detected less than half the time
+    15 years     180       0.447       5.37          2.7  detected less than half the time
+    20 years     240       0.387       4.65          2.3  detected less than half the time
+    30 years     360       0.316       3.79          1.9  detected less than half the time
 
   months needed to detect a 2.0%/year premium at t=3.0: 1,296
   which is 108 years.
+  at a monthly standard deviation of 1% instead: 324
+  at 80 per cent power, t=3.0 plus 0.84: 2,123
 
 DESIGN B. Hazard event study
   plausible true effect: 1.0% CAR per event
 
       events   MDE % CAR  power ratio  verdict
-          20       1.342          1.3  CANNOT detect
-          30       1.095          1.1  CANNOT detect
-          50       0.849          0.8  can detect
-          75       0.693          0.7  can detect
-         100       0.600          0.6  can detect
-         150       0.490          0.5  can detect
-         200       0.424          0.4  can detect
+          20       1.342          1.3  detected less than half the time
+          30       1.095          1.1  detected less than half the time
+          50       0.849          0.8  detected at least half the time
+          75       0.693          0.7  detected at least half the time
+         100       0.600          0.6  detected at least half the time
+         150       0.490          0.5  detected at least half the time
+         200       0.424          0.4  detected at least half the time
 
   events needed to detect a 1.0% CAR at t=3.0: 36
 
@@ -48,17 +50,18 @@ so both designs are re-scored across a plausible range.
 CONCLUSION
   Design A at 10 years: power ratio 3.3. Underpowered by roughly 3x.
   Design B at 75 events: power ratio 0.7.
-  The event study can detect a plausible effect on this data. The
-  cross-sectional premium cannot, and would need decades to.
+  An effect of plausible size is detected at least half the time by the event
+  study and less than half the time by the cross-sectional premium, which
+  would need 1,296 months, 108 years, to detect it half the time.
 
-  Both use the same 328 firms and the same exposure measure, so this
+  Both use the same 328 ownership entities and the same exposure measure, so this
   is a change of question rather than a change of dataset.
 
 DOES A BIGGER CROSS-SECTION RESCUE DESIGN A?
   measured firm counts, from running the traversal over every country:
-    Europe 16 + US ......... 328 firms, 175 with 5+ assets, 5,115 assets
-    Ken French Developed ... 541 firms, 266 with 5+ assets, 7,695 assets
-    excluded rest of world . 960 firms, 315 with 5+ assets, 8,997 assets
+    Europe 16 + US ......... 328 entities, 175 with 5+ assets, 5,115 asset holdings
+    Ken French Developed ... 541 entities, 266 with 5+ assets, 7,695 asset holdings
+    excluded rest of world . 960 entities, 315 with 5+ assets, 8,997 asset holdings
 
   optimistic bound: sd(gamma) falls by at most a factor of sqrt(328/541) = 0.779
   so sd(gamma) 2.0%/month becomes at best 1.56%/month
