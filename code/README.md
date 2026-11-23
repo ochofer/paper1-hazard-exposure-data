@@ -1,7 +1,7 @@
 # Scripts
 
 Everything that runs outside the notebook. The ownership data is free and openly licensed,
-and the price series is licensed and withheld, as noted at the end. The fourteen past
+and the price series is licensed and withheld, as the last section says. The fourteen past
 releases of the ownership tracker that scripts 04, 06 to 09, 12 to 15, 17 and 25 read were
 supplied by the vendor on request and are neither on the vendor's site nor in this
 repository, so those scripts cannot be rerun from what is published; scripts 05, 10, 16 and
@@ -29,20 +29,20 @@ whether to include assets that are not yet operating, whether to attribute an as
 the nearest listed parent or to every listed entity in its ownership chain, and which
 countries to include.
 
-I wrote each as a switch at the top of the file rather than burying it in the logic. A
-research design decision nobody can find is a research design decision nobody can argue
-with, and the whole point of publishing this is that someone can argue with it.
+I wrote each as a switch at the top of the file, where a reader can find it. A research
+design decision nobody can find is a research design decision nobody can argue with, and the
+whole point of publishing this is that someone can argue with it.
 
 The most instructive one is `OPERATING_ONLY`. Set it to `False` and the universe goes from
-328 ownership entities to 372. That single line accounts for the entire difference between my count
-and an earlier one, which is the fastest way to see what a filtering choice actually costs.
+328 ownership entities to 372. That single line accounts for the whole difference between
+the two counts, which is the fastest way to see what a filtering choice costs.
 
 ## The vintage and measurement scripts, `04` onward
 
 They run in numerical order and each reads the outputs of the ones before it. `_release.py`
 holds the release pin: the exact filenames of the GEM releases used, resolved by an explicit
-name rather than by a glob, so a script fails rather than silently picking up a different
-file. Two files I hold carry August 2026, one of them sent to me on 26 August 2026, and
+name, so that a script stops when the named file is missing and never reads another file in
+its place. Two files I hold carry August 2026, one of them sent to me on 26 August 2026, and
 nothing inside either marks it as a version, which is why the pin exists. `_overlap.py`,
 added 20 November 2026, gives a top-quintile overlap as the lowest and the highest count
 that the firms tied at each cut allow, with the tie counts, so that scripts 10, 13 and 15
@@ -100,11 +100,9 @@ provenance record.
 
 ## What is not here
 
-**Blocking tests 1 and 2** were originally scripts in this folder. They are now sections 5
-and 6 of [`../notebooks/01_raw_panels.ipynb`](../notebooks/01_raw_panels.ipynb), which is
-where they belong, since both need the price panel the notebook builds. The earlier
-versions never ran against live data and pointed at API paths the provider has since
-retired, so I removed them rather than publish code that does not work.
+**Blocking tests 1 and 2** are sections 5 and 6 of
+[`../notebooks/01_raw_panels.ipynb`](../notebooks/01_raw_panels.ipynb), since both need the
+price panel the notebook builds.
 
 **The price panel and the two files derived from it.** `11_vintage_return_spread.py` reads a
 licensed price series that cannot be redistributed, so `vintage_return_spread.csv` and
@@ -114,5 +112,6 @@ output in `../outputs/` is here in full.
 
 ## First-time reader
 
-Start with the notebook rather than these scripts. It explains the project, the data and
-the reasoning. These two are the parts of the pipeline that sit upstream of it.
+[`../notebooks/01_raw_panels.ipynb`](../notebooks/01_raw_panels.ipynb) explains the project,
+the data and the reasoning, and is the first file to read. Scripts `00` and `03` are the
+parts of the pipeline that sit upstream of it.
