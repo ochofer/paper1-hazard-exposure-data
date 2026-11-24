@@ -292,6 +292,13 @@ def _return_figures(fn="vintage_return_spread.csv", lag=6):
 
 
 F.update(_return_figures())
+# The summary and section 6 say in words which reading of a blank share puts the difference at the edge of
+# the 5 per cent level. The build stops if the verdict or the two ratios move from the figures those words
+# were checked against.
+if not (F["rule_v_zero"] == F["rule_v_impute"] == "mixed"
+        and 1.90 <= float(F["dt_impute"]) < 2.10 and float(F["dt_zero"]) < 1.645):
+    sys.exit("BUILD ABORTED: the typed sentence on the two readings of a blank share no longer matches "
+             f"the figures ({F['rule_v_zero']}, {F['rule_v_impute']}, {F['dt_zero']}, {F['dt_impute']})")
 # The months of the power calculation, from script 05 (computed there since 20 November 2026).
 F["pw_months"] = P("power_comparison.txt", r"months needed to detect a 2.0%/year premium at t=3.0: ([\d,]+)")
 F["pw_months_1pct"] = P("power_comparison.txt", r"at a monthly standard deviation of 1% instead: ([\d,]+)")
@@ -529,12 +536,13 @@ TODAY_WORDS = date.today().strftime("%d %B %Y").lstrip("0")
 # between versions. The current version carries the day of the build, which is
 # the day of the commit that is tagged, so that the version line, the byline and
 # the file's name give one date.
-VERSION = "1.3"
+VERSION = "1.4"
 VERSIONS = {
     "1.0": "9 September 2026",
     "1.1": "15 September 2026",
     "1.2": "2 October 2026",
-    "1.3": TODAY_WORDS,
+    "1.3": "20 November 2026",
+    "1.4": TODAY_WORDS,
 }
 CHANGELOG_LINE = ("Versions: " + "; ".join(f"{k}, {v}" for k, v in sorted(VERSIONS.items()))
                   + ". The repository's history holds every change between versions.")
@@ -696,8 +704,8 @@ of the {F['chg_total']} that differ, had no corporate event behind them, a share
 cent with a 95 per cent Wilson interval of {F['noev_lo']} to {F['noev_hi']} per cent; edges that appear in
 the later file, the kind the first paragraph names, were classified as the database growing and were not
 verified. Second, an undocumented choice, the analyst's reading of a blank ownership share, moves a
-verdict whose threshold was set before the run, in the header of the script that produced the result;
-the public history cannot show the order. Of the six changes that were real, the {F['inw_w']} with
+verdict whose threshold was set before the run, in the header of the script that produced the result.
+Of the six changes that were real, the {F['inw_w']} with
 transactions inside the window were carried in the {F['inw_pos']} release after the transaction, and the
 {F['pre_w']} with transactions before the first release, from {F['pre_from']} to {F['pre_to']}, were
 carried {F['after_lo']} to {F['after_hi']} days after the first release that could have carried them, in
@@ -712,8 +720,8 @@ line of section 2, and {F['both_sp_imp']} with blanks imputed. The gap between t
 enter the panel between the two releases: the panel is defined on the later release, {F['entered']} firms
 entered and {F['left']} left. Of the {F['ent_mw']} MW the {F['entered']} hold in August 2026,
 {F['ent_i_mw']} MW, {F['ent_i_pc']} per cent, is in units the March 2025 file attributed to a listed entity
-that owns the entrant in August 2026, the entrant not then a listed and identified entity: subsidiaries
-that gained a listed flag, the mechanism of section 3. Under the zero reading {F['both_blank_zero']} of the {F['both_units']} are at zero in March 2025 because every path
+that owns the entrant in August 2026, the entrant not then a listed and identified entity, the mechanism of section 3.
+Under the zero reading {F['both_blank_zero']} of the {F['both_units']} are at zero in March 2025 because every path
 from them to a unit crosses a blank share; set aside, the {F['pos_n']} others give {F['pos_sp_zero']} and
 {F['pos_sp_imp']}, a gap of {F['gap_pos']} against {F['gap_both']} on the {F['both_units']}. What a release
 costs a book built on this measure is therefore mostly firms arriving in the panel, and
@@ -729,7 +737,9 @@ share, the rule's measure and not the standard error of their difference, and th
 {F['rule_c_zero']} and {F['rule_c_impute']}, so the verdict is {F['rule_phrase']}. The Newey-West standard
 error of the difference of the two monthly series, added on 20 November 2026 after the results were known
 and in no verdict, is {F['dse_zero']}% and {F['dse_impute']}% a year, and the difference over it
-{F['dt_zero']} and {F['dt_impute']}. Beside it, every t-statistic is at most {F['t_max']}, the Newey-West
+{F['dt_zero']} and {F['dt_impute']}. Under the reading with blanks imputed the difference is at the edge of the 5 per cent level on the
+standard error of the difference, and under the other it is not.
+Beside the verdict, every t-statistic is at most {F['t_max']}, the Newey-West
 standard errors are {F['se_lo']}% to {F['se_hi']}% a
 year, and the effect at which the expected t-statistic reaches the Harvey, Liu and Zhu hurdle of 3.0 is
 {F['mde_lo']}% to {F['mde_hi']}% a year across the arms, an effect detected half the time; at a power of
@@ -775,9 +785,7 @@ methodology rather than the database growing, by the rule in the header of scrip
 was known and before the sample was drawn, which revises R by the measured share of real cases when that
 share lies between 0.25 and 0.50 (it is {F['V_k']} of {F['n_cases']}, {F['V_strict']}); before that
 correction the figure is {F['R_before']}%, and the threshold of 25% is set before the run in the header
-of script 06. The public history cannot show the order, since the scripts and their results entered the
-repository in one commit of 8 September 2026, and the decomposition behind R stood in the findings file
-at the commit of 22 August 2026, b012207. Section 4 sets out every construction of that figure.</p>
+of script 06. Section 4 sets out every construction of that figure.</p>
 <p class="src">Sources: <code>outputs/salience_lag.txt</code>, <code>outputs/event_validation_sample.csv</code>,
 <code>evidence/salience_lag_cases.csv</code>, <code>outputs/restricted_r.txt</code>,
 <code>outputs/release_ladder.txt</code>, <code>outputs/change_decomposition.txt</code></p>
@@ -979,7 +987,9 @@ not the standard error of their difference, and the two monthly series correlate
 and {F['rule_c_impute']}, so the verdict is {F['rule_phrase']}; the Newey-West standard error of the
 difference of the two series, added on 20 November 2026 after the results were known and in no verdict,
 is {F['dse_zero']}% and {F['dse_impute']}% a year, the difference over it {F['dt_zero']} and
-{F['dt_impute']}. The test returns every t-statistic at most {F['t_max']}, with Newey-West standard errors
+{F['dt_impute']}. Under the reading with blanks imputed the difference is at the edge of the 5 per cent level on the
+standard error of the difference, and under the other it is not.
+The test returns every t-statistic at most {F['t_max']}, with Newey-West standard errors
 of {F['se_lo']}% to {F['se_hi']}% a year;
 the effect at which the expected t-statistic reaches the Harvey, Liu and Zhu hurdle of 3.0 is
 {F['mde_lo']}% to {F['mde_hi']}% a year across the arms, an effect detected half the time, and at a power
