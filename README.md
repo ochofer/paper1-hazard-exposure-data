@@ -4,9 +4,9 @@
 
 Companies own physical assets, e.g., power stations, pipelines, mines and cement works, and those assets sit in places whose weather varies. The question this data serves is whether investors price the risk that weather damages those assets or interrupts what they produce, i.e., whether companies holding more exposed assets earn different returns from companies holding less exposed ones, once the known drivers of returns are controlled for.
 
-**This repository builds and audits the data for that question, and tests no return hypothesis on it.** A power calculation, published here, set the planned return test, a cross-sectional Fama-MacBeth design, aside. A quintile-spread comparison was run by a rule set in the header of its script before the run, and the note reports its result with the minimum detectable effect that makes it readable.
+**This repository builds and audits the data for that question, and does not test whether hazard exposure is priced.** A power calculation, published here, set the planned return test, a cross-sectional Fama-MacBeth design, aside. A quintile-spread comparison was run by a rule set in the header of its script before the run, and the note reports its result with the minimum detectable effect that makes it readable.
 
-The note is *What a vintage difference measures*, a hand verification of ownership changes in a public asset-level database, published as the release [`note-v1.3`](https://github.com/ochofer/paper1-hazard-exposure-data/releases/tag/note-v1.3). Every figure in it resolves to a named output file under `outputs/`.
+The note is *What a vintage difference measures*, a hand verification of ownership changes in a public asset-level database, published as the release [`note-v1.3`](https://github.com/ochofer/paper1-hazard-exposure-data/releases/tag/note-v1.3). Every result figure in it is read at build time from a named output file, two of which are withheld. The labels and settings that are typed are listed in its Appendix D.
 
 ## What is here
 
@@ -51,7 +51,7 @@ Each term carries one meaning, the same in the code, the notebook, the outputs a
 - **Exposure**: attributable capacity, i.e., the share of a tracked asset's capacity assigned to a company through its ownership stake, summed over its assets.
 - **Convention**: a stated rule for an ambiguous case, e.g., the blank-share convention, applied the same way in every script and reported with its alternative beside it.
 - **Provenance record**: the `RUN_PROVENANCE_*.json` file a script writes at run time, naming every input it opened with its hash.
-- **Figure register**: the table that ties every number in the note to the output file that carries it.
+- **Figure register**: the table that ties every result figure in the note to the output file that carries it.
 - **Price panel**: the daily total-return series of the priceable companies and two benchmarks, pulled from Financial Modeling Prep on 21 August 2026 and not redistributed.
 - **Crosswalk**: the table that joins ownership entities to security identifiers and tickers, with every hand correction recorded in `config/ticker_overrides.csv`.
 - **Blocking test**: a test that stops the pipeline if it fails, run before anything uses the pipeline's output.

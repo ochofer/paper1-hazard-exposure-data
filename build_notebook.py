@@ -2241,7 +2241,7 @@ Three quantities, in increasing order of usefulness:
 | over 15% | The survivor-only sample cannot carry the main claim. Either rebuild the universe from historical data, or reframe the paper around what this sample can support |
 
 The thresholds were set before the run, in this text above the cell that computes the
-number; the public history cannot show the order. The measured rates fall in the middle
+number. The measured rates fall in the middle
 band (9.6 per cent over 2021 to 2025, size and venue matched) and in the top band (30.9
 per cent extrapolated to sixteen years), and section 5b sets the threshold aside as
 measured on the wrong population, after the number was seen; the findings file records
@@ -2709,8 +2709,7 @@ how precisely the coefficients are estimated.
 
 I use Newey and West (1987) standard errors, which are robust to both, computed in this
 notebook's own code (`newey_west_ols`). Five lags is the conventional choice for daily
-data, set before the run, in this text above the cell; the public history cannot show
-the order.
+data, set before the run, in this text above the cell.
 
 > Newey, W. K. and West, K. D. (1987). "A simple, positive semi-definite,
 > heteroskedasticity and autocorrelation consistent covariance matrix."
