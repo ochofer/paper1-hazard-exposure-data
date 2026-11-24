@@ -41,8 +41,9 @@ table { font-size: 8.5pt; margin: 11px 0 14px;
 th, td { padding: 4px 7px; }
 thead { display: table-header-group; }
 tr { break-inside: avoid; page-break-inside: avoid; }
-.summary { break-inside: avoid; page-break-inside: avoid;
+.summary { -webkit-box-decoration-break: clone; box-decoration-break: clone;
            padding: 14px 16px; margin-bottom: 20px; }
+.summary p { break-inside: avoid; page-break-inside: avoid; }
 .note { break-inside: avoid; page-break-inside: avoid; font-size: 9.5pt; padding: 9px 12px; }
 .src { font-size: 8pt; margin: -8px 0 14px; }
 .appendix { break-before: page; page-break-before: always;

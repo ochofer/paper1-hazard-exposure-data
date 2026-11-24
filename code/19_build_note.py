@@ -600,7 +600,8 @@ footer{margin-top:48px;padding-top:16px;border-top:1px solid var(--line);color:v
   h1,h2,h3{break-after:avoid;page-break-after:avoid}
   tr{break-inside:avoid;page-break-inside:avoid}
   thead{display:table-header-group}
-  .summary{break-inside:avoid;page-break-inside:avoid}
+  .summary{-webkit-box-decoration-break:clone;box-decoration-break:clone}
+  .summary p{break-inside:avoid;page-break-inside:avoid}
   a{color:inherit;text-decoration:none}
 }
 """
