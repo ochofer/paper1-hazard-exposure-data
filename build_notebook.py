@@ -149,12 +149,12 @@ wherever you cloned the repository. On Colab it is a temporary folder on a virtu
 machine that is deleted when you close the tab.
 
 An obvious way to handle this is to guess: use the current folder if it looks right,
-otherwise its parent. I wrote it that way at first and it caused a genuinely nasty
-failure. On Colab the current folder is `/content`, its parent is the filesystem root
-`/`, and Colab runs with administrator rights. So the notebook cheerfully created
-`/data/raw` at the root of the machine, downloaded the factor data into it, printed a
-success message, and only fell over four sections later with an error mentioning a
-path that appears nowhere in this project.
+otherwise its parent. On Colab that guess goes wrong without stopping: the current
+folder is `/content`, its parent is the filesystem root `/`, and Colab runs with
+administrator rights, so a notebook that guessed would create `/data/raw` at the root
+of the machine, download the factor data into it, print a success message, and fail
+only four sections later with an error naming a path that appears nowhere in this
+project.
 
 **A wrong path that works is more dangerous than one that crashes.** So the code below
 looks for a specific file that exists only inside this repository and refuses to
@@ -1005,11 +1005,10 @@ in the findings is yours to recompute. If they do not match, the per-symbol cove
 `manifest.json` shows you exactly which symbols differ, which is usually a company that
 has gained or lost history since August 2026 rather than anything wrong with your run.
 
-The two files have different names on purpose. An earlier version of this notebook
-wrote to `manifest.json` as well, so a single run in Colab would have quietly
-overwritten the published record with a local one. `manifest_run.json` is gitignored,
-like everything else in `data/raw/`, so your run cannot disturb the published record
-even by accident.
+The two files have different names on purpose: a notebook that wrote to `manifest.json`
+would let a single run in Colab overwrite the published record with a local one.
+`manifest_run.json` is gitignored, like everything else in `data/raw/`, so your run
+cannot disturb the published record even by accident.
 
 Both manifests record the things that are easy to forget and expensive to get wrong:
 that the factors are in percent, and that no currency conversion has been applied.
@@ -1097,8 +1096,7 @@ wrong sample.
 
 ### Three questions that sound like one
 
-I first thought of this as "find the ticker for each company". It is three separate
-questions, and I made mistakes by conflating them.
+Finding the ticker for each company is three separate questions.
 
 1. **Is this entity a listed company at all?** Many owners of power stations are not:
    municipal utilities, state bodies, co-operatives, infrastructure funds, and

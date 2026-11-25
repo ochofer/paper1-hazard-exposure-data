@@ -78,9 +78,8 @@ repository root, or `python3 code/_overlap.py` for the same check without a test
 
 **No result figure is typed by hand.** `19_build_note.py` pulls every result figure in the
 note out of a named output file at build time and aborts if a pattern is missing or matches
-twice; the typed labels and settings are listed in the note's Appendix D. I wrote
-that check after typing twelve entity identifiers into an evidence file from memory instead
-of reading them from the source, and getting all twelve wrong.
+twice; the typed labels and settings are listed in the note's Appendix D. The check
+exists so that no result figure is typed where a file can give it.
 
 **Every data output is deterministic.** Each is sorted before it is written, so a reader who
 reruns a script against the pinned release gets the same bytes and therefore the same
