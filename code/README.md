@@ -59,11 +59,11 @@ repository root, or `python3 code/_overlap.py` for the same check without a test
 | `08_event_validation_sample.py` | Draws the random sample of apparent changes to check by hand |
 | `09_exposure_proxy.py` | Attributes coal and gas capacity to the nearest listed parent, under both blank-share conventions |
 | `10_panel_join.py` | Joins the measure to the company cross-section |
-| `11_vintage_return_spread.py` | The return test, whose rule is set in its header. **Reads the licensed price series** |
+| `11_vintage_return_spread.py` | The quintile-spread comparison, whose rule is set in its header. **Reads the licensed price series** |
 | `12_decimal_truncation.py` | How much of the share-value change is one-decimal rounding |
 | `13_scaling_second_column.py` | The same measure scaled by fleet share |
 | `14_restricted_r.py` | R with residual counterparties removed from both sides |
-| `15_bioenergy_check.py` | The control on the scaling result, set in its header before the run |
+| `15_bioenergy_check.py` | The control on the fossil-share result, set in its header before the run |
 | `16_figure_register.py` | Holds the figures of the note's running order against the output file that should contain each, and reports anything untraceable |
 | `17_release_ladder.py` | Both August 2026 releases side by side, with V derived from the verdicts and its Wilson interval computed |
 | `18_validate_salience_cases.py` | Validates the hand-collected evidence file against the verified sample and computes the recording lags |

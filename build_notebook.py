@@ -3437,7 +3437,7 @@ it is a research design decision rather than a lookup, and it is not made here.
 If the exposure measure had turned out to have no explanatory power for returns, that
 would have been a result to report as one, alongside the minimum effect size the sample
 could have detected; the study was stood down before the measure was built, and the null
-that is reported is the return test of the note, with its minimum detectable effect. A
+that is reported is the quintile-spread comparison of the note, with its minimum detectable effect. A
 study that can only publish one of its two possible answers is not a test of anything.
 """))
 

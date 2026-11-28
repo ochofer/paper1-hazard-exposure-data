@@ -4,9 +4,11 @@
 
 Companies own physical assets, e.g., power stations, pipelines, mines and cement works, and those assets sit in places whose weather varies. The question this data serves is whether investors price the risk that weather damages those assets or interrupts what they produce, i.e., whether companies holding more exposed assets earn different returns from companies holding less exposed ones, once the known drivers of returns are controlled for.
 
-**This repository builds and audits the data for that question, and does not test whether hazard exposure is priced.** A power calculation, published here, set the planned return test, a cross-sectional Fama-MacBeth design, aside. A quintile-spread comparison was run by a rule set in the header of its script before the run, and the note reports its result with the minimum detectable effect that makes it readable.
+**This repository builds and audits the data for that question, and does not test whether hazard exposure is priced.** A power calculation, published here, set the planned return test, a cross-sectional Fama-MacBeth design, aside. A comparison of the two releases' quintile spreads of monthly returns was read against a rule written in the header of its script before it ran, and the note reports its result with its minimum detectable effect.
 
 The note is *What a vintage difference measures*, a hand verification of ownership changes in a public asset-level database, published as the [latest release](https://github.com/ochofer/paper1-hazard-exposure-data/releases/latest). Every result figure in it is read at build time from a named output file, two of which are withheld. The labels and settings that are typed are listed in its Appendix D.
+
+Of 19 restatement changes checked by hand, 12 had no corporate event behind them. Whether a ranking of firms by coal and gas capacity counts as stable between the two releases depends on how a blank ownership share is read.
 
 ## What is here
 
@@ -40,9 +42,9 @@ The hazard study itself is closed: the hazard measure is not built and not sched
 
 Each term carries one meaning, the same here and in the note.
 
-- **Release**: one dated file published by Global Energy Monitor, identified by its file name and SHA-256 hash. The two files of August 2026 are **V1** and **V2**.
+- **Release**: one dated file published by Global Energy Monitor, identified by its file name and SHA-256 checksum. The two files of August 2026 are **V1** and **V2**.
 - **Vintage**: the data as they stood in one release. A **vintage difference** is the change between two releases of the same tracker, and it is what this repository measures.
-- **Pinned release**: the release a script reads, named by file name and hash in the script's provenance record.
+- **Pinned release**: the release a script reads, named by file name and checksum in the script's provenance record.
 - **Ownership entity**: an owner as Global Energy Monitor records it, before any matching. A **company** is the listed company an ownership entity resolves to. A **firm** is an owner whose attributable capacity the note ranks.
 - **Cross-section**: the 328 ownership entities that resolve to the US and developed-Europe listed universe, 302 of them listed companies with a price series.
 - **Priceable**: one of the 328 ownership entities whose shares resolve to a tradeable listing in the price panel. There are 302.
@@ -50,7 +52,7 @@ Each term carries one meaning, the same here and in the note.
 - **Build-out, restatement and methodology**: the three buckets into which a vintage difference is split. *Revision* keeps its ordinary sense and is not a fourth bucket.
 - **Attributable capacity**: the megawatts of an owner's operating coal and gas power units, each taken at its ownership share and summed.
 - **Blank share** and its two **readings**: an ownership share a release leaves empty, read as zero or imputed, the two readings applied the same way in every script and reported side by side.
-- **Provenance record**: the `RUN_PROVENANCE_*.json` file a script writes at run time, naming every input it opened with its hash.
+- **Provenance record**: the `RUN_PROVENANCE_*.json` file a script writes at run time, naming every input it opened with its checksum.
 - **Figure register**: the table that ties every result figure in the note to the output file that carries it.
 - **Price panel**: the daily total-return series of the priceable companies and two benchmarks, pulled from Financial Modeling Prep on 21 August 2026 and not redistributed.
 - **Crosswalk**: the table that joins ownership entities to security identifiers and tickers, with every hand override recorded in `config/ticker_overrides.csv`.
@@ -58,7 +60,7 @@ Each term carries one meaning, the same here and in the note.
 
 ## Why the data layer stands apart
 
-A data layer that can be checked only through the final result cannot really be checked, because the incentive to question the download depends on how the answer looks: an interesting result invites no second look, while a dull one does. The raw layer is therefore audited on its own, before anything depends on the answer, and each of the notebook's blocking tests tries to prove the pipeline broken before the pipeline is used.
+A data layer that can be checked only through the final result is not checked reliably, because a researcher is more likely to question the download when the answer is dull than when it is interesting. The raw layer is therefore audited on its own, before anything depends on the answer, and each of the notebook's blocking tests tries to prove the pipeline broken before the pipeline is used.
 
 ## Where to start reading
 
@@ -110,15 +112,15 @@ Each of these produces a plausible number and raises no error, which is why it i
 
 ## What this repository does not contain
 
-**The price panel.** Financial Modeling Prep's terms require a separate licence to redistribute its data, so `data/raw/` is excluded from version control. Published instead are the fetch code, the resolved company list, the hand overrides with a reason for each, and [`data/raw/manifest.json`](data/raw/manifest.json), which carries the SHA-256 hash, byte size and row count of every file the findings were computed on, with each of the 304 symbols' date coverage. A reader with their own access can therefore check that their panel matches this one. `build_manifest.py` writes an `owner` field naming who made the pull, here Carlo Hofer. The committed manifest lacks the field and gains it when it is next written. Running the notebook writes the same kind of record for the reader's own pull as `data/raw/manifest_run.json`, which git ignores and which cannot overwrite the published record. Matching hashes show the same bytes are held, and where they differ the coverage by symbol shows which symbols diverge.
+**The price panel.** Financial Modeling Prep's terms require a separate licence to redistribute its data, so `data/raw/` is excluded from version control. Published instead are the fetch code, the resolved company list, the hand overrides with a reason for each, and [`data/raw/manifest.json`](data/raw/manifest.json), which carries the SHA-256 checksum, byte size and row count of every file the findings were computed on, with each of the 304 symbols' date coverage. A reader with their own access can therefore check that their panel matches this one. `build_manifest.py` writes an `owner` field naming who made the pull, here Carlo Hofer. The committed manifest lacks the field and gains it when it is next written. Running the notebook writes the same kind of record for the reader's own pull as `data/raw/manifest_run.json`, which git ignores and which cannot overwrite the published record. Matching checksums show the same bytes are held, and where they differ the coverage by symbol shows which symbols diverge.
 
 **What the price series is.** Every return is computed from one field, `adjClose`, from Financial Modeling Prep's `historical-price-eod/dividend-adjusted` endpoint, pulled on 21 August 2026. The adjustment is the vendor's, for splits as well as dividends: NextEra's four-for-one split of 26 October 2020 shows no break in the series, and Exxon's adjusted level in January 2010 is about half its nominal close of the time. No unadjusted close is stored beside it, so the adjustment cannot be undone or checked independently. A vendor's adjusted history changes whenever a new dividend or split is applied, so the panel is a snapshot of the vendor's adjustment on 21 August 2026. **The pull is therefore auditable, not repeatable**, and rebuilding the price layer requires a paid subscription, while every other input here is free. The pull did not record a fetch time for each file, and none has been filled in from file system times, which change whenever a file is copied.
 
-**The outputs and the evidence.** `outputs/` holds every file the vintage and measurement scripts produce, and `evidence/` holds the hand-collected input behind the recording-lag table, i.e., transaction dates read from exchange filings, company statements and EDINET, with a source for each. Two files are withheld, `vintage_return_spread.csv` and `vintage_return_spread.txt`, because they are computed from the licensed price series. They are named in the note's figure register with their hashes, and rerunning `code/11_vintage_return_spread.py` against your own pull reproduces them.
+**The outputs and the evidence.** `outputs/` holds every file the vintage and measurement scripts produce, and `evidence/` holds the hand-collected input behind the recording-lag table, i.e., transaction dates read from exchange filings, company statements and EDINET, with a source for each. Two files are withheld, `vintage_return_spread.csv` and `vintage_return_spread.txt`, because they are computed from the licensed price series. They are named in the note's figure register with their checksums, and rerunning `code/11_vintage_return_spread.py` against your own pull reproduces them.
 
-One file has no script behind it. `outputs/isin_screen.csv`, which joins the ownership entities to GLEIF identifiers and ISIN counts and from which the 328 come, was built by hand from two free and openly licensed inputs, and it carries no provenance record. Every other file in `outputs/` resolves to a numbered script with a provenance record naming the release and its hash.
+One file has no script behind it. `outputs/isin_screen.csv`, which joins the ownership entities to GLEIF identifiers and ISIN counts and from which the 328 come, was built by hand from two free and openly licensed inputs, and it carries no provenance record. Every other file in `outputs/` resolves to a numbered script with a provenance record naming the release and its checksum.
 
-Every data output is sorted before it is written, so that rerunning a script against the pinned release reproduces its hash, and the run logs print each output's path relative to the repository. Two files marked `_SUPERSEDED_` hold the same rows as two outputs of record in another order, and `outputs/PROMOTION_2026-09-08.txt` records the hashes of both with their row count and header.
+The two outputs built from Python sets, `change_decomposition_edges.csv` and `vintage_asset_parent_changes.csv`, are sorted before they are written, so that rerunning their scripts against the pinned release reproduces their checksums, and the run logs print each output's path relative to the repository. Two files marked `_SUPERSEDED_` hold the same rows as two outputs of record in another order, and `outputs/PROMOTION_2026-09-08.txt` records the checksums of both with their row count and header.
 
 ## Layout
 
@@ -134,7 +136,7 @@ config/universe_isins.csv       their security identifiers, from GLEIF
 config/ticker_overrides.csv     hand overrides of the crosswalk, each with a reason
 config/tickers_draft_v0.csv     a 20-name sample kept for testing the data path
 data/raw/                       the downloaded panel, licensed and excluded from git
-data/raw/manifest.json          hashes and coverage of that panel, committed
+data/raw/manifest.json          checksums and coverage of that panel, committed
 data/raw/manifest_run.json      the same for your own run, excluded from git
 outputs/                        the files of the vintage and measurement scripts
 evidence/                       the hand-collected transaction dates, each with its source
@@ -148,7 +150,7 @@ Open the notebook with the Colab badge above and choose Runtime, Run all. Add `F
 
 ## References
 
-Every estimator is written in the project's own code on numpy and pandas: the Newey-West standard errors of the factor regressions in notebook 01 (`newey_west_ols`) and of the return test in script 11 and the note's build, and the rank correlations and quintile overlaps of scripts 09, 10, 13 and 15.
+Every estimator is written in the project's own code on numpy and pandas: the Newey-West standard errors of the factor regressions in notebook 01 (`newey_west_ols`) and of the quintile-spread comparison in script 11 and the note's build, and the rank correlations and quintile overlaps of scripts 09, 10, 13 and 15.
 
 > Blume, M. E. and Stambaugh, R. F. (1983). "Biases in computed returns: An application to the size effect." *Journal of Financial Economics* 12(3), 387-404.
 >
