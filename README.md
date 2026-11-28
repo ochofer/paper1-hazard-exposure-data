@@ -6,7 +6,7 @@ Companies own physical assets, e.g., power stations, pipelines, mines and cement
 
 **This repository builds and audits the data for that question, and does not test whether hazard exposure is priced.** A power calculation, published here, set the planned return test, a cross-sectional Fama-MacBeth design, aside. A quintile-spread comparison was run by a rule set in the header of its script before the run, and the note reports its result with the minimum detectable effect that makes it readable.
 
-The note is *What a vintage difference measures*, a hand verification of ownership changes in a public asset-level database, published as the release [`note-v1.4`](https://github.com/ochofer/paper1-hazard-exposure-data/releases/tag/note-v1.4). Every result figure in it is read at build time from a named output file, two of which are withheld. The labels and settings that are typed are listed in its Appendix D.
+The note is *What a vintage difference measures*, a hand verification of ownership changes in a public asset-level database, published as the [latest release](https://github.com/ochofer/paper1-hazard-exposure-data/releases/latest). Every result figure in it is read at build time from a named output file, two of which are withheld. The labels and settings that are typed are listed in its Appendix D.
 
 ## What is here
 
@@ -28,7 +28,7 @@ Three counts of companies appear in this project. They measure different things,
 
 | Count | What it is |
 |---|---|
-| 372 | Ownership entities that resolve to the US and developed-Europe listed universe and hold at least one tracked asset of **any** status. 200 of them hold five or more |
+| 372 | Ownership entities that resolve to the US and developed-Europe listed universe and hold at least one asset in the ownership data, of **any** status. 200 of them hold five or more |
 | 328 | The same, keeping only assets that are **operating**, i.e., not announced, permitted or cancelled. 175 of them hold five or more |
 | 302 | Those of the 328 that resolve to a tradeable listing, i.e., the price panel |
 
@@ -38,22 +38,22 @@ The hazard study itself is closed: the hazard measure is not built and not sched
 
 ## Terms
 
-Each term carries one meaning, the same in the code, the notebook, the outputs and the note.
+Each term carries one meaning, the same here and in the note.
 
 - **Release**: one dated file published by Global Energy Monitor, identified by its file name and SHA-256 hash. The two files of August 2026 are **V1** and **V2**.
 - **Vintage**: the data as they stood in one release. A **vintage difference** is the change between two releases of the same tracker, and it is what this repository measures.
 - **Pinned release**: the release a script reads, named by file name and hash in the script's provenance record.
-- **Ownership entity**: an owner as Global Energy Monitor records it, before any matching. A **company** is the listed company an ownership entity resolves to, and the note says *firm* for the same thing.
-- **Listed parent**: an ownership entity that resolves to the US and developed-Europe listed universe. There are 328, and 302 of them resolve to a listed company with a price series.
-- **Priceable**: a listed parent whose shares resolve to a tradeable listing in the price panel. There are 302.
-- **Tracked asset**: an operating unit in the ownership data. Global Energy Monitor's own words *unit* and *plant* appear where its fields are named.
-- **Build-out, restatement and methodology change**: the three causes into which a vintage difference is split. *Revision* keeps its ordinary sense and is not a fourth cause.
-- **Exposure**: attributable capacity, i.e., the share of a tracked asset's capacity assigned to a company through its ownership stake, summed over its assets.
-- **Convention**: a stated rule for an ambiguous case, e.g., the blank-share convention, applied the same way in every script and reported with its alternative beside it.
+- **Ownership entity**: an owner as Global Energy Monitor records it, before any matching. A **company** is the listed company an ownership entity resolves to. A **firm** is an owner whose attributable capacity the note ranks.
+- **Cross-section**: the 328 ownership entities that resolve to the US and developed-Europe listed universe, 302 of them listed companies with a price series.
+- **Priceable**: one of the 328 ownership entities whose shares resolve to a tradeable listing in the price panel. There are 302.
+- **Asset**: an operating unit in the ownership data, e.g., a power unit, a mine or a pipeline. Global Energy Monitor's own words *unit* and *plant* appear where its fields are named. An **asset holding** is one ownership entity's holding of one asset, so an asset owned by two of the 328 counts as two holdings.
+- **Build-out, restatement and methodology**: the three buckets into which a vintage difference is split. *Revision* keeps its ordinary sense and is not a fourth bucket.
+- **Attributable capacity**: the megawatts of an owner's operating coal and gas power units, each taken at its ownership share and summed.
+- **Blank share** and its two **readings**: an ownership share a release leaves empty, read as zero or imputed, the two readings applied the same way in every script and reported side by side.
 - **Provenance record**: the `RUN_PROVENANCE_*.json` file a script writes at run time, naming every input it opened with its hash.
 - **Figure register**: the table that ties every result figure in the note to the output file that carries it.
 - **Price panel**: the daily total-return series of the priceable companies and two benchmarks, pulled from Financial Modeling Prep on 21 August 2026 and not redistributed.
-- **Crosswalk**: the table that joins ownership entities to security identifiers and tickers, with every hand correction recorded in `config/ticker_overrides.csv`.
+- **Crosswalk**: the table that joins ownership entities to security identifiers and tickers, with every hand override recorded in `config/ticker_overrides.csv`.
 - **Blocking test**: a test that stops the pipeline if it fails, run before anything uses the pipeline's output.
 
 ## Why the data layer stands apart
@@ -82,7 +82,7 @@ The commitments:
 - **Delisting returns are included.** A company that goes to zero contributes its final return. Dropping the last observation turns bankruptcies into non-events and biases mean returns upward, the direction that would flatter the hypothesis.
 - **The size of the problem is measured before it is assumed small**, with thresholds fixed before the number appears.
 
-Section 5 of the notebook runs the measurement, and it returns two results. First, the price provider cannot measure delisting over this sample: its records show seven delistings in 2010 and 2,353 in 2025, a 336-fold rise, and delisting rates do not behave like that, so the series measures the provider's coverage and not delistings. The rate is therefore not quoted. Second, split by how heavily they traded, the smallest delisted companies underperform badly before delisting, while the largest outperform. That fits the usual account, in which small companies delist because they fail and companies of the size studied here mostly delist because they are acquired, at a premium. If it holds, excluding delisted companies biases returns downward, not upward.
+Section 5 of the notebook runs the measurement, and it returns two results. First, the price provider cannot measure delisting over this sample: its records show seven delistings in 2010 and 2,353 in 2025, a 336-fold rise, and delisting rates do not behave like that, so the series measures the provider's coverage and not delistings. The rate is therefore not quoted. Second, split by how heavily they traded, the smallest delisted companies' median return in their final year falls below the market's, while the largest companies' rises above it. That fits the usual account, in which small companies delist because they fail and companies of the size studied here mostly delist because they are acquired, at a premium. If it holds, excluding delisted companies biases returns downward, not upward.
 
 **Survivorship bias is therefore unmeasured at the company sizes that matter here.** Ten observations fall in the relevant band, which gives a direction and not a size, and this provider's records cannot settle it. CRSP's delisting file would settle it. No file of this repository uses CRSP, and the question stays open for a later study.
 
@@ -110,7 +110,7 @@ Each of these produces a plausible number and raises no error, which is why it i
 
 ## What this repository does not contain
 
-**The price panel.** Financial Modeling Prep's terms require a separate licence to redistribute its data, so `data/raw/` is excluded from version control. Published instead are the fetch code, the resolved company list, the hand corrections with a reason for each, and [`data/raw/manifest.json`](data/raw/manifest.json), which carries the SHA-256 hash, byte size and row count of every file the findings were computed on, with each of the 304 symbols' date coverage. A reader with their own access can therefore check that their panel matches this one. `build_manifest.py` writes an `owner` field naming who made the pull, here Carlo Hofer. The committed manifest lacks the field and gains it when it is next written. Running the notebook writes the same kind of record for the reader's own pull as `data/raw/manifest_run.json`, which git ignores and which cannot overwrite the published record. Matching hashes show the same bytes are held, and where they differ the coverage by symbol shows which symbols diverge.
+**The price panel.** Financial Modeling Prep's terms require a separate licence to redistribute its data, so `data/raw/` is excluded from version control. Published instead are the fetch code, the resolved company list, the hand overrides with a reason for each, and [`data/raw/manifest.json`](data/raw/manifest.json), which carries the SHA-256 hash, byte size and row count of every file the findings were computed on, with each of the 304 symbols' date coverage. A reader with their own access can therefore check that their panel matches this one. `build_manifest.py` writes an `owner` field naming who made the pull, here Carlo Hofer. The committed manifest lacks the field and gains it when it is next written. Running the notebook writes the same kind of record for the reader's own pull as `data/raw/manifest_run.json`, which git ignores and which cannot overwrite the published record. Matching hashes show the same bytes are held, and where they differ the coverage by symbol shows which symbols diverge.
 
 **What the price series is.** Every return is computed from one field, `adjClose`, from Financial Modeling Prep's `historical-price-eod/dividend-adjusted` endpoint, pulled on 21 August 2026. The adjustment is the vendor's, for splits as well as dividends: NextEra's four-for-one split of 26 October 2020 shows no break in the series, and Exxon's adjusted level in January 2010 is about half its nominal close of the time. No unadjusted close is stored beside it, so the adjustment cannot be undone or checked independently. A vendor's adjusted history changes whenever a new dividend or split is applied, so the panel is a snapshot of the vendor's adjustment on 21 August 2026. **The pull is therefore auditable, not repeatable**, and rebuilding the price layer requires a paid subscription, while every other input here is free. The pull did not record a fetch time for each file, and none has been filled in from file system times, which change whenever a file is copied.
 
@@ -131,7 +131,7 @@ EXECUTION_CHECKLIST.html        how to reproduce it, and what each step should p
 FINDINGS_2026-08-21.md          the results of the three blocking tests, with numbers
 config/universe.csv             the 328 ownership entities
 config/universe_isins.csv       their security identifiers, from GLEIF
-config/ticker_overrides.csv     hand corrections to the crosswalk, each with a reason
+config/ticker_overrides.csv     hand overrides of the crosswalk, each with a reason
 config/tickers_draft_v0.csv     a 20-name sample kept for testing the data path
 data/raw/                       the downloaded panel, licensed and excluded from git
 data/raw/manifest.json          hashes and coverage of that panel, committed
